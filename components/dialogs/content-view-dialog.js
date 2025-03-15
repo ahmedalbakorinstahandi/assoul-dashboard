@@ -11,13 +11,8 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-interface ContentViewDialogProps {
-  content: any
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
 
-export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDialogProps) {
+export function ContentViewDialog({ content, open, onOpenChange }) {
   if (!content) return null
 
   const isArticle = content.author !== undefined
@@ -26,10 +21,10 @@ export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDi
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "منشور":
-        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">{status}</span>
-      case "مسودة":
-        return <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">{status}</span>
+      case true:
+        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">منشور</span>
+      case false:
+        return <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">مسودة</span>
       default:
         return <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">{status}</span>
     }
@@ -37,7 +32,7 @@ export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px]" style={{maxWidth:"800px"}}>
         <DialogHeader>
           <DialogTitle>عرض بيانات المحتوى</DialogTitle>
           <DialogDescription>عرض تفاصيل المحتوى {content.title}</DialogDescription>
@@ -49,7 +44,7 @@ export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDi
             </div>
             <div>
               <h3 className="text-lg font-bold">{content.title}</h3>
-              <p className="text-sm text-gray-500">{getStatusBadge(content.status)}</p>
+              <p className="text-sm text-gray-500">{getStatusBadge(content.is_visible)}</p>
             </div>
           </div>
 
@@ -59,16 +54,16 @@ export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDi
               <p className="font-medium">{content.title}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-500">التصنيف</Label>
-              <p className="font-medium">{content.category}</p>
+              <Label className="text-sm text-gray-500">رابط الفديو</Label>
+              <p className="font-medium"><a href={content.link} target="_blank" rel="noopener noreferrer">{content.link}</a></p>
             </div>
             <div>
               <Label className="text-sm text-gray-500">تاريخ النشر</Label>
-              <p className="font-medium">{content.publishDate}</p>
+              <p className="font-medium">{new Date(content.created_at).toLocaleDateString("EN-ca")}</p>
             </div>
             <div>
               <Label className="text-sm text-gray-500">الحالة</Label>
-              <p>{getStatusBadge(content.status)}</p>
+              <p>{getStatusBadge(content.is_visible)}</p>
             </div>
 
             {isArticle && (
@@ -93,7 +88,7 @@ export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDi
             )}
           </div>
 
-          <div className="mt-6 border-t pt-4">
+          {/* <div className="mt-6 border-t pt-4">
             <Label className="text-sm text-gray-500 mb-2 block">
               {isArticle ? "مقتطف من المقال" : isVideo ? "وصف الفيديو" : "وصف الصورة"}
             </Label>
@@ -104,7 +99,7 @@ export function ContentViewDialog({ content, open, onOpenChange }: ContentViewDi
                   ? "هذا الفيديو يشرح بطريقة مبسطة كيفية التعامل مع السكري..."
                   : "هذه الصورة توضيحية تظهر أنواع الطعام المناسبة لمرضى السكري..."}
             </p>
-          </div>
+          </div> */}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

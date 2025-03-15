@@ -257,7 +257,7 @@ export function GamesManagement() {
       toast.error(response.message)
     }
   }
-  console.log(questionsIds.find(e => e.id == selectedQuestionId)?.answers_view);
+  // console.log(questionsIds.find(e => e.id == selectedQuestionId)?.answers_view);
 
   // معالجات عرض، تعديل وحذف العنصر (يمكن استخدامها لكل الكيانات)
   const handleViewItem = (item) => {

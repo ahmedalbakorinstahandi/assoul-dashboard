@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { getCookie } from "cookies-next/client";
 
 interface SidebarProps {
   activeSection: string;
@@ -27,6 +28,8 @@ export function Sidebar({
   isOpen,
   setIsOpen,
 }: SidebarProps) {
+  const email = getCookie("email");
+  const name = getCookie("name");
   const menuItems = [
     {
       id: "users",
@@ -132,8 +135,8 @@ export function Sidebar({
               م
             </div>
             <div className="min-w-0">
-              <p className="font-medium truncate">المدير</p>
-              <p className="text-sm text-gray-400 truncate">admin@assoul.com</p>
+              <p className="font-medium truncate">{name}</p>
+              <p className="text-sm text-gray-400 truncate">{email}</p>
             </div>
           </div>
         </div>

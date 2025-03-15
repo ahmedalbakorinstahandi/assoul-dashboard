@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,17 +24,121 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ContentViewDialog } from "@/components/dialogs/content-view-dialog"
 import { ContentEditDialog } from "@/components/dialogs/content-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
+import { getData, postData } from "@/lib/apiHelper"
+import toast from "react-hot-toast"
+import { Switch } from "./ui/switch"
+import { PaginationControls } from "./ui/pagination-controls"
 
 export function ContentManagement() {
-  const [activeTab, setActiveTab] = useState("articles")
+  const [activeTab, setActiveTab] = useState("videos")
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddContentOpen, setIsAddContentOpen] = useState(false)
+  const initialFilter = { game_id: "", level_id: "", question_id: "" };
+  const [filter, setFilter] = useState(initialFilter)
+  const [isEnabled, setIsEnabled] = useState(true);
 
   // أضف حالة النوافذ المنبثقة في بداية الدالة ContentManagement بعد تعريف المتغيرات الحالية
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedContent, setSelectedContent] = useState(null)
+  const [selectedQuestionId, setSelectedQuestionId] = useState("");
+  const [questionsIds, setQuestionsId] = useState([]);
+  const keys = [
+    { id: 1, name: "physical_activity" },
+    { id: 2, name: "meal" },
+    { id: 3, name: "blood_sugar_reading" },
+    { id: 4, name: "insulin_dose" },
+
+  ]
+  useEffect(() => {
+
+    const fetchQuestionId = async () => {
+      const response = await getData(`games/questions`);
+      // console.log("ddd", response);
+
+      setQuestionsId(response.data);
+    };
+    fetchQuestionId()
+  }, [selectedQuestionId]);
+
+
+  const [contentData, setContentData] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  const [pageSize, setPageSize] = useState(10); // number of items per page
+
+  const [contentPage, setContentPage] = useState(1);
+
+  const [contentMeta, setContentMeta] = useState({});
+  const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
+    setLoading(true)
+    const response = await getData(
+      `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
+    );
+    if (response.success) {
+      setData(response.data);
+      setMeta(response.meta); // Save metadata for pagination logic
+      setLoading(false)
+    } else {
+      toast.error(response.message);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "videos") {
+      fetchEntityData("general/educational-contents", setContentData, setContentMeta, contentPage, searchTerm, filter);
+    }
+  }, [activeTab, contentPage, searchTerm, pageSize, filter]);
+
+  const handleAddEntity = async (endpoint, newEntity, file = null) => {
+    let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
+    let imageLink = "";
+
+    if (file) {
+      console.log("Before uploading image:", dataToSend);
+
+      // رفع الصورة والحصول على الرابط
+      const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
+      console.log("Upload response:", response);
+
+      if (response.success) {
+        imageLink = response.data.image_name;
+        dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
+      } else {
+        toast.error("فشل رفع الصورة");
+        return;
+      }
+
+      console.log("After adding image:", dataToSend);
+    }
+
+    console.log("Sending Data:", dataToSend);
+
+    // إرسال البيانات كـ JSON
+    const response = await postData(endpoint, dataToSend, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.success) {
+      toast.success(response.message);
+      console.log(response);
+
+      // تحديث البيانات حسب نوع الكيان المضاف
+      if (endpoint.includes("educational-contents")) {
+        setIsEnabled(true)
+        setIsAddContentOpen(false);
+        // setImagePreview(null);
+
+        fetchEntityData("general/educational-contents", setContentData, setContentMeta, contentPage, searchTerm, filter);
+      }
+
+    } else {
+      toast.error(response.message);
+    }
+  };
 
   // Mock data for demonstration
   const articlesData = [
@@ -104,133 +208,16 @@ export function ContentManagement() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "منشور":
-        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">{status}</span>
-      case "مسودة":
-        return <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">{status}</span>
+      case true:
+        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">منشور</span>
+      case false:
+        return <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">مسودة</span>
       default:
         return <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">{status}</span>
     }
   }
 
-  const getContentTypeIcon = () => {
-    switch (activeTab) {
-      case "articles":
-        return <FileText className="h-4 w-4 ml-2" />
-      case "videos":
-        return <Video className="h-4 w-4 ml-2" />
-      case "images":
-        return <Image className="h-4 w-4 ml-2" />
-      default:
-        return <Plus className="h-4 w-4 ml-2" />
-    }
-  }
 
-  const renderContentForm = () => {
-    if (activeTab === "articles") {
-      return (
-        <>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">عنوان المقال</Label>
-              <Input id="title" placeholder="أدخل عنوان المقال" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="content">محتوى المقال</Label>
-              <Textarea id="content" placeholder="أدخل محتوى المقال" className="h-40" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">التصنيف</Label>
-              <Select>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="اختر التصنيف" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="تعليمي">تعليمي</SelectItem>
-                  <SelectItem value="تغذية">تغذية</SelectItem>
-                  <SelectItem value="رياضة">رياضة</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="author">الكاتب</Label>
-              <Select>
-                <SelectTrigger id="author">
-                  <SelectValue placeholder="اختر الكاتب" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="د. فاطمة أحمد">د. فاطمة أحمد</SelectItem>
-                  <SelectItem value="د. خالد عبدالله">د. خالد عبدالله</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </>
-      )
-    } else if (activeTab === "videos") {
-      return (
-        <>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">عنوان الفيديو</Label>
-              <Input id="title" placeholder="أدخل عنوان الفيديو" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">وصف الفيديو</Label>
-              <Textarea id="description" placeholder="أدخل وصف الفيديو" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="video">ملف الفيديو</Label>
-              <Input id="video" type="file" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">التصنيف</Label>
-              <Select>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="اختر التصنيف" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="تعليمي">تعليمي</SelectItem>
-                  <SelectItem value="ترفيهي">ترفيهي</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </>
-      )
-    } else {
-      return (
-        <>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">عنوان الصورة</Label>
-              <Input id="title" placeholder="أدخل عنوان الصورة" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">وصف الصورة</Label>
-              <Textarea id="description" placeholder="أدخل وصف الصورة" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="image">ملف الصورة</Label>
-              <Input id="image" type="file" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">التصنيف</Label>
-              <Select>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="اختر التصنيف" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="تغذية">تغذية</SelectItem>
-                  <SelectItem value="شخصيات">شخصيات</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </>
-      )
-    }
-  }
 
   // أضف الوظائف التالية قبل return
   // معالجة عرض المحتوى
@@ -265,54 +252,121 @@ export function ContentManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+      <div className="flex justify-between items-center">
         <h2 className="text-xl md:text-3xl font-bold">إدارة المحتوى التعليمي</h2>
-        <Dialog open={isAddContentOpen} onOpenChange={setIsAddContentOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-              {getContentTypeIcon()}
-              <span className="hidden sm:inline">إضافة محتوى جديد</span>
-              <span className="sm:hidden">إضافة</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>إضافة محتوى جديد</DialogTitle>
-              <DialogDescription>أدخل بيانات المحتوى الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
-            </DialogHeader>
-            {renderContentForm()}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddContentOpen(false)}>
-                إلغاء
-              </Button>
-              <Button className="bg-[#ffac33] hover:bg-[#f59f00]" onClick={() => setIsAddContentOpen(false)}>
-                حفظ
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <div className="">
+          {activeTab === "videos" && (
+            <Dialog open={isAddContentOpen} onOpenChange={setIsAddContentOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+                  <Plus className="h-4 w-4 ml-2" />
+                  <span className="hidden sm:inline">إضافة محتوى جديد</span>
+                  <span className="sm:hidden">إضافة</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>إضافة محتوى جديد</DialogTitle>
+                  <DialogDescription>أدخل بيانات المحتوى الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="level">عنوان فريد </Label>
+                    <Select name="level_id"
+                      value={selectedQuestionId}
+                      onValueChange={(value) => setSelectedQuestionId(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر عنوان فريد" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {keys.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
+                            {game.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* <div className="space-y-2">
+                    <Label htmlFor="key">عنوان فريد </Label>
+                    <Input id="key" placeholder="أدخل عنوان فريد" />
+                  </div> */}
+                  <div className="space-y-2">
+                    <Label htmlFor="title">عنوان المحتوى </Label>
+                    <Input id="title" placeholder="أدخل عنوان المحتوى" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="link">رابط الفديو </Label>
+                    <Input id="link" placeholder="أدخل رابط الفديو" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">مدة الفديو </Label>
+                    <Input id="duration" placeholder="أدخل مدة الفديو" type="number" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="is_visible">قابلية الظهور</Label>
+                    <Switch id="is_visible" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+
+                  </div>
+
+
+                </div>
+                <DialogFooter>
+                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddContentOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button
+                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+                    onClick={() => {
+                      const newGame = {
+                        title: document.getElementById("title").value,
+                        link: document.getElementById("link").value,
+                        duration: document.getElementById("duration").value,
+                        key:selectedQuestionId,
+
+                        // question_id: selectedQuestionId,
+                        is_visible: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
+
+                      };
+
+                      // const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+
+                      handleAddEntity("general/educational-contents", newGame);
+                    }}
+                  >
+                    حفظ
+                  </Button>
+
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:space-x-2 sm:space-x-reverse">
+      <div className="flex flex-col mb-4 sm:flex-row items-start sm:items-center gap-2 sm:space-x-2 sm:space-x-reverse">
         <div className="relative flex-1 w-full sm:max-w-sm">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Search style={{ left: "10px" }} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <Input
-            placeholder="بحث عن محتوى..."
+            placeholder="بحث..."
             className="pr-10 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="articles">المقالات</TabsTrigger>
-          <TabsTrigger value="videos">الفيديوهات</TabsTrigger>
-          <TabsTrigger value="images">الصور</TabsTrigger>
+        <TabsList className="flex w-full grid-cols-3">
+          {/* <TabsTrigger value="articles">المقالات</TabsTrigger> */}
+          <TabsTrigger value="videos" className="flex-1">الفيديوهات</TabsTrigger>
+          {/* <TabsTrigger value="images">الصور</TabsTrigger> */}
         </TabsList>
 
-        <TabsContent value="articles">
+        {/* <TabsContent value="articles">
           <Card>
             <CardHeader>
               <CardTitle>المقالات</CardTitle>
@@ -359,7 +413,7 @@ export function ContentManagement() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="videos">
           <Card>
@@ -373,7 +427,7 @@ export function ContentManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>العنوان</TableHead>
-                      <TableHead>التصنيف</TableHead>
+                      <TableHead>الرابط</TableHead>
                       <TableHead>المدة</TableHead>
                       <TableHead>تاريخ النشر</TableHead>
                       <TableHead>الحالة</TableHead>
@@ -381,36 +435,44 @@ export function ContentManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {videosData.map((video) => (
+                    {contentData.map((video) => (
                       <TableRow key={video.id}>
                         <TableCell className="font-medium">{video.title}</TableCell>
-                        <TableCell>{video.category}</TableCell>
-                        <TableCell>{video.duration}</TableCell>
-                        <TableCell>{video.publishDate}</TableCell>
-                        <TableCell>{getStatusBadge(video.status)}</TableCell>
+                        <TableCell><a href={video.link} target="_blank" rel="noopener noreferrer">{video.link}</a></TableCell>
+                        <TableCell>{video.duration} دقيقة</TableCell>
+                        <TableCell>{new Date(video.created_at).toLocaleDateString("EN-ca")}</TableCell>
+                        <TableCell>{getStatusBadge(video.is_visible)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewContent(video)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditContent(video)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditContent(video)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(video)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                           </div>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+
               </div>
+              <PaginationControls
+                currentPage={contentPage}
+                setPage={setContentPage}
+                totalItems={contentMeta.total}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="images">
+        {/* <TabsContent value="images">
           <Card>
             <CardHeader>
               <CardTitle>الصور</CardTitle>
@@ -457,7 +519,7 @@ export function ContentManagement() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
       {/* نوافذ العرض والتعديل والحذف */}
       <ContentViewDialog content={selectedContent} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />

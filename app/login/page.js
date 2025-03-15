@@ -42,8 +42,12 @@ export default function LoginPage() {
       );
       if (response.data?.success) {
         const token = response.data.user_token;
+        const email = response.data.data.email;
+        const name = response.data.data.first_name;
 
         setCookie("token", token);
+        setCookie("email", email);
+        setCookie("name", name);
 
         toast.success("Login successful!");
         router.push("/users");

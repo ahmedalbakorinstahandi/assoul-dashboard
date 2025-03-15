@@ -4,11 +4,15 @@ import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Menu } from "lucide-react";
-import { usePathname } from "next/navigation"; // استيراد usePathname
+import { usePathname, useRouter } from "next/navigation"; // استيراد usePathname
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "react-hot-toast";
 import { Sidebar } from "@/components/sidebar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { toast } from "sonner";
+import { deleteCookie, getCookie } from "cookies-next";
+import axios from "axios";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,6 +20,8 @@ export default function RootLayout({ children }) {
   const pathname = usePathname(); // الحصول على المسار الحالي
   const [activeSection, setActiveSection] = useState("users");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter()
+
 
   // تحديث activeSection بناءً على المسار
   useEffect(() => {
@@ -26,7 +32,32 @@ export default function RootLayout({ children }) {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+  const handleLogout = async () => {
+    try {
+      const token = getCookie("token");
+      if (!token) {
+        toast.error("No active session found.");
+        return;
+      }
 
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL_AUTH}logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      deleteCookie("token");
+      toast.success("Logged out successfully!");
+      router.push("/login");
+    } catch (error) {
+      toast.error("Failed to log out. Please try again.");
+      console.error("Logout Error:", error);
+    }
+  };
   return (
     // <html lang="ar" dir="rtl">
     //   <body className={inter.className}>
@@ -57,12 +88,24 @@ export default function RootLayout({ children }) {
           <div className="flex items-center gap-2 md:gap-4">
             <ModeToggle />
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium hidden sm:inline">
+              {/* <span className="text-sm font-medium hidden sm:inline">
                 مرحباً، المدير
-              </span>
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#ffac33] flex items-center justify-center text-white">
-                م
-              </div>
+              </span> */}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  {/* <Button variant="outline" size="icon"> */}
+
+                  <div className="w-8 cursor-pointer h-8 md:w-10 md:h-10 rounded-full bg-[#ffac33] flex items-center justify-center text-white">
+                    م
+                  </div>
+                  {/* </Button> */}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleLogout}>تسجيل الخروج</DropdownMenuItem>
+
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
