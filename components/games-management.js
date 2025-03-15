@@ -30,6 +30,8 @@ import { PaginationControls } from "./ui/pagination-controls"
 import { Image } from "@radix-ui/react-avatar"
 import { Switch } from "./ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { LevelViewDialog } from "./dialogs/level-view-dialog"
+import { QuestionViewDialog } from "./dialogs/question-view-dialog"
 
 export function GamesManagement() {
   const [activeTab, setActiveTab] = useState("games")
@@ -37,12 +39,19 @@ export function GamesManagement() {
   const [isAddGameOpen, setIsAddGameOpen] = useState(false)
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
+  const [isAddAnswerOpen, setIsAddAnswerOpen] = useState(false)
+  const initialFilter = { game_id: "", level_id: "", question_id: "" };
+  const [filter, setFilter] = useState(initialFilter)
+
   const [isEnabled, setIsEnabled] = useState(true);
   const [gameColor, setGameColor] = useState("#ffffff"); // اللون الافتراضي
   const [imagePreview, setImagePreview] = useState(null); // Store image preview
   const [selectedGameId, setSelectedGameId] = useState("");
   const [selectedLevelId, setSelectedLevelId] = useState("");
+  const [selectedQuestionId, setSelectedQuestionId] = useState("");
+
   const [selectedQuestionType, setSelectedQuestionType] = useState("");
+  const [selectedQuestionView, setSelectedQuestionView] = useState("text");
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -52,9 +61,16 @@ export function GamesManagement() {
   };
   // حالات النوافذ المنبثقة
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewDialogLevelOpen, setViewDialogLevelOpen] = useState(false)
+  const [viewDialogQuestionOpen, setViewDialogQuestionOpen] = useState(false)
+
+
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedItemLevel, setSelectedItemLevel] = useState(null)
+  const [selectedItemQuestion, setSelectedItemQuestion] = useState(null)
+
   const [loading, setLoading] = useState(false)
 
   // بيانات الكيانات
@@ -75,10 +91,17 @@ export function GamesManagement() {
   const [answersMeta, setAnswersMeta] = useState({});
   const [gamesIds, setGamesId] = useState([]);
   const [levelsIds, setLevelsId] = useState([]);
+  const [questionsIds, setQuestionsId] = useState([]);
+
   const typQuestions = [
     { id: 1, name: "DragDrop" },
     { id: 2, name: "LetterArrangement" },
     { id: 3, name: "MCQ" },
+
+  ]
+  const viewQuestions = [
+    { id: 1, name: "text", title: "نص" },
+    { id: 2, name: "image", title: "صورة" },
 
   ]
   useEffect(() => {
@@ -94,16 +117,23 @@ export function GamesManagement() {
 
       setLevelsId(response.data);
     };
+    const fetchQuestionId = async () => {
+      const response = await getData(`games/questions?game_id=${selectedGameId}&level_id=${selectedLevelId}`);
+      // console.log("ddd", response);
+
+      setQuestionsId(response.data);
+    };
     fetchLevelId()
+    fetchQuestionId()
     fetchGamesId();
-  }, [selectedGameId]);
+  }, [selectedGameId, selectedLevelId]);
 
   // بيانات وهمية لل
   // الدالة المسؤولة عن جلب البيانات مع pagination والبحث
-  const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm) => {
+  const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
     setLoading(true)
     const response = await getData(
-      `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`
+      `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
     );
     if (response.success) {
       setData(response.data);
@@ -117,15 +147,15 @@ export function GamesManagement() {
   // دالة لمزامنة جلب البيانات بناءً على التبويب النشط
   useEffect(() => {
     if (activeTab === "games") {
-      fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm);
+      fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
     } else if (activeTab === "levels") {
-      fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm);
+      fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
     } else if (activeTab === "questions") {
-      fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm);
+      fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
     } else if (activeTab === "answers") {
-      fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm);
+      fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
     }
-  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize]);
+  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter]);
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
     let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
@@ -167,23 +197,35 @@ export function GamesManagement() {
         setIsAddGameOpen(false);
         setImagePreview(null);
 
-        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm);
+        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
       }
       if (endpoint.includes("levels")) {
         setSelectedGameId("")
         setIsAddLevelOpen(false);
 
-        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm)
+        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
       };
       if (endpoint.includes("questions")) {
         setSelectedGameId("")
         setSelectedQuestionType("")
         setSelectedLevelId("")
+        setSelectedQuestionView("")
 
         setIsAddQuestionOpen(false);
-        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm);
+        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
       }
-      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage);
+      if (endpoint.includes("answers")) {
+        setSelectedGameId("")
+        setSelectedQuestionType("")
+        setSelectedLevelId("")
+        setSelectedQuestionView("")
+        setSelectedQuestionId("")
+
+
+        setIsAddAnswerOpen(false);
+        fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
+
+      };
     } else {
       toast.error(response.message);
     }
@@ -215,13 +257,21 @@ export function GamesManagement() {
       toast.error(response.message)
     }
   }
+  console.log(questionsIds.find(e => e.id == selectedQuestionId)?.answers_view);
 
   // معالجات عرض، تعديل وحذف العنصر (يمكن استخدامها لكل الكيانات)
   const handleViewItem = (item) => {
     setSelectedItem(item)
     setViewDialogOpen(true)
   }
-
+  const handleViewLevel = (item) => {
+    setSelectedItemLevel(item)
+    setViewDialogLevelOpen(true)
+  }
+  const handleViewQuestion = (item) => {
+    setSelectedItemQuestion(item)
+    setViewDialogQuestionOpen(true)
+  }
   const handleEditItem = (item) => {
     setSelectedItem(item)
     setEditDialogOpen(true)
@@ -462,7 +512,7 @@ export function GamesManagement() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="level">السمتوى</Label>
+                    <Label htmlFor="level">المستوى</Label>
                     <Select name="level_id"
                       value={selectedLevelId}
                       onValueChange={(value) => setSelectedLevelId(value)}
@@ -480,13 +530,10 @@ export function GamesManagement() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="text">نص السؤال</Label>
-                    <Textarea id="text" placeholder="أدخل نص السؤال" />
-                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="points">نقاط السؤال</Label>
-                    <Input id="points" type="points" placeholder="ادخل نقاط السؤال"  min={0}/>
+                    <Input id="points" type="points" placeholder="ادخل نقاط السؤال" min={0} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">مزع السؤال</Label>
@@ -507,17 +554,44 @@ export function GamesManagement() {
                     </Select>
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="type">عرض السؤال</Label>
+                    <Select name="type"
+                      value={selectedQuestionView}
+                      onValueChange={(value) => setSelectedQuestionView(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر عرض السؤال" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {viewQuestions.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
+                            {game.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* {selectedQuestionView == "text" ? <> */}
+                  <div className="space-y-2">
+                    <Label htmlFor="text">نص السؤال</Label>
+                    <Textarea id="text" placeholder="أدخل نص السؤال" />
+                  </div>
+                  {/* </> : <> */}
+                  <div className="space-y-2">
                     <Label htmlFor="image">صورة السؤال</Label>
                     <Input id="image" type="file" onChange={handleImageChange} />
                     {imagePreview && (
                       <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
                     )}
+
+
                     {/*            <Image src={
 
                       document.getElementById("image").files[0] || null// جلب الصورة
 
                     } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
                   </div>
+                  {/* </>} */}
                 </div>
                 <DialogFooter>
                   <Button
@@ -537,10 +611,156 @@ export function GamesManagement() {
                         points: document.getElementById("points").value,
 
                         type: selectedQuestionType,
+                        type: selectedQuestionType,
+                        answers_view: selectedQuestionView
                       }
-                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+                      // if (selectedQuestionView == "text") {
 
+                      //   handleAddEntity("games/questions", newQuestion)
+                      // } else {
+                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
                       handleAddEntity("games/questions", newQuestion, imageFile)
+
+                      // }
+                      // setIsAddQuestionOpen(false)
+                    }}
+                  >
+                    حفظ
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+          {activeTab === "answers" && (
+            <Dialog open={isAddAnswerOpen} onOpenChange={setIsAddAnswerOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+                  <Plus className="h-4 w-4 ml-2" />
+                  <span className="hidden sm:inline">إضافة جواب سؤال جديد</span>
+                  <span className="sm:hidden">إضافة</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>إضافة جواب سؤال جديد</DialogTitle>
+                  <DialogDescription>أدخل بيانات جواب السؤال الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="game">اللعبة</Label>
+                    <Select name="game_id"
+                      value={selectedGameId}
+                      onValueChange={(value) => setSelectedGameId(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر اللعبة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gamesIds.map((game, idx) => (
+                          <SelectItem key={idx} value={game.id.toString()}>
+                            {game.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="level">المستوى</Label>
+                    <Select name="level_id"
+                      value={selectedLevelId}
+                      onValueChange={(value) => setSelectedLevelId(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر اللعبة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {levelsIds.map((game, idx) => (
+                          <SelectItem key={idx} value={game.id.toString()}>
+                            {game.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="level">السؤال</Label>
+                    <Select name="level_id"
+                      value={selectedQuestionId}
+                      onValueChange={(value) => setSelectedQuestionId(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر السؤال" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {questionsIds.map((game, idx) => (
+                          <SelectItem key={idx} value={game.id.toString()}>
+                            {game.text}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+
+                  {questionsIds && questionsIds.find(e => e.id == selectedQuestionId)?.answers_view == "text" ? <>
+                    <div className="space-y-2">
+                      <Label htmlFor="text">جواب السؤال</Label>
+                      <Textarea id="text" placeholder="أدخل نص السؤال" />
+                    </div>
+                  </> : <>
+                    <div className="space-y-2">
+                      <Label htmlFor="image">صورة جواب السؤال</Label>
+                      <Input id="image" type="file" onChange={handleImageChange} />
+                      {imagePreview && (
+                        <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
+                      )}
+
+
+                      {/*            <Image src={
+
+                      document.getElementById("image").files[0] || null// جلب الصورة
+
+                    } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
+                    </div>
+                  </>}
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="is_correct"> الجواب الصحيح</Label>
+                    <Switch id="is_correct" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    style={{
+                      marginInline: "1rem"
+                    }}
+                    variant="outline" onClick={() => setIsAddAnswerOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button
+                    className="bg-[#ffac33] hover:bg-[#f59f00]"
+                    onClick={() => {
+                      const newQuestion = {
+                        game_id: selectedGameId,
+                        level_id: selectedLevelId,
+                        question_id: selectedQuestionId,
+                        is_correct: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
+
+                        // text:  || null,
+                        // points: document.getElementById("points").value,
+
+                        // type: selectedQuestionType,
+                        // type: selectedQuestionType,
+                        // answers_view: selectedQuestionView
+                      }
+                      if (questionsIds.find(e => e.id == selectedQuestionId)?.answers_view == "text") {
+                        newQuestion.text = document.getElementById("text").value
+                        handleAddEntity("games/answers", newQuestion)
+                      } else {
+                        const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+                        handleAddEntity("games/answers", newQuestion, imageFile)
+
+                      }
                       // setIsAddQuestionOpen(false)
                     }}
                   >
@@ -562,7 +782,89 @@ export function GamesManagement() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+
         </div>
+        {activeTab === "levels" && <>
+          <div className="space-y-2 " style={{ width: "10rem" }}>
+            {/* <Label htmlFor="game">اللعبة</Label> */}
+            <Select name="game_id"
+              value={filter.game_id}
+
+              onValueChange={(value) => setFilter((prev) => ({
+                ...prev,
+                game_id: prev.game_id == value ? "" : value,
+              }))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="اختر اللعبة" />
+              </SelectTrigger>
+              <SelectContent>
+                {gamesIds.map((game, idx) => (
+                  <SelectItem key={idx} value={game.id.toString()}>
+                    {game.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" onClick={() => setFilter(initialFilter)}>
+            مسح الكل
+          </Button>
+        </>}
+        {activeTab === "questions" && <>
+          <div className="space-y-2 " style={{ width: "10rem" }}>
+            {/* <Label htmlFor="game">اللعبة</Label> */}
+            <Select name="level_id"
+              value={filter.level_id}
+
+              onValueChange={(value) => setFilter((prev) => ({
+                ...prev,
+                level_id: prev.level_id == value ? "" : value,
+              }))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="اختر المستوى" />
+              </SelectTrigger>
+              <SelectContent>
+                {levelsIds.map((game, idx) => (
+                  <SelectItem key={idx} value={game.id.toString()}>
+                    {game.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" onClick={() => setFilter(initialFilter)}>
+            مسح الكل
+          </Button>
+        </>}
+        {activeTab === "answers" && <>
+          <div className="space-y-2 " style={{ width: "10rem" }}>
+            {/* <Label htmlFor="game">اللعبة</Label> */}
+            <Select name="question_id"
+              value={filter.question_id}
+
+              onValueChange={(value) => setFilter((prev) => ({
+                ...prev,
+                question_id: prev.question_id == value ? "" : value,
+              }))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="اختر السؤال" />
+              </SelectTrigger>
+              <SelectContent>
+                {questionsIds.map((game, idx) => (
+                  <SelectItem key={idx} value={game.id.toString()}>
+                    {game.text}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" onClick={() => setFilter(initialFilter)}>
+            مسح الكل
+          </Button>
+        </>}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -618,12 +920,12 @@ export function GamesManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
                               <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
+                            </Button> */}
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -674,15 +976,15 @@ export function GamesManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(level)}>
-                              <FileQuestion className="h-4 w-4" />
+                            <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
+                              <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(level)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(level)}>
                               <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
+                            </Button> */}
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -729,15 +1031,15 @@ export function GamesManagement() {
                         <TableCell>{question.type}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(question)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(question)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(question)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(question)}>
                               <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
+                            </Button> */}
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -772,28 +1074,33 @@ export function GamesManagement() {
                       <TableHead>المستوى</TableHead>
                       <TableHead>السؤال</TableHead>
                       <TableHead>الجواب</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      {/* <TableHead>الإجراءات</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {answersData.map((answer) => (
                       <TableRow key={answer.id}>
-                        <TableCell className="font-medium">{answer.game}</TableCell>
-                        <TableCell>{answer.question?.level_id}</TableCell>
+                        <TableCell className="font-medium">{answer.question?.level?.game?.name}</TableCell>
+                        <TableCell>{answer.question?.level?.title}</TableCell>
                         <TableCell>{answer.question?.text}</TableCell>
-                        <TableCell>{answer.text}</TableCell>
+                        <TableCell>{
+
+                          answer.question.answers_view === "text" ?
+                            answer.text : <>
+                              <img src={answer.image} className="rounded-lg h-10 w-10 object-cover" />
+                            </>}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          {/* <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                            </Button> */}
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
                               <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                            </Button> */}
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                            </Button> */}
+                          {/* </div> */}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -814,6 +1121,8 @@ export function GamesManagement() {
 
       {/* نوافذ العرض والتعديل والحذف */}
       <GameViewDialog game={selectedItem} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />
+      <LevelViewDialog game={selectedItemLevel} open={viewDialogLevelOpen} onOpenChange={setViewDialogLevelOpen} />
+      <QuestionViewDialog game={selectedItemQuestion} open={viewDialogQuestionOpen} onOpenChange={setViewDialogQuestionOpen} />
 
       <GameEditDialog
         game={selectedItem}

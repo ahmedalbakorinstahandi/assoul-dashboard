@@ -23,54 +23,52 @@ import {
 import { useEffect, useState } from "react";
 import { getData } from "@/lib/apiHelper";
 
-interface GameViewDialogProps {
-  game: any;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+
 
 export function GameViewDialog({
   game,
   open,
   onOpenChange,
-}: GameViewDialogProps) {
+}) {
   if (!game) return null;
-  // const [levelsData, setLevelsData] = useState([]);
-  // useEffect(() => {
-  //   const fetchLevels = async () => {
-  //     const response = await getData(`games/levels/${game.id}`);
-  //     setLevelsData(response.data.data);
-  //   };
-  //   fetchLevels();
-  // }, [game]);
+  const [levelsData, setLevelsData] = useState([]);
+  useEffect(() => {
+    const fetchLevels = async () => {
+      const response = await getData(`games/levels?game_id=${game?.id}`);
+      console.log(response);
+
+      setLevelsData(response.data);
+    };
+    fetchLevels();
+  }, [game]);
 
   // بيانات وهمية للمستويات والأسئلة
-  const levelsData = [
-    { id: 1, level: "المستوى الأول", questions: 5, difficulty: "سهل" },
-    { id: 2, level: "المستوى الثاني", questions: 7, difficulty: "متوسط" },
-    { id: 3, level: "المستوى الثالث", questions: 10, difficulty: "صعب" },
-  ];
+  // const levelsData = [
+  //   { id: 1, level: "المستوى الأول", questions: 5, difficulty: "سهل" },
+  //   { id: 2, level: "المستوى الثاني", questions: 7, difficulty: "متوسط" },
+  //   { id: 3, level: "المستوى الثالث", questions: 10, difficulty: "صعب" },
+  // ];
   // if (!levelsData) return null;
 
-  const questionsData = [
-    {
-      id: 1,
-      level: "المستوى الأول",
-      question: "أي من هذه الأطعمة صحي لمريض السكري؟",
-      type: "اختيار متعدد",
-    },
-    {
-      id: 2,
-      level: "المستوى الأول",
-      question: "ما هو الطعام الذي يحتوي على نسبة سكر عالية؟",
-      type: "اختيار متعدد",
-    },
-  ];
+  // const questionsData = [
+  //   {
+  //     id: 1,
+  //     level: "المستوى الأول",
+  //     question: "أي من هذه الأطعمة صحي لمريض السكري؟",
+  //     type: "اختيار متعدد",
+  //   },
+  //   {
+  //     id: 2,
+  //     level: "المستوى الأول",
+  //     question: "ما هو الطعام الذي يحتوي على نسبة سكر عالية؟",
+  //     type: "اختيار متعدد",
+  //   },
+  // ];
   // console.log(game);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[525px]" style={{maxWidth:"800px"}}>
         <DialogHeader>
           <DialogTitle>عرض بيانات اللعبة</DialogTitle>
           <DialogDescription>
@@ -117,9 +115,9 @@ export function GameViewDialog({
           </div>
 
           <Tabs defaultValue="levels">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="levels">المستويات</TabsTrigger>
-              <TabsTrigger value="questions">الأسئلة</TabsTrigger>
+            <TabsList className="flex w-full ">
+              <TabsTrigger value="levels" className="flex-1">المستويات</TabsTrigger>
+              {/* <TabsTrigger value="questions">الأسئلة</TabsTrigger> */}
             </TabsList>
             <TabsContent value="levels">
               <Card>
@@ -130,17 +128,29 @@ export function GameViewDialog({
                         <TableRow>
                           <TableHead>المستوى</TableHead>
                           <TableHead>عدد الأسئلة</TableHead>
-                          <TableHead>مستوى الصعوبة</TableHead>
+                          <TableHead>حالة المستوى </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {levelsData.map((level) => (
-                          <TableRow key={level.id}>
+                          <TableRow key={level?.id}>
                             <TableCell className="font-medium">
-                              {level.level}
+                              {level.title}
                             </TableCell>
-                            <TableCell>{level.questions}</TableCell>
-                            <TableCell>{level.difficulty}</TableCell>
+                            <TableCell>{level.question_count}</TableCell>
+                            <TableCell>
+                              {" "}
+                              <span
+                                className={`px-2 py-1 rounded-full ${level.status === "published"
+                                    ? "bg-green-100 text-green-800 "
+                                    : "bg-red-100 text-red-800 "
+                                  }  text-xs`}
+                              >
+                                {level.status === "published"
+                                  ? "نشط"
+                                  : "غير نشط"}
+                              </span>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -149,7 +159,7 @@ export function GameViewDialog({
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="questions">
+            {/* <TabsContent value="questions">
               <Card>
                 <CardContent className="pt-6">
                   <div className="overflow-x-auto">
@@ -176,7 +186,7 @@ export function GameViewDialog({
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </div>
         <DialogFooter>
