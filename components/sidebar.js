@@ -3,6 +3,7 @@
 import {
   Users,
   GamepadIcon,
+  HomeIcon,
   Activity,
   CheckSquare,
   BookOpen,
@@ -15,22 +16,23 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { getCookie } from "cookies-next/client";
 
-interface SidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-}
+
 
 export function Sidebar({
   activeSection,
   setActiveSection,
   isOpen,
   setIsOpen,
-}: SidebarProps) {
+}) {
   const email = getCookie("email");
   const name = getCookie("name");
   const menuItems = [
+
+    {
+      id: "dashboard",
+      label: "الرئيسية",
+      icon: HomeIcon,
+    },
     {
       id: "users",
       label: "إدارة المستخدمين",
@@ -68,7 +70,7 @@ export function Sidebar({
     },
   ];
 
-  const handleMenuItemClick = (id: string) => {
+  const handleMenuItemClick = (id) => {
     setActiveSection(id);
     // على الشاشات الصغيرة، أغلق الشريط الجانبي عند النقر على عنصر
     if (window.innerWidth < 768) {

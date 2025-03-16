@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation"; // استيراد usePathname
 import { useEffect, useState } from "react";
 
 import { Toaster } from "react-hot-toast";
-
+import { Providers } from "@/app/providers"
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
@@ -28,16 +28,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" >
       <body >
-        {/* <Providers>
+        <Providers>
+          {/* 
           <div className="flex h-screen bg-background overflow-hidden"> */}
 
-        {/* <main className="flex-1 overflow-auto p-3 md:p-6"> */}
-        <Toaster position="top-right" reverseOrder={false} />
-        {children}
-        {/* </main> */}
+          {/* <main className="flex-1 overflow-auto p-3 md:p-6"> */}
+          <Toaster position="top-right" reverseOrder={false} />
+          {children}
+          {/* </main> */}
 
-        {/* </div>
-        </Providers> */}
+          {/* </div>*/}
+        </Providers>
       </body>
     </html>
   );

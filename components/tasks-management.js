@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,11 +24,18 @@ import { TaskEditDialog } from "@/components/dialogs/task-edit-dialog"
 import { TaskCompletionDialog } from "@/components/dialogs/task-completion-dialog"
 import { TaskRejectionDialog } from "@/components/dialogs/task-rejection-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
+import toast from "react-hot-toast"
+import { PaginationControls } from "./ui/pagination-controls"
+import { getData, postData } from "@/lib/apiHelper"
+import { Switch } from "./ui/switch"
 
 export function TasksManagement() {
-  const [activeTab, setActiveTab] = useState("parent-tasks")
+  const [activeTab, setActiveTab] = useState("system-tasks")
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
+  const initialFilter = { game_id: "", level_id: "", question_id: "" };
+  const [filter, setFilter] = useState(initialFilter)
+  const [gameColor, setGameColor] = useState("#ffffff"); // اللون الافتراضي
 
   // حالة النوافذ
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
@@ -37,8 +44,94 @@ export function TasksManagement() {
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false)
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [imagePreview, setImagePreview] = useState(null); // Store image preview
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file)); // Generate preview URL
+    }
+  };
+  const [gamesData, setGamesData] = useState([])
+  const [gamesPage, setGamesPage] = useState(1);
+  const [gamesMeta, setGamesMeta] = useState({});
+  const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
+    setLoading(true)
+    const response = await getData(
+      `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
+    );
+    if (response.success) {
+      setData(response.data);
+      setMeta(response.meta); // Save metadata for pagination logic
+      setLoading(false)
+    } else {
+      toast.error(response.message);
+    }
+  };
+  useEffect(() => {
+    if (activeTab === "system-tasks") {
+      fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+    }
+    // else if (activeTab === "levels") {
+    //   fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+    // } else if (activeTab === "questions") {
+    //   fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+    // } else if (activeTab === "answers") {
+    //   fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
+    // }
+  }, [activeTab, gamesPage, searchTerm, pageSize, filter]);
   // Mock data for demonstration
+  const handleAddEntity = async (endpoint, newEntity, file = null) => {
+    let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
+    let imageLink = "";
+
+    if (file) {
+      console.log("Before uploading image:", dataToSend);
+
+      // رفع الصورة والحصول على الرابط
+      const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
+      console.log("Upload response:", response);
+
+      if (response.success) {
+        imageLink = response.data.image_name;
+        dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
+      } else {
+        toast.error("فشل رفع الصورة");
+        return;
+      }
+
+      console.log("After adding image:", dataToSend);
+    }
+
+    console.log("Sending Data:", dataToSend);
+
+    // إرسال البيانات كـ JSON
+    const response = await postData(endpoint, dataToSend, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.success) {
+      toast.success(response.message);
+      console.log(response);
+
+      // تحديث البيانات حسب نوع الكيان المضاف
+      if (endpoint.includes("system-tasks")) {
+        setIsAddTaskOpen(false);
+        setImagePreview(null);
+
+        fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      }
+
+    } else {
+      toast.error(response.message);
+    }
+  };
+
+
   const parentTasksData = [
     {
       id: 1,
@@ -166,7 +259,7 @@ export function TasksManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <h2 className="text-xl md:text-3xl font-bold">إدارة المهام</h2>
-        <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+        {/* <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
               <Plus className="h-4 w-4 ml-2" />
@@ -215,7 +308,95 @@ export function TasksManagement() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
+        <div>
+
+          {activeTab === "system-tasks" && (
+            <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+                  <Plus className="h-4 w-4 ml-2" />
+                  <span className="hidden sm:inline">إضافة مهمة جديدة</span>
+                  <span className="sm:hidden">إضافة</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>إضافة مهمة جديدة</DialogTitle>
+                  <DialogDescription>أدخل بيانات المهمة الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">عنوان المهمة</Label>
+                    <Input id="title" placeholder="أدخل عنوان المهمة" />
+                  </div>
+                  {/* <div className="space-y-2">
+                    <Label htmlFor="description">وصف اللعبة</Label>
+                    <Textarea id="description" placeholder="أدخل وصف اللعبة" />
+                  </div> */}
+                  {/* <div className="flex items-center justify-between">
+                    <Label htmlFor="is_enable">تفعيل اللعبة</Label>
+                    <Switch id="is_enable" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+
+                  </div> */}
+                  {/* إدخال اللون */}
+                  <div className="space-y-2">
+                    <Label htmlFor="color">لون المهمة</Label>
+                    <input
+                      id="color"
+                      type="color"
+                      value={gameColor}
+                      onChange={(e) => setGameColor(e.target.value)}
+                      className="w-full h-10 p-1 border border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="points">نقاط المهمة</Label>
+                    <Input id="points" placeholder="أدخل نقاط المهمة" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="image">صورة المهمة</Label>
+                    <Input id="image" type="file" onChange={handleImageChange} />
+                    {imagePreview && (
+                      <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
+                    )}
+                    {/*            <Image src={
+
+                      document.getElementById("image").files[0] || null// جلب الصورة
+
+                    } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
+                  </div>
+
+                </div>
+                <DialogFooter>
+                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddTaskOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button
+                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+                    onClick={() => {
+                      const newGame = {
+                        title: document.getElementById("title").value,
+                        // description: document.getElementById("description").value,
+                        points: document.getElementById("points").value,
+                        color: gameColor, // إرسال اللون المختار
+
+                      };
+
+                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+
+                      handleAddEntity("games/games", newGame, imageFile);
+                    }}
+                  >
+                    حفظ
+                  </Button>
+
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:space-x-2 sm:space-x-reverse">
@@ -228,14 +409,88 @@ export function TasksManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="parent-tasks">مهام الأهل</TabsTrigger>
-          <TabsTrigger value="child-tasks">مهام الأطفال</TabsTrigger>
-        </TabsList>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="system-tasks">مهام عسول</TabsTrigger>
 
+          <TabsTrigger value="parent-tasks" disabled>مهام الأهل</TabsTrigger>
+          <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger>
+        </TabsList>
+        <TabsContent value="system-tasks">
+          <Card>
+            <CardHeader>
+              <CardTitle>مهام عسول</CardTitle>
+              <CardDescription>إدارة المهام المخصصة  لعسول</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>عنوان المهمة</TableHead>
+                      <TableHead>اللون</TableHead>
+                      <TableHead>النقاط</TableHead>
+                      <TableHead>الصورة</TableHead>
+                      <TableHead>الإجراءات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {gamesData.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium">{task.title}</TableCell>
+                        <TableCell> <div
+                          style={{
+                            backgroundColor: task.color,
+                            width: "24px",
+                            height: "24px",
+                            borderRadius: "4px",
+                            display: "inline-block",
+                          }}
+                        /></TableCell>
+                        <TableCell>{task.points}</TableCell>
+                        <TableCell>
+                          <img src={task.image} className="rounded-lg h-10 w-10 object-cover" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2 space-x-reverse">
+                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            {task.status !== "مكتمل" ? (
+                              <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              </Button>
+                            ) : (
+                              <Button variant="ghost" size="icon" onClick={() => handleRejectTask(task)}>
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <PaginationControls
+                currentPage={gamesPage}
+                setPage={setGamesPage}
+                totalItems={gamesMeta.total}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="parent-tasks">
           <Card>
             <CardHeader>
@@ -349,6 +604,7 @@ export function TasksManagement() {
             </CardContent>
           </Card>
         </TabsContent>
+
       </Tabs>
 
       {/* نوافذ العرض والتعديل والحذف والتأكيد */}

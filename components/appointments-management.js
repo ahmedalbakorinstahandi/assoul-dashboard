@@ -85,10 +85,10 @@ export function AppointmentsManagement() {
       {/* تعديل عنوان الصفحة والأزرار */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <h2 className="text-xl md:text-3xl font-bold">إدارة المواعيد</h2>
-        <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+        {/* <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
           <Calendar className="h-4 w-4 ml-2" />
           عرض التقويم
-        </Button>
+        </Button> */}
       </div>
 
       {/* تعديل البطاقات لتكون متجاوبة */}

@@ -49,8 +49,8 @@ export default function LoginPage() {
         setCookie("email", email);
         setCookie("name", name);
 
-        toast.success("Login successful!");
-        router.push("/users");
+        toast.success(response.data.message);
+        router.push("/dashboard");
       } else {
         toast.error(response.message || "Login failed!");
         setError(response.message);
@@ -74,7 +74,7 @@ export default function LoginPage() {
 
   return (
     <div
-      style={{ maxWidth: "400px", margin: "auto" ,height:"100vh"}}
+      style={{ maxWidth: "400px", margin: "auto", height: "100vh" }}
       className="min-h-screen flex items-center justify-center  dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">

@@ -228,9 +228,9 @@ export function UserManagement() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex grid-cols-3">
-          <TabsTrigger value="parents">حسابات الأهل</TabsTrigger>
-          <TabsTrigger value="doctors">حسابات الأطباء</TabsTrigger>
-          <TabsTrigger value="children">حسابات الأطفال</TabsTrigger>
+          <TabsTrigger value="parents" className="flex-1">حسابات الأهل</TabsTrigger>
+          <TabsTrigger value="doctors" className="flex-1">حسابات الأطباء</TabsTrigger>
+          <TabsTrigger value="children" className="flex-1">حسابات الأطفال</TabsTrigger>
         </TabsList>
 
         <TabsContent value="parents">
