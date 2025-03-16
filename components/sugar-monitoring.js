@@ -25,13 +25,14 @@ import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
 import { GameEditDialog } from "@/components/dialogs/game-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import { getData, postData, putData, deleteData } from "@/lib/apiHelper"
-import { toast } from "sonner"
 import { PaginationControls } from "./ui/pagination-controls"
 import { Image } from "@radix-ui/react-avatar"
 import { Switch } from "./ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { LevelViewDialog } from "./dialogs/level-view-dialog"
 import { QuestionViewDialog } from "./dialogs/question-view-dialog"
+import { injectionSites, measurementTypes, takenTime, units } from "@/data/data"
+import toast from "react-hot-toast"
 export function SugarMonitoring() {
   const [activeTab, setActiveTab] = useState("blood-sugar-readings")
   const [searchTerm, setSearchTerm] = useState("")
@@ -50,6 +51,8 @@ export function SugarMonitoring() {
   const [selectedQuestionId, setSelectedQuestionId] = useState("");
 
   const [selectedQuestionType, setSelectedQuestionType] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
+
   const [selectedQuestionView, setSelectedQuestionView] = useState("text");
 
   const handleImageChange = (e) => {
@@ -98,11 +101,20 @@ export function SugarMonitoring() {
   const [questionsIds, setQuestionsId] = useState([]);
 
   const typQuestions = [
-    { id: 1, name: "DragDrop" },
-    { id: 2, name: "LetterArrangement" },
-    { id: 3, name: "MCQ" },
+    { id: 1, name: "fasting" },
+    { id: 2, name: "befor_breakfast" },
+    { id: 3, name: "befor_lunch" },
+    { id: 4, name: "befor_dinner" },
+    { id: 5, name: "after_snack" },
+    { id: 6, name: "after_breakfast" },
+    { id: 7, name: "after_lunch" },
+    { id: 8, name: "after_dinner" },
+    { id: 9, name: "befor_activity" },
+    { id: 10, name: "after_activity" },
+
 
   ]
+
   const viewQuestions = [
     { id: 1, name: "text", title: "نص" },
     { id: 2, name: "image", title: "صورة" },
@@ -200,17 +212,26 @@ export function SugarMonitoring() {
       console.log(response);
 
       // تحديث البيانات حسب نوع الكيان المضاف
-      if (endpoint.includes("games")) {
+      if (endpoint.includes("blood-sugar-readings")) {
         setIsAddGameOpen(false);
         setImagePreview(null);
-
-        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
-      }
-      if (endpoint.includes("levels")) {
         setSelectedGameId("")
+        setSelectedUnit("")
+
+        setSelectedQuestionType("")
+
+        fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      }
+      if (endpoint.includes("insulin-doses")) {
+        setIsAddGameOpen(false);
+        setImagePreview(null);
+        setSelectedGameId("")
+        setSelectedUnit("")
+
+        setSelectedQuestionType("")
         setIsAddLevelOpen(false);
 
-        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+        fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
       };
       if (endpoint.includes("questions")) {
         setSelectedGameId("")
@@ -329,61 +350,99 @@ export function SugarMonitoring() {
       <div className="flex justify-between items-center">
         <h2 className="text-xl md:text-3xl mb-2 font-bold"> متابعة سكر الدم</h2>
         <div className="">
-          {activeTab === "blood22-sugar-readings" && (
+          {activeTab === "blood-sugar-readings" && (
             <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
                   <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة لعبة جديدة</span>
+                  <span className="hidden sm:inline">إضافة قراءة سكر الدم جديدة</span>
                   <span className="sm:hidden">إضافة</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة لعبة جديدة</DialogTitle>
-                  <DialogDescription>أدخل بيانات اللعبة الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                  <DialogTitle>إضافة بيانات قراءة سكر الدم جديدة</DialogTitle>
+                  <DialogDescription>أدخل بيانات قراءة سكر الدم الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">اسم اللعبة</Label>
-                    <Input id="name" placeholder="أدخل اسم اللعبة" />
+                    <Label htmlFor="patient_id">الطفل</Label>
+                    <Select name="patient_id"
+                      value={selectedGameId}
+                      onValueChange={(value) => setSelectedGameId(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر الطفل" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gamesIds.map((game, idx) => (
+                          <SelectItem key={idx} value={game.id.toString()}>
+                            {game.user.first_name + " " + game.user.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description">وصف اللعبة</Label>
-                    <Textarea id="description" placeholder="أدخل وصف اللعبة" />
+                    <Label htmlFor="measurement_type"> نوع القياس</Label>
+                    <Select name="measurement_type"
+                      value={selectedQuestionType}
+                      onValueChange={(value) => setSelectedQuestionType(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر نوع  القياس" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {measurementTypes.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
+                            {game.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="is_enable">تفعيل اللعبة</Label>
-                    <Switch id="is_enable" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
-
-                  </div>
-                  {/* إدخال اللون */}
                   <div className="space-y-2">
-                    <Label htmlFor="color">لون اللعبة</Label>
-                    <input
-                      id="color"
-                      type="color"
-                      value={gameColor}
-                      onChange={(e) => setGameColor(e.target.value)}
-                      className="w-full h-10 p-1 border border-gray-300 rounded"
+                    <Label htmlFor="value"> القيمة</Label>
+                    <Input id="value" type="number" placeholder="أدخل  القيمة" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit"> وحدة القياس</Label>
+                    <Select name="unit"
+                      value={selectedUnit}
+                      onValueChange={(value) => setSelectedUnit(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر وحدة  القياس" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
+                            {game.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="measured_at">تقاس في </Label>
+                    <Input
+                      id="measured_at"
+                      type="datetime-local"
+                    // value={editedTask.dueDate || ""}
+                    // onChange={(e) => handleChange("dueDate", e.target.value)}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="order">ترتيب اللعبة</Label>
-                    <Input id="order" placeholder="أدخل ترتيب اللعبة" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="image">صورة اللعبة</Label>
-                    <Input id="image" type="file" onChange={handleImageChange} />
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
-                    )}
-                    {/*            <Image src={
+                  {/* إدخال اللون */}
 
-                    document.getElementById("image").files[0] || null// جلب الصورة
-
-                  } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
+                  <div className="space-y-2">
+                    <Label htmlFor="notes"> ملاحظات </Label>
+                    <Input
+                      id="notes"
+                      type="text"
+                    // value={editedTask.dueDate || ""}
+                    // onChange={(e) => handleChange("dueDate", e.target.value)}
+                    />
                   </div>
 
                 </div>
@@ -394,19 +453,20 @@ export function SugarMonitoring() {
                   <Button
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
+                      const measuredAtInput = document.getElementById("measured_at").value;
+                      const formattedMeasuredAt = measuredAtInput.replace("T", " ") + ":00";
+
                       const newGame = {
-                        name: document.getElementById("name").value,
-                        description: document.getElementById("description").value,
-                        order: document.getElementById("order").value,
-
-                        is_enable: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
-                        color: gameColor, // إرسال اللون المختار
-
+                        value: document.getElementById("value").value,
+                        notes: document.getElementById("notes").value,
+                        measured_at: formattedMeasuredAt,
+                        measurement_type: selectedQuestionType,
+                        unit: selectedUnit, // تحويل الحالة إلى 1 أو 0
+                        patient_id: selectedGameId
                       };
 
-                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
 
-                      handleAddEntity("games/games", newGame, imageFile);
+                      handleAddEntity("health/blood-sugar-readings", newGame,);
                     }}
                   >
                     حفظ
@@ -417,33 +477,61 @@ export function SugarMonitoring() {
             </Dialog>
           )}
 
-          {activeTab === "levels" && (
+          {activeTab === "insulin-doses" && (
             <Dialog open={isAddLevelOpen} onOpenChange={setIsAddLevelOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
                   <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة مستوى جديد</span>
+                  <span className="hidden sm:inline">إضافة جرعات الأنسولين جديدة</span>
                   <span className="sm:hidden">إضافة</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة مستوى جديد</DialogTitle>
-                  <DialogDescription>أدخل بيانات المستوى الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                  <DialogTitle>إضافة جرعات الأنسولين جديدة</DialogTitle>
+                  <DialogDescription>أدخل جرعات الأنسولين الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
+
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="game">اللعبة</Label>
-                    <Select name="game_id"
+                    <Label htmlFor="patient_id">الطفل</Label>
+                    <Select name="patient_id"
                       value={selectedGameId}
                       onValueChange={(value) => setSelectedGameId(value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر اللعبة" />
+                        <SelectValue placeholder="اختر الطفل" />
                       </SelectTrigger>
                       <SelectContent>
                         {gamesIds.map((game, idx) => (
                           <SelectItem key={idx} value={game.id.toString()}>
+                            {game.user.first_name + " " + game.user.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="taken_date">تاريخ الاخذ  </Label>
+                    <Input
+                      id="taken_date"
+                      type="date"
+                    // value={editedTask.dueDate || ""}
+                    // onChange={(e) => handleChange("dueDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="taken_time">وقت الأخذ</Label>
+                    <Select name="taken_time"
+                      value={selectedQuestionType}
+                      onValueChange={(value) => setSelectedQuestionType(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر وقت الأخذ  " />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {takenTime.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
                             {game.name}
                           </SelectItem>
                         ))}
@@ -451,41 +539,59 @@ export function SugarMonitoring() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="title">اسم المستوى</Label>
-                    <Input id="title" placeholder="أدخل اسم المستوى" />
+                    <Label htmlFor="insulin_type"> نوع الأنسولين</Label>
+                    <Input id="insulin_type" type="text" placeholder="أدخل  نوع الأنسولين" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="number">رقم المستوى</Label>
-                    <Input id="number" type="number" placeholder="اختر مستوى الصعوبة" />
+                    <Label htmlFor="dose_units"> وحدات الجرعة</Label>
+                    <Input id="dose_units" type="number" placeholder="أدخل  وحدات الجرعة" />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="status"> حالة المستوى</Label>
-                    <Switch id="status" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+                  <div className="space-y-2">
+                    <Label htmlFor="injection_site"> موقع الحقن </Label>
+                    <Select name="injection_site"
+                      value={selectedUnit}
+                      onValueChange={(value) => setSelectedUnit(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر موقع الحقن  " />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {injectionSites.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
+                            {game.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                  </div>
+
+
                 </div>
                 <DialogFooter>
-                  <Button
-                    style={{ marginInline: "1rem" }}
-                    variant="outline" onClick={() => setIsAddLevelOpen(false)}>
+                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddLevelOpen(false)}>
                     إلغاء
                   </Button>
                   <Button
-                    className="bg-[#ffac33] hover:bg-[#f59f00]"
+                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
-                      const newLevel = {
-                        number: document.getElementById("number").value,
-                        title: document.getElementById("title").value,
-                        game_id: selectedGameId, // use the selected game ID from state
-                        status: isEnabled ? "published" : "pending", // تحويل الحالة إلى 1 أو 0
 
-                      }
-                      handleAddEntity("games/levels", newLevel)
-                      // setIsAddLevelOpen(false)
+                      const newGame = {
+                        dose_units: document.getElementById("dose_units").value,
+                        insulin_type: document.getElementById("insulin_type").value,
+                        taken_date: document.getElementById("taken_date").value,
+                        injection_site: selectedUnit,
+                        patient_id: selectedGameId,
+                        taken_time: selectedQuestionType
+                      };
+
+
+                      handleAddEntity("health/insulin-doses", newGame,);
                     }}
                   >
                     حفظ
                   </Button>
+
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -912,7 +1018,7 @@ export function SugarMonitoring() {
                           {game.notes}
                         </TableCell> */}
                         <TableCell>
-                          {game.measured_at}
+                          {new Date(game.measured_at).toLocaleString("EN-ca")}
                         </TableCell>
                         {/* <TableCell>
                           <div className="flex space-x-2 space-x-reverse"> */}
