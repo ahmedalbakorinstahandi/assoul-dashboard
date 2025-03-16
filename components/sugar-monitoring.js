@@ -110,7 +110,7 @@ export function SugarMonitoring() {
   ]
   useEffect(() => {
     const fetchGamesId = async () => {
-      const response = await getData(`games/games`);
+      const response = await getData(`users/children/children`);
       // console.log("ddd", response);
 
       setGamesId(response.data);
@@ -843,18 +843,18 @@ export function SugarMonitoring() {
               <SelectValue placeholder="اختر الطفل" />
             </SelectTrigger>
             <SelectContent>
-              {/* {gamesIds.map((game, idx) => (
-                  <SelectItem key={idx} value={game.id.toString()}>
-                    {game.name}
-                  </SelectItem>
+              {gamesIds.map((game, idx) => (
+                <SelectItem key={idx} value={game.id.toString()}>
+                  {game.user.first_name + " " + game.user.last_name}
+                </SelectItem>
 
-                ))} */}
-              <SelectItem value={"1"}>
+              ))}
+              {/* <SelectItem value={"1"}>
                 الطفل الاول
               </SelectItem>
               <SelectItem value={"2"}>
                 الطفل الثاني
-              </SelectItem>
+              </SelectItem> */}
             </SelectContent>
           </Select>
         </div>

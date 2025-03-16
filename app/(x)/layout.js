@@ -63,6 +63,8 @@ export default function RootLayout({ children }) {
     //   <body className={inter.className}>
     //     <Providers>
     <div className="flex h-screen bg-background overflow-hidden">
+      <Toaster position="top-right" reverseOrder={false} />
+
       <Sidebar
         activeSection={activeSection}
         setActiveSection={setActiveSection}

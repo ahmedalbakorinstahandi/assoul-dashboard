@@ -25,13 +25,13 @@ import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
 import { GameEditDialog } from "@/components/dialogs/game-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import { getData, postData, putData, deleteData } from "@/lib/apiHelper"
-import { toast } from "sonner"
 import { PaginationControls } from "./ui/pagination-controls"
 import { Image } from "@radix-ui/react-avatar"
 import { Switch } from "./ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { LevelViewDialog } from "./dialogs/level-view-dialog"
 import { QuestionViewDialog } from "./dialogs/question-view-dialog"
+import toast from "react-hot-toast"
 
 export function GamesManagement() {
   const [activeTab, setActiveTab] = useState("games")
@@ -52,10 +52,21 @@ export function GamesManagement() {
 
   const [selectedQuestionType, setSelectedQuestionType] = useState("");
   const [selectedQuestionView, setSelectedQuestionView] = useState("text");
+  const [imageLink, setImageLink] = useState("");
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
+      console.log("Upload response:", response);
+
+      if (response.success) {
+        // imageLink = response.data.image_name;
+        setImageLink(response.data.image_name); // إضافة رابط الصورة إلى البيانات
+      } else {
+        toast.error("فشل رفع الصورة");
+        return;
+      }
       setImagePreview(URL.createObjectURL(file)); // Generate preview URL
     }
   };
@@ -159,75 +170,89 @@ export function GamesManagement() {
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
     let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
-    let imageLink = "";
+    try {
+      // let imageLink = "";
 
-    if (file) {
-      console.log("Before uploading image:", dataToSend);
+      // if (file) {
+      //   console.log("Before uploading image:", dataToSend);
 
-      // رفع الصورة والحصول على الرابط
-      const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
-      console.log("Upload response:", response);
+      //   // رفع الصورة والحصول على الرابط
+      //   const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
+      //   console.log("Upload response:", response);
+
+      //   if (response.success) {
+      //     imageLink = response.data.image_name;
+      //     dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
+      //   } else {
+      //     toast.error("فشل رفع الصورة");
+      //     return;
+      //   }
+
+      //   console.log("After adding image:", dataToSend);
+      // }
+      console.log("imageLink:", imageLink);
+
+      if (imageLink.length > 0) {
+        dataToSend.image = imageLink
+      }
+      console.log("Sending Data:", dataToSend);
+
+      // إرسال البيانات كـ JSON
+      const response = await postData(endpoint, dataToSend, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
 
       if (response.success) {
-        imageLink = response.data.image_name;
-        dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
-      } else {
-        toast.error("فشل رفع الصورة");
-        return;
+        toast.success(response.message);
+        console.log(response);
+
+        // تحديث البيانات حسب نوع الكيان المضاف
+        if (endpoint.includes("games")) {
+          setIsAddGameOpen(false);
+          setImagePreview(null);
+          setImageLink("")
+          fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+        }
+        if (endpoint.includes("levels")) {
+          setSelectedGameId("")
+          setImageLink("")
+
+          setIsAddLevelOpen(false);
+
+          fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+        };
+        if (endpoint.includes("questions")) {
+          setSelectedGameId("")
+          setSelectedQuestionType("")
+          setImageLink("")
+
+          setSelectedLevelId("")
+          setSelectedQuestionView("")
+
+          setIsAddQuestionOpen(false);
+          fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+        }
+        if (endpoint.includes("answers")) {
+          setSelectedGameId("")
+          setSelectedQuestionType("")
+          setImageLink("")
+
+          setSelectedLevelId("")
+          setSelectedQuestionView("")
+          setSelectedQuestionId("")
+
+
+          setIsAddAnswerOpen(false);
+          fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
+
+        };
       }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
 
-      console.log("After adding image:", dataToSend);
-    }
-
-    console.log("Sending Data:", dataToSend);
-
-    // إرسال البيانات كـ JSON
-    const response = await postData(endpoint, dataToSend, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (response.success) {
-      toast.success(response.message);
-      console.log(response);
-
-      // تحديث البيانات حسب نوع الكيان المضاف
-      if (endpoint.includes("games")) {
-        setIsAddGameOpen(false);
-        setImagePreview(null);
-
-        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
-      }
-      if (endpoint.includes("levels")) {
-        setSelectedGameId("")
-        setIsAddLevelOpen(false);
-
-        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
-      };
-      if (endpoint.includes("questions")) {
-        setSelectedGameId("")
-        setSelectedQuestionType("")
-        setSelectedLevelId("")
-        setSelectedQuestionView("")
-
-        setIsAddQuestionOpen(false);
-        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
-      }
-      if (endpoint.includes("answers")) {
-        setSelectedGameId("")
-        setSelectedQuestionType("")
-        setSelectedLevelId("")
-        setSelectedQuestionView("")
-        setSelectedQuestionId("")
-
-
-        setIsAddAnswerOpen(false);
-        fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
-
-      };
-    } else {
-      toast.error(response.message);
     }
   };
 
@@ -518,7 +543,7 @@ export function GamesManagement() {
                       onValueChange={(value) => setSelectedLevelId(value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر اللعبة" />
+                        <SelectValue placeholder="اختر المستوى" />
                       </SelectTrigger>
                       <SelectContent>
                         {levelsIds.map((game, idx) => (
@@ -1094,10 +1119,10 @@ export function GamesManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                          {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                          {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
                               <Trash2 className="h-4 w-4" />
                             </Button> */}
                           {/* </div> */}

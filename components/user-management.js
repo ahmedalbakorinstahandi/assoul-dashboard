@@ -1,6 +1,6 @@
 "use client"
 
-import { SetStateAction, useState } from "react"
+import { SetStateAction, useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,18 +20,212 @@ import { Plus, Search, Edit, Trash2, Eye } from "lucide-react"
 import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
+import { getData, postData } from "@/lib/apiHelper"
+import { PaginationControls } from "./ui/pagination-controls"
+import toast from "react-hot-toast"
 
 export function UserManagement() {
   const [activeTab, setActiveTab] = useState("parents")
   const [searchTerm, setSearchTerm] = useState("")
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false)
+  const [isAddGameOpen, setIsAddGameOpen] = useState(false)
+  const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
+  const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
+  const [isAddAnswerOpen, setIsAddAnswerOpen] = useState(false)
+  const initialFilter = { game_id: "", level_id: "", question_id: "" };
+  const [filter, setFilter] = useState(initialFilter)
 
-  // حالة النوافذ
+  const [isEnabled, setIsEnabled] = useState(true);
+  const [gameColor, setGameColor] = useState("#ffffff"); // اللون الافتراضي
+  const [imagePreview, setImagePreview] = useState(null); // Store image preview
+  const [selectedGameId, setSelectedGameId] = useState("");
+  const [selectedLevelId, setSelectedLevelId] = useState("");
+  const [selectedQuestionId, setSelectedQuestionId] = useState("");
+
+  const [selectedQuestionType, setSelectedQuestionType] = useState("");
+  const [selectedQuestionView, setSelectedQuestionView] = useState("text");
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file)); // Generate preview URL
+    }
+  };
+  // حالات النوافذ المنبثقة
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewDialogLevelOpen, setViewDialogLevelOpen] = useState(false)
+  const [viewDialogQuestionOpen, setViewDialogQuestionOpen] = useState(false)
+
+
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedItemLevel, setSelectedItemLevel] = useState(null)
+  const [selectedItemQuestion, setSelectedItemQuestion] = useState(null)
 
+  const [loading, setLoading] = useState(false)
+
+  // بيانات الكيانات
+  const [gamesData, setGamesData] = useState([])
+  const [levelsData, setLevelsData] = useState([])
+  const [questionsData, setQuestionsData] = useState([])
+  const [answersData, setAnswersData] = useState([])
+  const [pageSize, setPageSize] = useState(10); // number of items per page
+
+  const [gamesPage, setGamesPage] = useState(1);
+  const [levelsPage, setLevelsPage] = useState(1);
+  const [questionsPage, setQuestionsPage] = useState(1);
+  const [answersPage, setAnswersPage] = useState(1);
+
+  const [gamesMeta, setGamesMeta] = useState({});
+  const [levelsMeta, setLevelsMeta] = useState({});
+  const [questionsMeta, setQuestionsMeta] = useState({});
+  const [answersMeta, setAnswersMeta] = useState({});
+  const [gamesIds, setGamesId] = useState([]);
+  const [levelsIds, setLevelsId] = useState([]);
+  const [questionsIds, setQuestionsId] = useState([]);
+
+  const typQuestions = [
+    { id: 1, name: "DragDrop" },
+    { id: 2, name: "LetterArrangement" },
+    { id: 3, name: "MCQ" },
+
+  ]
+  const viewQuestions = [
+    { id: 1, name: "text", title: "نص" },
+    { id: 2, name: "image", title: "صورة" },
+
+  ]
+
+
+  // بيانات وهمية لل
+  // الدالة المسؤولة عن جلب البيانات مع pagination والبحث
+  const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
+    setLoading(true)
+    const response = await getData(
+      `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
+    );
+    if (response.success) {
+      setData(response.data);
+      setMeta(response.meta); // Save metadata for pagination logic
+      setLoading(false)
+    } else {
+      toast.error(response.message);
+    }
+  };
+
+  // دالة لمزامنة جلب البيانات بناءً على التبويب النشط
+  useEffect(() => {
+    if (activeTab === "children") {
+      fetchEntityData("users/children/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+    } else if (activeTab === "parents") {
+      fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+    } else if (activeTab === "questions") {
+      fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+    } else if (activeTab === "answers") {
+      fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
+    }
+  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter]);
+  // العمليات CRUD
+  const handleAddEntity = async (endpoint, newEntity, file = null) => {
+    let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
+    let imageLink = "";
+
+    if (file) {
+      console.log("Before uploading image:", dataToSend);
+
+      // رفع الصورة والحصول على الرابط
+      const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
+      console.log("Upload response:", response);
+
+      if (response.success) {
+        imageLink = response.data.image_name;
+        dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
+      } else {
+        toast.error("فشل رفع الصورة");
+        return;
+      }
+
+      console.log("After adding image:", dataToSend);
+    }
+
+    console.log("Sending Data:", dataToSend);
+
+    // إرسال البيانات كـ JSON
+    const response = await postData(endpoint, dataToSend, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.success) {
+      toast.success(response.message);
+      console.log(response);
+
+      // تحديث البيانات حسب نوع الكيان المضاف
+      if (endpoint.includes("games")) {
+        setIsAddGameOpen(false);
+        setImagePreview(null);
+
+        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      }
+      if (endpoint.includes("levels")) {
+        setSelectedGameId("")
+        setIsAddLevelOpen(false);
+
+        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+      };
+      if (endpoint.includes("questions")) {
+        setSelectedGameId("")
+        setSelectedQuestionType("")
+        setSelectedLevelId("")
+        setSelectedQuestionView("")
+
+        setIsAddQuestionOpen(false);
+        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+      }
+      if (endpoint.includes("answers")) {
+        setSelectedGameId("")
+        setSelectedQuestionType("")
+        setSelectedLevelId("")
+        setSelectedQuestionView("")
+        setSelectedQuestionId("")
+
+
+        setIsAddAnswerOpen(false);
+        fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
+
+      };
+    } else {
+      toast.error(response.message);
+    }
+  };
+
+
+  const handleUpdateEntity = async (endpoint, updatedEntity) => {
+    const response = await putData(endpoint, updatedEntity)
+    if (response.success) {
+      toast.success("تم التعديل بنجاح")
+      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
+      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
+      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+    } else {
+      toast.error(response.message)
+    }
+  }
+
+  const handleDeleteEntity = async (endpoint, entityId) => {
+    const response = await deleteData(endpoint, entityId)
+    if (response.success) {
+      toast.success("تم الحذف بنجاح")
+      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
+      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
+      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+    } else {
+      toast.error(response.message)
+    }
+  }
   // Mock data for demonstration
   const parentsData = [
     { id: 1, name: "أحمد محمد", email: "ahmed@example.com", phone: "0501234567", childrenCount: 2, status: "نشط" },
@@ -189,7 +383,7 @@ export function UserManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl md:text-3xl font-bold">إدارة المستخدمين</h2>
-        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+        <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#ffac33] hover:bg-[#f59f00]">
               <Plus className="h-4 w-4 ml-2" />
@@ -351,23 +545,21 @@ export function UserManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>الاسم</TableHead>
-                      <TableHead>العمر</TableHead>
-                      <TableHead>ولي الأمر</TableHead>
-                      <TableHead>نوع السكري</TableHead>
+                      <TableHead>الجنس</TableHead>
+                      <TableHead> تارخ الولادة</TableHead>
                       <TableHead>الحالة</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {childrenData.map((child) => (
+                    {gamesData.map((child) => (
                       <TableRow key={child.id}>
-                        <TableCell className="font-medium">{child.name}</TableCell>
-                        <TableCell>{child.age}</TableCell>
-                        <TableCell>{child.parent}</TableCell>
-                        <TableCell>{child.diabetesType}</TableCell>
+                        <TableCell className="font-medium">{child.user.first_name + " " + child.user.last_name}</TableCell>
+                        <TableCell>{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
+                        <TableCell>{child.birth_date}</TableCell>
                         <TableCell>
-                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
-                            {child.status}
+                          <span className={`px-2 py-1 rounded-full ${child.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}  text-xs`}>
+                            {child.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -388,16 +580,23 @@ export function UserManagement() {
                   </TableBody>
                 </Table>
               </div>
+              <PaginationControls
+                currentPage={gamesPage}
+                setPage={setGamesPage}
+                totalItems={gamesMeta.total}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
       {/* نوافذ العرض والتعديل والحذف */}
-      <UserViewDialog user={selectedUser} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />
+      <UserViewDialog user={selectedItem} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />
 
       <UserEditDialog
-        user={selectedUser}
+        user={selectedItem}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={handleSaveUser}
@@ -405,7 +604,7 @@ export function UserManagement() {
 
       <DeleteConfirmationDialog
         title="حذف المستخدم"
-        description={`هل أنت متأكد من حذف المستخدم "${selectedUser?.name}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        description={`هل أنت متأكد من حذف المستخدم "${selectedItem?.name}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
