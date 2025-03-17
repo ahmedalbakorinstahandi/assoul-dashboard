@@ -25,6 +25,7 @@ import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
 import { GameEditDialog } from "@/components/dialogs/games/games/game-edit-dialog"
 import { LevelDialog } from "@/components/dialogs/games/levels/level-edit-dialog"
 import { QuestionDialog } from "@/components/dialogs/games/questions/questions-edit-dialog"
+import { AnswerDialog } from "@/components/dialogs/games/answers/answers-edit-dialog"
 
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import { getData, postData, putData, deleteData } from "@/lib/apiHelper"
@@ -289,7 +290,10 @@ export function GamesManagement() {
         setEditQuestionDialogOpen(false)
 
       }
-      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+      if (endpoint.includes("answers")) {
+        fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
+        setEditAnswerDialogOpen(false)
+      }
     } else {
       toast.error(response.message)
     }
@@ -1158,9 +1162,9 @@ export function GamesManagement() {
                             {/*    <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditItemAnswer(answer)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1208,6 +1212,15 @@ export function GamesManagement() {
         typQuestions={typQuestions}
         open={ediQuestionDialogOpen}
         onOpenChange={setEditQuestionDialogOpen}
+        onSave={handleSaveItem}
+      />
+      <AnswerDialog
+        answer={selectedItem}
+        gamesIds={gamesIds}
+        levelsIds={levelsIds}
+        questionsIds={questionsIds}
+        open={editAnswerDialogOpen}
+        onOpenChange={setEditAnswerDialogOpen}
         onSave={handleSaveItem}
       />
       <DeleteConfirmationDialog

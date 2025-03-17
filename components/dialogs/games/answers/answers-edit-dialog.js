@@ -13,49 +13,59 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { postData } from "@/lib/apiHelper"
 
-export function QuestionDialog({ question, open, onOpenChange, onSave, gamesIds, levelsIds, typQuestions, viewQuestions }) {
-  // Initial form state: if editing an existing question, load its values; otherwise, use defaults.
+export function AnswerDialog({
+  answer,
+  open,
+  onOpenChange,
+  onSave,
+  gamesIds,
+  levelsIds,
+  questionsIds,
+}) {
+  // Initial state: if editing, prefill with answer data; otherwise, defaults.
   const initialForm = {
-    game_id: question?.game_id ? question.game_id.toString() : "",
-    level_id: question?.level_id ? question.level_id.toString() : "",
-    points: question?.points || "",
-    text: question?.text || "",
-    type: question?.type || "",
-    answers_view: question?.answers_view || "",
+    game_id: answer?.question?.level.game_id ? answer.question.level.game_id.toString() : "",
+    level_id: answer?.question?.level_id ? answer.question.level_id.toString() : "",
+    question_id: answer?.question_id ? answer.question_id.toString() : "",
+    text: answer?.text || "",
+    is_correct: answer ? Boolean(answer.is_correct) : false,
     image: null,
   }
+  console.log(answer);
+
   const [form, setForm] = useState(initialForm)
   const [imagePreview, setImagePreview] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [imageLink, setImageLink] = useState("");
 
-  // Update form state if the "question" prop changes (for editing)
+  // Update form when answer prop changes (for edit mode)
   useEffect(() => {
-    if (question) {
+    if (answer) {
       setForm({
-        game_id: question.game_id ? question.game_id.toString() : "",
-        level_id: question.level_id ? question.level_id.toString() : "",
-        points: question.points || "",
-        text: question.text || "",
-        type: question.type || "",
-        answers_view: question.answers_view || "",
+        game_id: answer?.question?.level.game_id ? answer.question.level.game_id.toString() : "",
+        level_id: answer?.question?.level_id ? answer.question.level_id.toString() : "",
+        question_id: answer?.question_id ? answer.question_id.toString() : "",
+        text: answer.text || "",
+        is_correct: Boolean(answer.is_correct),
         image: null,
       })
-      // Optionally, if the question has an image URL, set it as preview:
-      setImagePreview(question.image || null)
+      setImagePreview(answer.image || null)
     } else {
       setForm(initialForm)
       setImagePreview(null)
     }
-  }, [question])
+  }, [answer])
 
+  // Handle field updates
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  // Handle file input change and preview update
   const handleImageChange = async (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -79,20 +89,31 @@ export function QuestionDialog({ question, open, onOpenChange, onSave, gamesIds,
     }
   }
 
+  // Check the selected question's answers_view property to determine answer type.
+  const selectedQuestion = questionsIds.find(
+    (q) => q.id.toString() === form.question_id
+  )
+  const isTextAnswer = selectedQuestion?.answers_view === "text"
+
   const handleSubmit = () => {
     setIsLoading(true)
-    const newQuestion = {
+    const newAnswer = {
       game_id: form.game_id,
       level_id: form.level_id,
-      points: form.points,
-      text: form.text,
-      type: form.type,
-      answers_view: form.answers_view,
+      question_id: form.question_id,
+      is_correct: form.is_correct ? 1 : 0,
     }
     if (form.image) {
-      newQuestion.image = form.image
+      newAnswer.image = form.image
     }
-    onSave(newQuestion, form.image)
+    // Include the answer text if it's a text answer.
+    if (isTextAnswer) {
+      newAnswer.text = form.text
+      onSave(newAnswer)
+    } else {
+      // For non-text answers, pass the image file.
+      onSave(newAnswer, form.image)
+    }
     onOpenChange(false)
     setIsLoading(false)
   }
@@ -101,11 +122,13 @@ export function QuestionDialog({ question, open, onOpenChange, onSave, gamesIds,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>{question ? "تعديل السؤال" : "إضافة سؤال جديد"}</DialogTitle>
+          <DialogTitle>
+            {answer ? "تعديل جواب السؤال" : "إضافة جواب سؤال جديد"}
+          </DialogTitle>
           <DialogDescription>
-            {question
-              ? "قم بتعديل بيانات السؤال هنا."
-              : "أدخل بيانات السؤال الجديد هنا. اضغط على حفظ عند الانتهاء."}
+            {answer
+              ? "قم بتعديل بيانات جواب السؤال هنا."
+              : "أدخل بيانات جواب السؤال الجديد هنا. اضغط على حفظ عند الانتهاء."}
           </DialogDescription>
         </DialogHeader>
 
@@ -115,9 +138,8 @@ export function QuestionDialog({ question, open, onOpenChange, onSave, gamesIds,
             <Label htmlFor="game_id">اللعبة</Label>
             <Select
               name="game_id"
-              value={form.game_id}
               disabled
-
+              value={form.game_id}
               onValueChange={(value) => handleChange("game_id", value)}
             >
               <SelectTrigger className="w-full">
@@ -156,83 +178,64 @@ export function QuestionDialog({ question, open, onOpenChange, onSave, gamesIds,
             </Select>
           </div>
 
-          {/* Points Input */}
+          {/* Question Select */}
           <div className="space-y-2">
-            <Label htmlFor="points">نقاط السؤال</Label>
-            <Input
-              id="points"
-              type="number"
-              placeholder="ادخل نقاط السؤال"
-              min={0}
-              value={form.points}
-              onChange={(e) => handleChange("points", e.target.value)}
-            />
-          </div>
 
-          {/* Question Type Select */}
-          <div className="space-y-2">
-            <Label htmlFor="type">نوع السؤال</Label>
+            <Label htmlFor="question_id">السؤال</Label>
             <Select
-              name="type"
-              value={form.type}
-              onValueChange={(value) => handleChange("type", value)}
+              disabled
+
+              name="question_id"
+              value={form.question_id}
+              onValueChange={(value) => handleChange("question_id", value)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="اختر نوع السؤال" />
+                <SelectValue placeholder="اختر السؤال" />
               </SelectTrigger>
               <SelectContent>
-                {typQuestions.map((item, idx) => (
-                  <SelectItem key={idx} value={item.name.toString()}>
-                    {item.name}
+                {questionsIds.map((question, idx) => (
+                  <SelectItem key={idx} value={question.id.toString()}>
+                    {question.text}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Question View Select */}
-          <div className="space-y-2">
-            <Label htmlFor="answers_view">عرض السؤال</Label>
-            <Select
-              name="answers_view"
-              value={form.answers_view}
-              onValueChange={(value) => handleChange("answers_view", value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="اختر عرض السؤال" />
-              </SelectTrigger>
-              <SelectContent>
-                {viewQuestions.map((item, idx) => (
-                  <SelectItem key={idx} value={item.name.toString()}>
-                    {item.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Text Area for Question Text */}
-          <div className="space-y-2">
-            <Label htmlFor="text">نص السؤال</Label>
-            <Textarea
-              id="text"
-              placeholder="أدخل نص السؤال"
-              value={form.text}
-              onChange={(e) => handleChange("text", e.target.value)}
-            />
-          </div>
-
-          {/* Image Input */}
-          <div className="space-y-2">
-            <Label htmlFor="image">صورة السؤال</Label>
-            <Input id="image" type="file" onChange={handleImageChange} />
-            {imagePreview && (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
+          {/* Conditional Rendering: Text or Image Answer */}
+          {isTextAnswer ? (
+            <div className="space-y-2">
+              <Label htmlFor="text">جواب السؤال</Label>
+              <Textarea
+                id="text"
+                placeholder="أدخل جواب السؤال"
+                value={form.text}
+                onChange={(e) => handleChange("text", e.target.value)}
               />
-            )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="image">صورة جواب السؤال</Label>
+              <Input id="image" type="file" onChange={handleImageChange} />
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
+                />
+              )}
+            </div>
+          )}
+
+          {/* Correct Answer Switch */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="is_correct">الجواب الصحيح</Label>
+            <Switch
+              id="is_correct"
+              color="primary"
+              checked={form.is_correct}
+              onCheckedChange={(checked) => handleChange("is_correct", checked)}
+            />
           </div>
         </div>
 

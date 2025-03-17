@@ -90,6 +90,8 @@ export function LevelDialog({ level, open, onOpenChange, onSave }) {
           <div className="space-y-2">
             <Label htmlFor="game_id">اللعبة</Label>
             <Select
+              disabled
+
               name="game_id"
               value={form.game_id}
               onValueChange={(value) => handleChange("game_id", value)}
