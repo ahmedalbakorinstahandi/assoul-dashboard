@@ -22,7 +22,10 @@ import { Plus, Search, Edit, Trash2, Eye, FileQuestion } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
-import { GameEditDialog } from "@/components/dialogs/game-edit-dialog"
+import { GameEditDialog } from "@/components/dialogs/games/games/game-edit-dialog"
+import { LevelDialog } from "@/components/dialogs/games/levels/level-edit-dialog"
+import { QuestionDialog } from "@/components/dialogs/games/questions/questions-edit-dialog"
+
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import { getData, postData, putData, deleteData } from "@/lib/apiHelper"
 import { PaginationControls } from "./ui/pagination-controls"
@@ -77,6 +80,10 @@ export function GamesManagement() {
 
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editLevelDialogOpen, setEditLevelDialogOpen] = useState(false)
+  const [ediQuestionDialogOpen, setEditQuestionDialogOpen] = useState(false)
+  const [editAnswerDialogOpen, setEditAnswerDialogOpen] = useState(false)
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [selectedItemLevel, setSelectedItemLevel] = useState(null)
@@ -271,8 +278,17 @@ export function GamesManagement() {
         setEditDialogOpen(false)
 
       }
-      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
-      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+      if (endpoint.includes("levels")) {
+        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+
+        setEditLevelDialogOpen(false)
+
+      }
+      if (endpoint.includes("questions")) {
+        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+        setEditQuestionDialogOpen(false)
+
+      }
       if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
     } else {
       toast.error(response.message)
@@ -314,7 +330,18 @@ export function GamesManagement() {
     setSelectedItem(item)
     setEditDialogOpen(true)
   }
-
+  const handleEditItemLevel = (item) => {
+    setSelectedItem(item)
+    setEditLevelDialogOpen(true)
+  }
+  const handleEditItemQuestion = (item) => {
+    setSelectedItem(item)
+    setEditQuestionDialogOpen(true)
+  }
+  const handleEditItemAnswer = (item) => {
+    setSelectedItem(item)
+    setEditAnswerDialogOpen(true)
+  }
   const handleDeleteItem = (item) => {
     setSelectedItem(item)
     setDeleteDialogOpen(true)
@@ -338,7 +365,6 @@ export function GamesManagement() {
     if (activeTab === "questions") endpoint = "games/questions"
     if (activeTab === "answers") endpoint = "games/answers"
     handleUpdateEntity(endpoint, updatedItem)
-    setEditDialogOpen(false)
   }
 
   // pagination controls بسيطة
@@ -1017,9 +1043,9 @@ export function GamesManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(level)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditItemLevel(level)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1072,9 +1098,9 @@ export function GamesManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(question)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(question)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditItemQuestion(question)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1168,7 +1194,22 @@ export function GamesManagement() {
         onOpenChange={setEditDialogOpen}
         onSave={handleSaveItem}
       />
-
+      <LevelDialog
+        level={selectedItem}
+        open={editLevelDialogOpen}
+        onOpenChange={setEditLevelDialogOpen}
+        onSave={handleSaveItem}
+      />
+      <QuestionDialog
+        question={selectedItem}
+        gamesIds={gamesIds}
+        levelsIds={levelsIds}
+        viewQuestions={viewQuestions}
+        typQuestions={typQuestions}
+        open={ediQuestionDialogOpen}
+        onOpenChange={setEditQuestionDialogOpen}
+        onSave={handleSaveItem}
+      />
       <DeleteConfirmationDialog
         title="حذف العنصر"
         description={`هل أنت متأكد من حذف العنصر ؟ هذا الإجراء لا يمكن التراجع عنه.`}
