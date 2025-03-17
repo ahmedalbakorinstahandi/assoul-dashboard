@@ -258,10 +258,19 @@ export function GamesManagement() {
 
 
   const handleUpdateEntity = async (endpoint, updatedEntity) => {
-    const response = await putData(endpoint, updatedEntity)
+    console.log("Sending Data:", updatedEntity);
+
+    const response = await putData(endpoint + `/${selectedItem.id}`, updatedEntity)
+    console.log(response);
+
     if (response.success) {
-      toast.success("تم التعديل بنجاح")
-      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
+      toast.success(response.message)
+      if (endpoint.includes("games")) {
+        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+
+        setEditDialogOpen(false)
+
+      }
       if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
       if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
       if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
@@ -949,9 +958,9 @@ export function GamesManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
