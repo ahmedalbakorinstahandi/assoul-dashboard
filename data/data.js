@@ -56,3 +56,9 @@ export const typeMeals = [
     { id: 4, name: "snack" },
 
 ]
+export const statusUser = [
+    { id: 1, name: "Active" },
+    { id: 2, name: "Pending" },
+    { id: 3, name: "Banned" },
+
+]

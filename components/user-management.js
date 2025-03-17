@@ -19,13 +19,16 @@ import { Label } from "@/components/ui/label"
 import { Plus, Search, Edit, Trash2, Eye } from "lucide-react"
 import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
+import { GuardianDialog } from "@/components/dialogs/users/guardians/guardian-dialog"
+import { DoctorDialog } from "@/components/dialogs/users/doctors/doctor-dialog"
+
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
-import { getData, postData } from "@/lib/apiHelper"
+import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { PaginationControls } from "./ui/pagination-controls"
 import toast from "react-hot-toast"
 
 export function UserManagement() {
-  const [activeTab, setActiveTab] = useState("parents")
+  const [activeTab, setActiveTab] = useState("guardians")
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddGameOpen, setIsAddGameOpen] = useState(false)
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
@@ -57,6 +60,8 @@ export function UserManagement() {
 
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editDoctorDialogOpen, setEditDoctorDialogOpen] = useState(false)
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [selectedItemLevel, setSelectedItemLevel] = useState(null)
@@ -117,10 +122,10 @@ export function UserManagement() {
   useEffect(() => {
     if (activeTab === "children") {
       fetchEntityData("users/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
-    } else if (activeTab === "parents") {
+    } else if (activeTab === "guardians") {
       fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
-    } else if (activeTab === "questions") {
-      fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+    } else if (activeTab === "doctors") {
+      fetchEntityData("users/doctors", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
     } else if (activeTab === "answers") {
       fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
     }
@@ -128,86 +133,93 @@ export function UserManagement() {
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
     let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
-    let imageLink = "";
-
-    if (file) {
-      console.log("Before uploading image:", dataToSend);
-
-      // رفع الصورة والحصول على الرابط
-      const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
-      console.log("Upload response:", response);
-
-      if (response.success) {
-        imageLink = response.data.image_name;
-        dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
-      } else {
-        toast.error("فشل رفع الصورة");
-        return;
-      }
-
-      console.log("After adding image:", dataToSend);
-    }
 
     console.log("Sending Data:", dataToSend);
+    try {
 
-    // إرسال البيانات كـ JSON
-    const response = await postData(endpoint, dataToSend, {
-      headers: {
-        "Content-Type": "application/json"
+
+      // إرسال البيانات كـ JSON
+      const response = await postData(endpoint, dataToSend, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (response.success) {
+        toast.success(response.message);
+        console.log(response);
+
+        // تحديث البيانات حسب نوع الكيان المضاف
+        if (endpoint.includes("guardians")) {
+          setIsAddGameOpen(false);
+          setImagePreview(null);
+
+          fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+        }
+        if (endpoint.includes("doctors")) {
+          setSelectedGameId("")
+          setIsAddLevelOpen(false);
+
+          fetchEntityData("users/doctors", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+        };
+        if (endpoint.includes("children")) {
+          setSelectedGameId("")
+          setSelectedQuestionType("")
+          setSelectedLevelId("")
+          setSelectedQuestionView("")
+
+          setIsAddQuestionOpen(false);
+          fetchEntityData("users/children", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+        }
+        if (endpoint.includes("answers")) {
+          setSelectedGameId("")
+          setSelectedQuestionType("")
+          setSelectedLevelId("")
+          setSelectedQuestionView("")
+          setSelectedQuestionId("")
+
+
+          setIsAddAnswerOpen(false);
+          fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
+
+        };
       }
-    });
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+      
 
-    if (response.success) {
-      toast.success(response.message);
-      console.log(response);
-
-      // تحديث البيانات حسب نوع الكيان المضاف
-      if (endpoint.includes("games")) {
-        setIsAddGameOpen(false);
-        setImagePreview(null);
-
-        fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
-      }
-      if (endpoint.includes("levels")) {
-        setSelectedGameId("")
-        setIsAddLevelOpen(false);
-
-        fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
-      };
-      if (endpoint.includes("questions")) {
-        setSelectedGameId("")
-        setSelectedQuestionType("")
-        setSelectedLevelId("")
-        setSelectedQuestionView("")
-
-        setIsAddQuestionOpen(false);
-        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
-      }
-      if (endpoint.includes("answers")) {
-        setSelectedGameId("")
-        setSelectedQuestionType("")
-        setSelectedLevelId("")
-        setSelectedQuestionView("")
-        setSelectedQuestionId("")
-
-
-        setIsAddAnswerOpen(false);
-        fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
-
-      };
-    } else {
-      toast.error(response.message);
     }
   };
 
 
   const handleUpdateEntity = async (endpoint, updatedEntity) => {
-    const response = await putData(endpoint, updatedEntity)
+    const response = await putData(endpoint + `/${selectedItem.id}`, updatedEntity)
+    console.log(response);
+
     if (response.success) {
-      toast.success("تم التعديل بنجاح")
-      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
-      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
-      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+      toast.success(response.message)
+      if (endpoint.includes("guardians")) {
+        setEditDialogOpen(false);
+        setImagePreview(null);
+
+        fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+      }
+      if (endpoint.includes("doctors")) {
+        // setSelectedGameId("")
+        // setIsAddLevelOpen(false);
+
+        fetchEntityData("users/doctors", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+      };
+      if (endpoint.includes("children")) {
+        // setSelectedGameId("")
+        // setSelectedQuestionType("")
+        // setSelectedLevelId("")
+        // setSelectedQuestionView("")
+
+        // setIsAddQuestionOpen(false);
+        fetchEntityData("users/children", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+      }
       if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
     } else {
       toast.error(response.message)
@@ -216,174 +228,102 @@ export function UserManagement() {
 
   const handleDeleteEntity = async (endpoint, entityId) => {
     const response = await deleteData(endpoint, entityId)
-    if (response.success) {
-      toast.success("تم الحذف بنجاح")
-      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
-      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
-      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+    if (response.data.success) {
+      toast.success(response.data.message)
+      if (endpoint.includes("guardians")) fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+
+      if (endpoint.includes("children")) fetchEntityData("users/children", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+
+      if (endpoint.includes("doctors")) fetchEntityData("users/doctors", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+
       if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
     } else {
-      toast.error(response.message)
+      toast.error(response.data.message)
     }
   }
-  // Mock data for demonstration
-  const parentsData = [
-    { id: 1, name: "أحمد محمد", email: "ahmed@example.com", phone: "0501234567", childrenCount: 2, status: "نشط" },
-    { id: 2, name: "سارة علي", email: "sara@example.com", phone: "0551234567", childrenCount: 1, status: "نشط" },
-    { id: 3, name: "محمد خالد", email: "mohammed@example.com", phone: "0561234567", childrenCount: 3, status: "نشط" },
-  ]
 
-  const doctorsData = [
-    {
-      id: 1,
-      name: "د. فاطمة أحمد",
-      email: "dr.fatima@example.com",
-      phone: "0501111111",
-      specialty: "طب أطفال",
-      status: "نشط",
-    },
-    {
-      id: 2,
-      name: "د. خالد عبدالله",
-      email: "dr.khalid@example.com",
-      phone: "0502222222",
-      specialty: "غدد صماء",
-      status: "نشط",
-    },
-  ]
 
-  const childrenData = [
-    { id: 1, name: "ياسر أحمد", age: 8, parent: "أحمد محمد", diabetesType: "النوع 1", status: "نشط" },
-    { id: 2, name: "نورة أحمد", age: 10, parent: "أحمد محمد", diabetesType: "النوع 1", status: "نشط" },
-    { id: 3, name: "عمر سارة", age: 9, parent: "سارة علي", diabetesType: "النوع 1", status: "نشط" },
-  ]
-
-  // الحصول على البيانات الحالية بناءً على التبويب النشط
-  const getCurrentData = () => {
-    switch (activeTab) {
-      case "parents":
-        return parentsData
-      case "doctors":
-        return doctorsData
-      case "children":
-        return childrenData
-      default:
-        return []
-    }
-  }
 
   // معالجة عرض المستخدم
   const handleViewUser = (user) => {
-    setSelectedUser(user)
+    setSelectedItem(user)
     setViewDialogOpen(true)
   }
 
   // معالجة تعديل المستخدم
   const handleEditUser = (user) => {
-    setSelectedUser(user)
+    setSelectedItem(user)
     setEditDialogOpen(true)
   }
-
+  const handleEditDoctor = (user) => {
+    setSelectedItem(user)
+    setEditDoctorDialogOpen(true)
+  }
   // معالجة حذف المستخدم
   const handleDeleteUser = (user) => {
-    setSelectedUser(user)
+    setSelectedItem(user)
     setDeleteDialogOpen(true)
   }
 
-  // معالجة حفظ تعديلات المستخدم
-  const handleSaveUser = (updatedUser) => {
-    console.log("تم حفظ التعديلات:", updatedUser)
-    // هنا يمكن إضافة منطق تحديث البيانات
-  }
+
 
   // معالجة تأكيد حذف المستخدم
   const handleConfirmDelete = () => {
-    console.log("تم حذف المستخدم:", selectedUser)
-    // هنا يمكن إضافة منطق حذف البيانات
+    let endpoint = ""
+    if (activeTab === "guardians") endpoint = "users/guardians"
+    if (activeTab === "doctors") endpoint = "users/doctors"
+    if (activeTab === "children") endpoint = "users/children"
+    if (activeTab === "answers") endpoint = "games/answers"
+    handleDeleteEntity(endpoint, selectedItem?.id)
+    setDeleteDialogOpen(false)
   }
 
-  const renderUserForm = () => {
-    if (activeTab === "parents") {
-      return (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">الاسم الكامل</Label>
-              <Input id="name" placeholder="أدخل الاسم الكامل" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
-              <Input id="email" type="email" placeholder="أدخل البريد الإلكتروني" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">رقم الهاتف</Label>
-              <Input id="phone" placeholder="أدخل رقم الهاتف" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور</Label>
-              <Input id="password" type="password" placeholder="أدخل كلمة المرور" />
-            </div>
-          </div>
-        </>
-      )
-    } else if (activeTab === "doctors") {
-      return (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">الاسم الكامل</Label>
-              <Input id="name" placeholder="أدخل الاسم الكامل" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
-              <Input id="email" type="email" placeholder="أدخل البريد الإلكتروني" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">رقم الهاتف</Label>
-              <Input id="phone" placeholder="أدخل رقم الهاتف" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="specialty">التخصص</Label>
-              <Input id="specialty" placeholder="أدخل التخصص" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور</Label>
-              <Input id="password" type="password" placeholder="أدخل كلمة المرور" />
-            </div>
-          </div>
-        </>
-      )
-    } else {
-      return (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">اسم الطفل</Label>
-              <Input id="name" placeholder="أدخل اسم الطفل" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="age">العمر</Label>
-              <Input id="age" type="number" placeholder="أدخل العمر" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="parent">ولي الأمر</Label>
-              <Input id="parent" placeholder="اختر ولي الأمر" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="diabetesType">نوع السكري</Label>
-              <Input id="diabetesType" placeholder="اختر نوع السكري" />
-            </div>
-          </div>
-        </>
-      )
-    }
-  }
+  const handleAddItem = (updatedItem) => {
+    console.log(updatedItem);
 
+    let endpoint = ""
+    if (activeTab === "guardians") endpoint = "users/guardians"
+    if (activeTab === "doctors") endpoint = "users/doctors"
+    if (activeTab === "children") endpoint = "users/children"
+    if (activeTab === "answers") endpoint = "games/answers"
+    handleAddEntity(endpoint, updatedItem)
+  }
+  const handleSaveItem = (updatedItem) => {
+    console.log(updatedItem);
+
+    let endpoint = ""
+    if (activeTab === "guardians") endpoint = "users/guardians"
+    if (activeTab === "doctors") endpoint = "users/doctors"
+    if (activeTab === "children") endpoint = "users/children"
+    if (activeTab === "answers") endpoint = "games/answers"
+    handleUpdateEntity(endpoint, updatedItem)
+  }
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl md:text-3xl font-bold">إدارة المستخدمين</h2>
-        <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
+        {activeTab === "guardians" && (
+          <>
+
+            <Button onClick={() => setIsAddGameOpen(true)} className="bg-[#ffac33] hover:bg-[#f59f00]">
+              <Plus className="h-4 w-4 ml-2" />
+              <span className="hidden sm:inline">إضافة حساب أهل جديد</span>
+              <span className="sm:hidden">إضافة</span>
+            </Button>
+          </>
+        )}
+
+        {activeTab === "doctors" && (
+          <>
+
+            <Button onClick={() => setIsAddLevelOpen(true)} className="bg-[#ffac33] hover:bg-[#f59f00]">
+              <Plus className="h-4 w-4 ml-2" />
+              <span className="hidden sm:inline">إضافة حساب طبيب جديد</span>
+              <span className="sm:hidden">إضافة</span>
+            </Button>
+          </>
+        )}
+        {/* <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#ffac33] hover:bg-[#f59f00]">
               <Plus className="h-4 w-4 ml-2" />
@@ -406,7 +346,7 @@ export function UserManagement() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:space-x-2 sm:space-x-reverse">
         <div className="relative flex-1 w-full sm:max-w-sm">
@@ -422,12 +362,12 @@ export function UserManagement() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex grid-cols-2">
-          <TabsTrigger value="parents" className="flex-1">حسابات الأهل</TabsTrigger>
-          {/* <TabsTrigger value="doctors" className="flex-1">حسابات الأطباء</TabsTrigger> */}
+          <TabsTrigger value="guardians" className="flex-1">حسابات الأهل</TabsTrigger>
+          <TabsTrigger value="doctors" className="flex-1">حسابات الأطباء</TabsTrigger>
           <TabsTrigger value="children" className="flex-1">حسابات الأطفال</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="parents">
+        <TabsContent value="guardians">
           <Card className="rtl">
             <CardHeader>
               <CardTitle>حسابات الأهل</CardTitle>
@@ -439,30 +379,36 @@ export function UserManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>الاسم</TableHead>
+                      <TableHead>الصورة الشخصية</TableHead>
+
                       <TableHead>البريد الإلكتروني</TableHead>
                       <TableHead>رقم الهاتف</TableHead>
                       <TableHead>عدد الأطفال</TableHead>
                       <TableHead>الحالة</TableHead>
-                      {/* <TableHead>الإجراءات</TableHead> */}
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {levelsData.map((parent) => (
                       <TableRow key={parent.id}>
                         <TableCell className="font-medium">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
+                        <TableCell>
+                          <img src={parent.user.avtar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
+                        </TableCell>
                         <TableCell>{parent.user.email}</TableCell>
-                        <TableCell>{parent.user.phone}</TableCell>
+                        <TableCell className="switch-custom ">
+                          {parent.user.phone}</TableCell>
                         <TableCell>2</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full ${parent.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}  text-xs`}>
                             {parent.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
                         </TableCell>
-                        {/* <TableCell>
+                        <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewUser(parent)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewUser(parent)}>
                               <Eye className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                             <Button variant="ghost" size="icon" onClick={() => handleEditUser(parent)}>
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -470,7 +416,7 @@ export function UserManagement() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell> */}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -507,23 +453,23 @@ export function UserManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {doctorsData.map((doctor) => (
+                    {questionsData.map((doctor) => (
                       <TableRow key={doctor.id}>
-                        <TableCell className="font-medium">{doctor.name}</TableCell>
-                        <TableCell>{doctor.email}</TableCell>
-                        <TableCell>{doctor.phone}</TableCell>
-                        <TableCell>{doctor.specialty}</TableCell>
+                        <TableCell className="font-medium">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
+                        <TableCell>{doctor.user.email}</TableCell>
+                        <TableCell>{doctor.user.phone}</TableCell>
+                        <TableCell>{doctor.specialization}</TableCell>
                         <TableCell>
-                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
-                            {doctor.status}
+                          <span className={`px-2 py-1 rounded-full ${doctor.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}  text-xs`}>
+                            {doctor.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewUser(doctor)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewUser(doctor)}>
                               <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(doctor)}>
+                            </Button> */}
+                            <Button variant="ghost" size="icon" onClick={() => handleEditDoctor(doctor)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(doctor)}>
@@ -598,20 +544,36 @@ export function UserManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+      <GuardianDialog
+        isOpen={isAddGameOpen}
+        onClose={() => setIsAddGameOpen(false)}
+        onSave={handleAddItem}
+      // initialData={selectedUser}
+      />
+      <GuardianDialog
+        isOpen={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        onSave={handleSaveItem}
+        initialData={selectedItem}
+      />
 
-      {/* نوافذ العرض والتعديل والحذف */}
-      <UserViewDialog user={selectedItem} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />
+      <DoctorDialog
+        isOpen={isAddLevelOpen}
+        onClose={() => setIsAddLevelOpen(false)}
+        onSave={handleAddItem}
+      // initialData={selectedItem}
+      />
 
-      <UserEditDialog
-        user={selectedItem}
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        onSave={handleSaveUser}
+      <DoctorDialog
+        isOpen={editDoctorDialogOpen}
+        onClose={() => setEditDoctorDialogOpen(false)}
+        onSave={handleSaveItem}
+        initialData={selectedItem}
       />
 
       <DeleteConfirmationDialog
         title="حذف المستخدم"
-        description={`هل أنت متأكد من حذف المستخدم "${selectedItem?.name}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        description={`هل أنت متأكد من حذف المستخدم ؟ هذا الإجراء لا يمكن التراجع عنه.`}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
