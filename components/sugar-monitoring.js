@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
 import { InsulinDosesDialog } from "@/components/dialogs/health/insulin-doses/insulin-doses-edit-dialog"
+import { PhysicalActivitiesDialog } from "@/components/dialogs/health/physical-activities/physical-activities-edit-dialog"
 
 import { BloodSugarReadingsEditDialog } from "@/components/dialogs/health/blood-sugar-readings/blood-sugar-readings-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
@@ -239,7 +240,7 @@ export function SugarMonitoring() {
 
         setSelectedQuestionType("")
         setIsAddQuestionOpen(false);
-        fetchEntityData("health/physical-activities", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+        fetchEntityData("health/physical-activities", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
       }
       if (endpoint.includes("meals")) {
         setImagePreview(null);
@@ -277,7 +278,13 @@ export function SugarMonitoring() {
           fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
           setViewDialogOpen(false)
         }
-        if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+        if (endpoint.includes("physical-activities")) {
+          console.log("dddd");
+
+          fetchEntityData("health/physical-activities", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
+          setViewDialogLevelOpen(false)
+        }
+
         if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
       }
     } catch (error) {
@@ -295,7 +302,8 @@ export function SugarMonitoring() {
       toast.success(response.data.message)
       if (endpoint.includes("blood-sugar-readings")) fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter)
       if (endpoint.includes("insulin-doses")) fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
-      if (endpoint.includes("physical-activities")) fetchEntityData("health/physical-activities", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+      if (endpoint.includes("physical-activities")) fetchEntityData("health/physical-activities", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
+
 
       if (endpoint.includes("meals")) fetchEntityData("health/meals", setMealsData, setMealsMeta, mealsPage, searchTerm, filter)
     } else {
@@ -310,7 +318,7 @@ export function SugarMonitoring() {
     setViewDialogOpen(true)
   }
   const handleViewLevel = (item) => {
-    setSelectedItemLevel(item)
+    setSelectedItem(item)
     setViewDialogLevelOpen(true)
   }
   const handleViewQuestion = (item) => {
@@ -342,8 +350,8 @@ export function SugarMonitoring() {
     let endpoint = ""
     if (activeTab === "blood-sugar-readings") endpoint = "health/blood-sugar-readings"
     if (activeTab === "insulin-doses") endpoint = "health/insulin-doses"
-    if (activeTab === "questions") endpoint = "games/questions"
-    if (activeTab === "answers") endpoint = "games/answers"
+    if (activeTab === "physical-activities") endpoint = "health/physical-activities"
+    if (activeTab === "meals") endpoint = "health/meals"
     handleUpdateEntity(endpoint, updatedItem)
     // setEditDialogOpen(false)
   }
@@ -1101,17 +1109,17 @@ export function SugarMonitoring() {
                         <TableCell>{answer.duration}</TableCell>
 
                         <TableCell>
-                          {/* <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
+                          <div className="flex space-x-2 space-x-reverse">
+                            {/*  <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                          {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleViewLevel(answer)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                          {/* </div> */}
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1198,8 +1206,11 @@ export function SugarMonitoring() {
         onSave={handleSaveItem}
 
       />
-      <LevelViewDialog game={selectedItemLevel} open={viewDialogLevelOpen} onOpenChange={setViewDialogLevelOpen} />
-      <QuestionViewDialog game={selectedItemQuestion} open={viewDialogQuestionOpen} onOpenChange={setViewDialogQuestionOpen} />
+      <PhysicalActivitiesDialog activity={selectedItem} open={viewDialogLevelOpen} onOpenChange={setViewDialogLevelOpen}
+        onSave={handleSaveItem}
+
+      />
+      {/* <QuestionViewDialog game={selectedItem} open={viewDialogQuestionOpen} onOpenChange={setViewDialogQuestionOpen} /> */}
 
       <BloodSugarReadingsEditDialog
         game={selectedItem}
