@@ -38,6 +38,7 @@ import { LevelViewDialog } from "./dialogs/level-view-dialog"
 import { QuestionViewDialog } from "./dialogs/question-view-dialog"
 import { activityTime, injectionSites, intensity, measurementTypes, takenTime, typeMeals, units } from "@/data/data"
 import toast from "react-hot-toast"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 export function SugarMonitoring() {
   const [activeTab, setActiveTab] = useState("blood-sugar-readings")
   const [searchTerm, setSearchTerm] = useState("")
@@ -1111,7 +1112,19 @@ export function SugarMonitoring() {
                         <TableCell>{answer.activity_date}</TableCell>
                         <TableCell>{answer.activity_time}</TableCell>
 
-                        <TableCell>{answer.description}</TableCell>
+                        <TableCell>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button className="p-2"> {truncateText(answer.description)}</button>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                {answer.description}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableCell>
                         <TableCell>{answer.intensity}</TableCell>
                         <TableCell>{answer.duration}</TableCell>
 
@@ -1174,8 +1187,31 @@ export function SugarMonitoring() {
                         <TableCell>{answer.type}</TableCell>
 
                         <TableCell>{answer.carbohydrates_calories}</TableCell>
-                        <TableCell>{truncateText(answer.description)}</TableCell>
-                        <TableCell>{truncateText(answer.notes)}</TableCell>
+                        <TableCell>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button className="p-2"> {truncateText(answer.description)}</button>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                {answer.description}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableCell>
+                        <TableCell>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button className="p-2"> {truncateText(answer.notes)}</button>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                {answer.notes}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                        </TableCell>
 
 
                         <TableCell>
