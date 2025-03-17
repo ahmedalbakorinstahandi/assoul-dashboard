@@ -22,6 +22,8 @@ import { Plus, Search, Edit, Trash2, Eye, FileQuestion } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
+import { MealsDialog } from "@/components/dialogs/health/meals/physical-activities-edit-dialog"
+
 import { InsulinDosesDialog } from "@/components/dialogs/health/insulin-doses/insulin-doses-edit-dialog"
 import { PhysicalActivitiesDialog } from "@/components/dialogs/health/physical-activities/physical-activities-edit-dialog"
 
@@ -285,7 +287,12 @@ export function SugarMonitoring() {
           setViewDialogLevelOpen(false)
         }
 
-        if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+        if (endpoint.includes("meals")) {
+
+
+          fetchEntityData("health/meals", setMealsData, setMealsMeta, mealsPage, searchTerm, filter)
+          setViewDialogQuestionOpen(false)
+        }
       }
     } catch (error) {
       toast.error(error.message)
@@ -322,7 +329,7 @@ export function SugarMonitoring() {
     setViewDialogLevelOpen(true)
   }
   const handleViewQuestion = (item) => {
-    setSelectedItemQuestion(item)
+    setSelectedItem(item)
     setViewDialogQuestionOpen(true)
   }
   const handleEditItem = (item) => {
@@ -1172,17 +1179,17 @@ export function SugarMonitoring() {
 
 
                         <TableCell>
-                          {/* <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
+                          <div className="flex space-x-2 space-x-reverse">
+                            {/*       <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                          {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(answer)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                          {/* </div> */}
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1210,7 +1217,10 @@ export function SugarMonitoring() {
         onSave={handleSaveItem}
 
       />
-      {/* <QuestionViewDialog game={selectedItem} open={viewDialogQuestionOpen} onOpenChange={setViewDialogQuestionOpen} /> */}
+      <MealsDialog meal={selectedItem} open={viewDialogQuestionOpen} onOpenChange={setViewDialogQuestionOpen}
+        onSave={handleSaveItem}
+
+      />
 
       <BloodSugarReadingsEditDialog
         game={selectedItem}
