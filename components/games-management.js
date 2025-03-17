@@ -15,7 +15,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Spinner } from "@/components/ui/Spinner"
 
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Search, Edit, Trash2, Eye, FileQuestion } from "lucide-react"
