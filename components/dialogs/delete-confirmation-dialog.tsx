@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,14 +10,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 interface DeleteConfirmationDialogProps {
-  title: string
-  description: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
+  title: string;
+  description: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
 }
 
 export function DeleteConfirmationDialog({
@@ -27,21 +27,21 @@ export function DeleteConfirmationDialog({
   onOpenChange,
   onConfirm,
 }: DeleteConfirmationDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // هنا يمكن إضافة طلب API لحذف العنصر
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      onConfirm()
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      onConfirm();
     } catch (error) {
-      console.error("Error deleting item:", error)
+      console.error("Error deleting item:", error);
     } finally {
-      setIsLoading(false)
-      onOpenChange(false)
+      setIsLoading(false);
+      onOpenChange(false);
     }
-  }
+  };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -51,7 +51,9 @@ export function DeleteConfirmationDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          <AlertDialogCancel style={{ marginInline: "1rem" }}>
+            إلغاء
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
@@ -62,6 +64,5 @@ export function DeleteConfirmationDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
-

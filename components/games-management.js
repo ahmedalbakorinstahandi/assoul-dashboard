@@ -272,14 +272,18 @@ export function GamesManagement() {
 
   const handleDeleteEntity = async (endpoint, entityId) => {
     const response = await deleteData(endpoint, entityId)
-    if (response.success) {
-      toast.success("تم الحذف بنجاح")
-      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
-      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
-      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
-      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+    if (response.data.success) {
+      toast.success(response.data.message)
+      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+
+      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+
+      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+
+      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
+
     } else {
-      toast.error(response.message)
+      toast.error(response.data.message)
     }
   }
   // console.log(questionsIds.find(e => e.id == selectedQuestionId)?.answers_view);
@@ -948,9 +952,9 @@ export function GamesManagement() {
                             {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1007,9 +1011,9 @@ export function GamesManagement() {
                             {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(level)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1062,9 +1066,9 @@ export function GamesManagement() {
                             {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(question)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1115,17 +1119,17 @@ export function GamesManagement() {
                               <img src={answer.image} className="rounded-lg h-10 w-10 object-cover" />
                             </>}</TableCell>
                         <TableCell>
-                          {/* <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
+                          <div className="flex space-x-2 space-x-reverse">
+                            {/*    <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                          {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                          {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
-                          {/* </div> */}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1158,7 +1162,7 @@ export function GamesManagement() {
 
       <DeleteConfirmationDialog
         title="حذف العنصر"
-        description={`هل أنت متأكد من حذف العنصر "${selectedItem?.name || selectedItem?.title || "العنصر"}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        description={`هل أنت متأكد من حذف العنصر ؟ هذا الإجراء لا يمكن التراجع عنه.`}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
