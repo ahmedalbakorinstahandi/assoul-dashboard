@@ -116,7 +116,7 @@ export function UserManagement() {
   // دالة لمزامنة جلب البيانات بناءً على التبويب النشط
   useEffect(() => {
     if (activeTab === "children") {
-      fetchEntityData("users/children/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      fetchEntityData("users/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
     } else if (activeTab === "parents") {
       fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
     } else if (activeTab === "questions") {
@@ -421,9 +421,9 @@ export function UserManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex grid-cols-3">
+        <TabsList className="flex grid-cols-2">
           <TabsTrigger value="parents" className="flex-1">حسابات الأهل</TabsTrigger>
-          <TabsTrigger value="doctors" className="flex-1">حسابات الأطباء</TabsTrigger>
+          {/* <TabsTrigger value="doctors" className="flex-1">حسابات الأطباء</TabsTrigger> */}
           <TabsTrigger value="children" className="flex-1">حسابات الأطفال</TabsTrigger>
         </TabsList>
 
@@ -443,22 +443,22 @@ export function UserManagement() {
                       <TableHead>رقم الهاتف</TableHead>
                       <TableHead>عدد الأطفال</TableHead>
                       <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      {/* <TableHead>الإجراءات</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {parentsData.map((parent) => (
+                    {levelsData.map((parent) => (
                       <TableRow key={parent.id}>
-                        <TableCell className="font-medium">{parent.name}</TableCell>
-                        <TableCell>{parent.email}</TableCell>
-                        <TableCell>{parent.phone}</TableCell>
-                        <TableCell>{parent.childrenCount}</TableCell>
+                        <TableCell className="font-medium">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
+                        <TableCell>{parent.user.email}</TableCell>
+                        <TableCell>{parent.user.phone}</TableCell>
+                        <TableCell>2</TableCell>
                         <TableCell>
-                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
-                            {parent.status}
+                          <span className={`px-2 py-1 rounded-full ${parent.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}  text-xs`}>
+                            {parent.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewUser(parent)}>
                               <Eye className="h-4 w-4" />
@@ -470,12 +470,19 @@ export function UserManagement() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell>
+                        </TableCell> */}
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
+              <PaginationControls
+                currentPage={levelsPage}
+                setPage={setLevelsPage}
+                totalItems={levelsMeta.total}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -548,7 +555,7 @@ export function UserManagement() {
                       <TableHead>الجنس</TableHead>
                       <TableHead> تارخ الولادة</TableHead>
                       <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      {/* <TableHead>الإجراءات</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -562,7 +569,7 @@ export function UserManagement() {
                             {child.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewUser(child)}>
                               <Eye className="h-4 w-4" />
@@ -574,7 +581,7 @@ export function UserManagement() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell>
+                        </TableCell> */}
                       </TableRow>
                     ))}
                   </TableBody>

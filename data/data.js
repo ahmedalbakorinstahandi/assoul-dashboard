@@ -33,3 +33,26 @@ export const measurementTypes = [
 
 
 ]
+
+export const activityTime = [
+    { id: 1, name: "6-8" },
+    { id: 2, name: "8-10" },
+    { id: 3, name: "10-12" },
+    { id: 4, name: "12-14" },
+    { id: 5, name: "14-16" },
+    { id: 6, name: "16-18" },
+    { id: 7, name: "18-20" },
+    { id: 8, name: "20-22" },
+]
+export const intensity = [
+    { id: 1, name: "low" },
+    { id: 2, name: "moderate" },
+    { id: 3, name: "high" },
+]
+export const typeMeals = [
+    { id: 1, name: "breakfast" },
+    { id: 2, name: "lunch" },
+    { id: 3, name: "dinner" },
+    { id: 4, name: "snack" },
+
+]

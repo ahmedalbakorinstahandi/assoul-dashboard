@@ -22,7 +22,9 @@ import { Plus, Search, Edit, Trash2, Eye, FileQuestion } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
-import { GameEditDialog } from "@/components/dialogs/game-edit-dialog"
+import { InsulinDosesDialog } from "@/components/dialogs/health/insulin-doses/insulin-doses-edit-dialog"
+
+import { BloodSugarReadingsEditDialog } from "@/components/dialogs/health/blood-sugar-readings/blood-sugar-readings-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import { getData, postData, putData, deleteData } from "@/lib/apiHelper"
 import { PaginationControls } from "./ui/pagination-controls"
@@ -31,7 +33,7 @@ import { Switch } from "./ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { LevelViewDialog } from "./dialogs/level-view-dialog"
 import { QuestionViewDialog } from "./dialogs/question-view-dialog"
-import { injectionSites, measurementTypes, takenTime, units } from "@/data/data"
+import { activityTime, injectionSites, intensity, measurementTypes, takenTime, typeMeals, units } from "@/data/data"
 import toast from "react-hot-toast"
 export function SugarMonitoring() {
   const [activeTab, setActiveTab] = useState("blood-sugar-readings")
@@ -122,7 +124,7 @@ export function SugarMonitoring() {
   ]
   useEffect(() => {
     const fetchGamesId = async () => {
-      const response = await getData(`users/children/children`);
+      const response = await getData(`users/children`);
       // console.log("ddd", response);
 
       setGamesId(response.data);
@@ -166,8 +168,6 @@ export function SugarMonitoring() {
       fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
     } else if (activeTab === "insulin-doses") {
       fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
-    } else if (activeTab === "questions") {
-      fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
     } else if (activeTab === "physical-activities") {
       fetchEntityData("health/physical-activities", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
     }
@@ -223,7 +223,6 @@ export function SugarMonitoring() {
         fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
       }
       if (endpoint.includes("insulin-doses")) {
-        setIsAddGameOpen(false);
         setImagePreview(null);
         setSelectedGameId("")
         setSelectedUnit("")
@@ -233,25 +232,25 @@ export function SugarMonitoring() {
 
         fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
       };
-      if (endpoint.includes("questions")) {
+      if (endpoint.includes("physical-activities")) {
+        setImagePreview(null);
         setSelectedGameId("")
-        setSelectedQuestionType("")
-        setSelectedLevelId("")
-        setSelectedQuestionView("")
+        setSelectedUnit("")
 
+        setSelectedQuestionType("")
         setIsAddQuestionOpen(false);
-        fetchEntityData("games/questions", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+        fetchEntityData("health/physical-activities", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
       }
-      if (endpoint.includes("answers")) {
+      if (endpoint.includes("meals")) {
+        setImagePreview(null);
         setSelectedGameId("")
+        setSelectedUnit("")
+
         setSelectedQuestionType("")
-        setSelectedLevelId("")
-        setSelectedQuestionView("")
-        setSelectedQuestionId("")
-
-
         setIsAddAnswerOpen(false);
-        fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
+        // console.log("feteched");
+
+        fetchEntityData("health/meals", setMealsData, setMealsMeta, mealsPage, searchTerm, filter)
 
       };
     } else {
@@ -261,28 +260,46 @@ export function SugarMonitoring() {
 
 
   const handleUpdateEntity = async (endpoint, updatedEntity) => {
-    const response = await putData(endpoint, updatedEntity)
-    if (response.success) {
-      toast.success("تم التعديل بنجاح")
-      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
-      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
-      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
-      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
-    } else {
-      toast.error(response.message)
+    console.log(updatedEntity);
+    try {
+      const response = await putData(endpoint + `/${selectedItem.id}`, updatedEntity)
+
+      if (response.success) {
+        toast.success(response.message)
+        if (endpoint.includes("blood-sugar-readings")) {
+          fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+          setSelectedItem(null)
+          setEditDialogOpen(false)
+
+        }
+        if (endpoint.includes("insulin-doses")) {
+
+          fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+          setViewDialogOpen(false)
+        }
+        if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
+        if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+      }
+    } catch (error) {
+      toast.error(error.message)
+
     }
+
   }
 
   const handleDeleteEntity = async (endpoint, entityId) => {
     const response = await deleteData(endpoint, entityId)
-    if (response.success) {
-      toast.success("تم الحذف بنجاح")
-      if (endpoint.includes("games")) fetchEntityData("games/games", setGamesData, gamesPage)
-      if (endpoint.includes("levels")) fetchEntityData("games/levels", setLevelsData, levelsPage)
-      if (endpoint.includes("questions")) fetchEntityData("games/questions", setQuestionsData, questionsPage)
-      if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
+    // console.log("response", response);
+
+    if (response.data.success) {
+      toast.success(response.data.message)
+      if (endpoint.includes("blood-sugar-readings")) fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter)
+      if (endpoint.includes("insulin-doses")) fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+      if (endpoint.includes("physical-activities")) fetchEntityData("health/physical-activities", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+
+      if (endpoint.includes("meals")) fetchEntityData("health/meals", setMealsData, setMealsMeta, mealsPage, searchTerm, filter)
     } else {
-      toast.error(response.message)
+      toast.error(response.data.message)
     }
   }
   // console.log(questionsIds.find(e => e.id == selectedQuestionId)?.answers_view);
@@ -312,10 +329,10 @@ export function SugarMonitoring() {
 
   const handleConfirmDelete = () => {
     let endpoint = ""
-    if (activeTab === "games") endpoint = "games/games"
-    if (activeTab === "levels") endpoint = "games/levels"
-    if (activeTab === "questions") endpoint = "games/questions"
-    if (activeTab === "answers") endpoint = "games/answers"
+    if (activeTab === "blood-sugar-readings") endpoint = "health/blood-sugar-readings"
+    if (activeTab === "physical-activities") endpoint = "health/physical-activities"
+    if (activeTab === "insulin-doses") endpoint = "health/insulin-doses"
+    if (activeTab === "meals") endpoint = "health/meals"
     handleDeleteEntity(endpoint, selectedItem?.id)
     setDeleteDialogOpen(false)
   }
@@ -323,12 +340,12 @@ export function SugarMonitoring() {
   // مثال لمعالجة حفظ التعديلات (تستخدم في Dialog الخاص بالتعديل)
   const handleSaveItem = (updatedItem) => {
     let endpoint = ""
-    if (activeTab === "games") endpoint = "games/games"
-    if (activeTab === "levels") endpoint = "games/levels"
+    if (activeTab === "blood-sugar-readings") endpoint = "health/blood-sugar-readings"
+    if (activeTab === "insulin-doses") endpoint = "health/insulin-doses"
     if (activeTab === "questions") endpoint = "games/questions"
     if (activeTab === "answers") endpoint = "games/answers"
     handleUpdateEntity(endpoint, updatedItem)
-    setEditDialogOpen(false)
+    // setEditDialogOpen(false)
   }
 
   // pagination controls بسيطة
@@ -597,33 +614,61 @@ export function SugarMonitoring() {
             </Dialog>
           )}
 
-          {activeTab === "questions" && (
+          {activeTab === "physical-activities" && (
             <Dialog open={isAddQuestionOpen} onOpenChange={setIsAddQuestionOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
                   <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة سؤال جديد</span>
+                  <span className="hidden sm:inline">إضافة أنشطة بدنية جديدة</span>
                   <span className="sm:hidden">إضافة</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة سؤال جديد</DialogTitle>
-                  <DialogDescription>أدخل بيانات السؤال الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                  <DialogTitle>إضافة أنشطة بدنية جديدة</DialogTitle>
+                  <DialogDescription>أدخل الأنشطة البدنية الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
+
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="game">اللعبة</Label>
-                    <Select name="game_id"
+                    <Label htmlFor="patient_id">الطفل</Label>
+                    <Select name="patient_id"
                       value={selectedGameId}
                       onValueChange={(value) => setSelectedGameId(value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر اللعبة" />
+                        <SelectValue placeholder="اختر الطفل" />
                       </SelectTrigger>
                       <SelectContent>
                         {gamesIds.map((game, idx) => (
                           <SelectItem key={idx} value={game.id.toString()}>
+                            {game.user.first_name + " " + game.user.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity_date">تاريخ النشاط  </Label>
+                    <Input
+                      id="activity_date"
+                      type="date"
+                    // value={editedTask.dueDate || ""}
+                    // onChange={(e) => handleChange("dueDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity_time">وقت النشاط</Label>
+                    <Select name="activity_time"
+                      value={selectedQuestionType}
+                      onValueChange={(value) => setSelectedQuestionType(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر وقت النشاط  " />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {activityTime.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
                             {game.name}
                           </SelectItem>
                         ))}
@@ -631,40 +676,122 @@ export function SugarMonitoring() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="level">المستوى</Label>
-                    <Select name="level_id"
-                      value={selectedLevelId}
-                      onValueChange={(value) => setSelectedLevelId(value)}
+                    <Label htmlFor="description"> وصف </Label>
+                    <Input id="description" placeholder="أدخل وصف" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="intensity">  الشدة </Label>
+                    <Select name="intensity"
+                      value={selectedUnit}
+                      onValueChange={(value) => setSelectedUnit(value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر اللعبة" />
+                        <SelectValue placeholder="اختر الشدة   " />
                       </SelectTrigger>
                       <SelectContent>
-                        {levelsIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.title}
+                        {intensity.map((game, idx) => (
+                          <SelectItem key={idx} value={game.name.toString()}>
+                            {game.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
-
                   <div className="space-y-2">
-                    <Label htmlFor="points">نقاط السؤال</Label>
-                    <Input id="points" type="points" placeholder="ادخل نقاط السؤال" min={0} />
+                    <Label htmlFor="duration"> مدة </Label>
+                    <Input id="duration" type="number" placeholder="أدخل مدة" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="type">مزع السؤال</Label>
+                    <Label htmlFor="notes"> ملاحظات </Label>
+                    <Textarea id="notes" placeholder="أدخل ملاحظات" />
+                  </div>
+
+                </div>
+                <DialogFooter>
+                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddQuestionOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button
+                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+                    onClick={() => {
+
+                      const newGame = {
+                        activity_date: document.getElementById("activity_date").value,
+                        description: document.getElementById("description").value,
+                        duration: document.getElementById("duration").value,
+                        notes: document.getElementById("notes").value,
+                        patient_id: selectedGameId,
+
+                        intensity: selectedUnit,
+                        activity_time: selectedQuestionType
+                      };
+
+
+                      handleAddEntity("health/physical-activities", newGame,);
+                    }}
+                  >
+                    حفظ
+                  </Button>
+
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+          {activeTab === "meals" && (
+            <Dialog open={isAddAnswerOpen} onOpenChange={setIsAddAnswerOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+                  <Plus className="h-4 w-4 ml-2" />
+                  <span className="hidden sm:inline">إضافة وجبات جديدة</span>
+                  <span className="sm:hidden">إضافة</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>إضافة وجبات جديدة</DialogTitle>
+                  <DialogDescription>أدخل وجبات الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="patient_id">الطفل</Label>
+                    <Select name="patient_id"
+                      value={selectedGameId}
+                      onValueChange={(value) => setSelectedGameId(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر الطفل" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gamesIds.map((game, idx) => (
+                          <SelectItem key={idx} value={game.id.toString()}>
+                            {game.user.first_name + " " + game.user.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity_date">تاريخ الاستهلاك  </Label>
+                    <Input
+                      id="consumed_date"
+                      type="date"
+                    // value={editedTask.dueDate || ""}
+                    // onChange={(e) => handleChange("dueDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="type">نوع الوجبة</Label>
                     <Select name="type"
                       value={selectedQuestionType}
                       onValueChange={(value) => setSelectedQuestionType(value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر نوع السؤال" />
+                        <SelectValue placeholder="اختر نوع الوجبة  " />
                       </SelectTrigger>
                       <SelectContent>
-                        {typQuestions.map((game, idx) => (
+                        {typeMeals.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
                             {game.name}
                           </SelectItem>
@@ -673,222 +800,51 @@ export function SugarMonitoring() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="type">عرض السؤال</Label>
-                    <Select name="type"
-                      value={selectedQuestionView}
-                      onValueChange={(value) => setSelectedQuestionView(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر عرض السؤال" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {viewQuestions.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="carbohydrates_calories"> السعرات الحرارية الكربوهيدرات </Label>
+                    <Input id="carbohydrates_calories" placeholder="أدخل السعرات الحرارية الكربوهيدرات" />
                   </div>
-                  {/* {selectedQuestionView == "text" ? <> */}
+
                   <div className="space-y-2">
-                    <Label htmlFor="text">نص السؤال</Label>
-                    <Textarea id="text" placeholder="أدخل نص السؤال" />
+                    <Label htmlFor="description"> الوصف </Label>
+                    <Textarea id="description" placeholder="أدخل الوصف" />
                   </div>
-                  {/* </> : <> */}
                   <div className="space-y-2">
-                    <Label htmlFor="image">صورة السؤال</Label>
-                    <Input id="image" type="file" onChange={handleImageChange} />
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
-                    )}
-
-
-                    {/*            <Image src={
-
-                    document.getElementById("image").files[0] || null// جلب الصورة
-
-                  } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
+                    <Label htmlFor="notes"> ملاحظات </Label>
+                    <Textarea id="notes" placeholder="أدخل ملاحظات" />
                   </div>
-                  {/* </>} */}
+
                 </div>
                 <DialogFooter>
-                  <Button
-                    style={{
-                      marginInline: "1rem"
-                    }}
-                    variant="outline" onClick={() => setIsAddQuestionOpen(false)}>
+                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddAnswerOpen(false)}>
                     إلغاء
                   </Button>
                   <Button
-                    className="bg-[#ffac33] hover:bg-[#f59f00]"
+                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
-                      const newQuestion = {
-                        game_id: selectedGameId,
-                        level_id: selectedLevelId,
-                        text: document.getElementById("text").value,
-                        points: document.getElementById("points").value,
 
-                        type: selectedQuestionType,
-                        type: selectedQuestionType,
-                        answers_view: selectedQuestionView
-                      }
-                      // if (selectedQuestionView == "text") {
+                      const newGame = {
+                        consumed_date: document.getElementById("consumed_date").value,
+                        carbohydrates_calories: document.getElementById("carbohydrates_calories").value,
+                        description: document.getElementById("description").value,
+                        notes: document.getElementById("notes").value,
 
-                      //   handleAddEntity("games/questions", newQuestion)
-                      // } else {
-                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
-                      handleAddEntity("games/questions", newQuestion, imageFile)
+                        patient_id: selectedGameId,
 
-                      // }
-                      // setIsAddQuestionOpen(false)
+                        type: selectedQuestionType
+                      };
+
+
+                      handleAddEntity("health/meals", newGame,);
                     }}
                   >
                     حفظ
                   </Button>
+
                 </DialogFooter>
               </DialogContent>
             </Dialog>
           )}
-          {activeTab === "answers" && (
-            <Dialog open={isAddAnswerOpen} onOpenChange={setIsAddAnswerOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                  <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة جواب سؤال جديد</span>
-                  <span className="sm:hidden">إضافة</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[525px]">
-                <DialogHeader>
-                  <DialogTitle>إضافة جواب سؤال جديد</DialogTitle>
-                  <DialogDescription>أدخل بيانات جواب السؤال الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="game">اللعبة</Label>
-                    <Select name="game_id"
-                      value={selectedGameId}
-                      onValueChange={(value) => setSelectedGameId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر اللعبة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gamesIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="level">المستوى</Label>
-                    <Select name="level_id"
-                      value={selectedLevelId}
-                      onValueChange={(value) => setSelectedLevelId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر اللعبة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {levelsIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="level">السؤال</Label>
-                    <Select name="level_id"
-                      value={selectedQuestionId}
-                      onValueChange={(value) => setSelectedQuestionId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر السؤال" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {questionsIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.text}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
-
-                  {questionsIds && questionsIds.find(e => e.id == selectedQuestionId)?.answers_view == "text" ? <>
-                    <div className="space-y-2">
-                      <Label htmlFor="text">جواب السؤال</Label>
-                      <Textarea id="text" placeholder="أدخل نص السؤال" />
-                    </div>
-                  </> : <>
-                    <div className="space-y-2">
-                      <Label htmlFor="image">صورة جواب السؤال</Label>
-                      <Input id="image" type="file" onChange={handleImageChange} />
-                      {imagePreview && (
-                        <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
-                      )}
-
-
-                      {/*            <Image src={
-
-                    document.getElementById("image").files[0] || null// جلب الصورة
-
-                  } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
-                    </div>
-                  </>}
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="is_correct"> الجواب الصحيح</Label>
-                    <Switch id="is_correct" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
-
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    style={{
-                      marginInline: "1rem"
-                    }}
-                    variant="outline" onClick={() => setIsAddAnswerOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button
-                    className="bg-[#ffac33] hover:bg-[#f59f00]"
-                    onClick={() => {
-                      const newQuestion = {
-                        game_id: selectedGameId,
-                        level_id: selectedLevelId,
-                        question_id: selectedQuestionId,
-                        is_correct: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
-
-                        // text:  || null,
-                        // points: document.getElementById("points").value,
-
-                        // type: selectedQuestionType,
-                        // type: selectedQuestionType,
-                        // answers_view: selectedQuestionView
-                      }
-                      if (questionsIds.find(e => e.id == selectedQuestionId)?.answers_view == "text") {
-                        newQuestion.text = document.getElementById("text").value
-                        handleAddEntity("games/answers", newQuestion)
-                      } else {
-                        const imageFile = document.getElementById("image").files[0]; // جلب الصورة
-                        handleAddEntity("games/answers", newQuestion, imageFile)
-
-                      }
-                      // setIsAddQuestionOpen(false)
-                    }}
-                  >
-                    حفظ
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
         </div>
       </div>
 
@@ -998,13 +954,13 @@ export function SugarMonitoring() {
                       <TableHead>تقاس في</TableHead>
                       {/* <TableHead>الوحدة</TableHead> */}
 
-                      {/* <TableHead>الإجراءات</TableHead> */}
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {gamesData.map((game) => (
                       <TableRow key={game.id}>
-                        <TableCell className="font-medium">{game.patient_id}</TableCell>
+                        <TableCell className="font-medium">{game.patient.user.first_name + " " + game.patient.user.last_name}</TableCell>
                         <TableCell>
                           {game.measurement_type}
                         </TableCell>
@@ -1020,19 +976,19 @@ export function SugarMonitoring() {
                         <TableCell>
                           {new Date(game.measured_at).toLocaleString("EN-ca")}
                         </TableCell>
-                        {/* <TableCell>
-                          <div className="flex space-x-2 space-x-reverse"> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
+                        <TableCell>
+                          <div className="flex space-x-2 space-x-reverse">
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
-                        {/* </div>
-                        </TableCell> */}
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1067,33 +1023,33 @@ export function SugarMonitoring() {
                       <TableHead>نوع الأنسولين</TableHead>
                       <TableHead>وحدات الجرعة </TableHead>
                       <TableHead>موقع الحقن</TableHead>
-                      {/* <TableHead>الإجراءات</TableHead> */}
+                      <TableHead>الإجراءات</TableHead>
 
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {levelsData.map((level) => (
                       <TableRow key={level.id}>
-                        <TableCell className="font-medium">{level.patient_id}</TableCell>
+                        <TableCell className="font-medium">{level.patient.user.first_name + " " + level.patient.user.last_name}</TableCell>
                         <TableCell>{level.taken_date}</TableCell>
                         <TableCell>{level.taken_time}</TableCell>
                         <TableCell>{level.insulin_type}</TableCell>
                         <TableCell>{level.dose_units}</TableCell>
                         <TableCell>{level.injection_site}</TableCell>
 
-                        {/* <TableCell>
+                        <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
-                              <Eye className="h-4 w-4" />
-                            </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(level)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
+                            <Eye className="h-4 w-4" />
+                          </Button> */}
+                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(level)}>
                               <Edit className="h-4 w-4" />
-                            </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
-                        {/* </div>
-                        </TableCell> */}
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1130,13 +1086,13 @@ export function SugarMonitoring() {
                       <TableHead>الشدة</TableHead>
                       <TableHead>المدة</TableHead>
 
-                      {/* <TableHead>الإجراءات</TableHead> */}
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {answersData.map((answer) => (
                       <TableRow key={answer.id}>
-                        <TableCell className="font-medium">{answer.patient_id}</TableCell>
+                        <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
                         <TableCell>{answer.activity_date}</TableCell>
                         <TableCell>{answer.activity_time}</TableCell>
 
@@ -1144,19 +1100,19 @@ export function SugarMonitoring() {
                         <TableCell>{answer.intensity}</TableCell>
                         <TableCell>{answer.duration}</TableCell>
 
-                        {/* <TableCell> */}
-                        {/* <div className="flex space-x-2 space-x-reverse">
+                        <TableCell>
+                          {/* <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                          {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button> */}
-                        {/* </div> */}
-                        {/* </TableCell> */}
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          {/* </div> */}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1192,13 +1148,13 @@ export function SugarMonitoring() {
                       <TableHead>الوصف</TableHead>
                       <TableHead>الملاحظات</TableHead>
 
-                      {/* <TableHead>الإجراءات</TableHead> */}
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {mealsData.map((answer) => (
                       <TableRow key={answer.id}>
-                        <TableCell className="font-medium">{answer.patient_id}</TableCell>
+                        <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
                         <TableCell>{answer.consumed_date}</TableCell>
                         <TableCell>{answer.type}</TableCell>
 
@@ -1207,19 +1163,19 @@ export function SugarMonitoring() {
                         <TableCell>{truncateText(answer.notes)}</TableCell>
 
 
-                        {/* <TableCell> */}
-                        {/* <div className="flex space-x-2 space-x-reverse">
+                        <TableCell>
+                          {/* <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
+                          {/* <Button variant="ghost" size="icon" onClick={() => handleEditItem(answer)}>
                               <Edit className="h-4 w-4" />
                             </Button> */}
-                        {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button> */}
-                        {/* </div> */}
-                        {/* </TableCell> */}
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          {/* </div> */}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1238,11 +1194,14 @@ export function SugarMonitoring() {
       </Tabs>
 
       {/* نوافذ العرض والتعديل والحذف */}
-      <GameViewDialog game={selectedItem} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />
+      <InsulinDosesDialog insulinDose={selectedItem} open={viewDialogOpen} onOpenChange={setViewDialogOpen}
+        onSave={handleSaveItem}
+
+      />
       <LevelViewDialog game={selectedItemLevel} open={viewDialogLevelOpen} onOpenChange={setViewDialogLevelOpen} />
       <QuestionViewDialog game={selectedItemQuestion} open={viewDialogQuestionOpen} onOpenChange={setViewDialogQuestionOpen} />
 
-      <GameEditDialog
+      <BloodSugarReadingsEditDialog
         game={selectedItem}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
@@ -1251,12 +1210,12 @@ export function SugarMonitoring() {
 
       <DeleteConfirmationDialog
         title="حذف العنصر"
-        description={`هل أنت متأكد من حذف العنصر "${selectedItem?.name || selectedItem?.title || "العنصر"}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        description={`هل أنت متأكد من حذف العنصر ؟ هذا الإجراء لا يمكن التراجع عنه.`}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </div >
   )
 }
 
