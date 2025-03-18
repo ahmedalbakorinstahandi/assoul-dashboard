@@ -20,13 +20,13 @@ import { Plus, Search, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-re
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TaskViewDialog } from "@/components/dialogs/task-view-dialog"
-import { TaskEditDialog } from "@/components/dialogs/task-edit-dialog"
+import { SystemTasksEditDialog } from "@/components/dialogs/tasks/system-tasks/system-tasks-edit-dialog"
 import { TaskCompletionDialog } from "@/components/dialogs/task-completion-dialog"
 import { TaskRejectionDialog } from "@/components/dialogs/task-rejection-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import toast from "react-hot-toast"
 import { PaginationControls } from "./ui/pagination-controls"
-import { getData, postData } from "@/lib/apiHelper"
+import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { Switch } from "./ui/switch"
 
 export function TasksManagement() {
@@ -183,23 +183,6 @@ export function TasksManagement() {
     },
   ]
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "مكتمل":
-        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">{status}</span>
-      case "قيد التنفيذ":
-        return <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs">{status}</span>
-      case "متأخر":
-        return <span className="px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs">{status}</span>
-      default:
-        return <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">{status}</span>
-    }
-  }
-
-  // الحصول على البيانات الحالية بناءً على التبويب النشط
-  const getCurrentData = () => {
-    return activeTab === "parent-tasks" ? parentTasksData : childTasksData
-  }
 
   // معالجة عرض المهمة
   const handleViewTask = (task) => {
@@ -231,16 +214,46 @@ export function TasksManagement() {
     setRejectionDialogOpen(true)
   }
 
+  const handleUpdateEntity = async (endpoint, updatedEntity) => {
+    let response
+
+    response = await putData(endpoint + `/${selectedTask.id}`, updatedEntity)
+
+
+    console.log(response);
+
+    if (response.success) {
+      toast.success(response.message)
+      setEditDialogOpen(false)
+
+      fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+
+    } else {
+      toast.error(response.message)
+    }
+  }
   // معالجة حفظ تعديلات المهمة
   const handleSaveTask = (updatedTask) => {
     console.log("تم حفظ التعديلات:", updatedTask)
-    // هنا يمكن إضافة منطق تحديث البيانات
+    handleUpdateEntity("tasks/system-tasks", updatedTask)
+
+
   }
 
+  const handleDeleteEntity = async (endpoint, entityId) => {
+    const response = await deleteData(endpoint, entityId)
+    if (response.data.success) {
+      toast.success(response.data.message)
+      setDeleteDialogOpen(false)
+      fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+    } else {
+      toast.error(response.data.message)
+    }
+  }
   // معالجة تأكيد حذف المهمة
   const handleConfirmDelete = () => {
-    console.log("تم حذف المهمة:", selectedTask)
-    // هنا يمكن إضافة منطق حذف البيانات
+    // console.log("تم حذف المهمة:", selectedTask)
+    handleDeleteEntity("tasks/system-tasks", selectedTask?.id)
   }
 
   // معالجة تأكيد إكمال المهمة
@@ -386,7 +399,7 @@ export function TasksManagement() {
 
                       const imageFile = document.getElementById("image").files[0]; // جلب الصورة
 
-                      handleAddEntity("games/games", newGame, imageFile);
+                      handleAddEntity("tasks/system-tasks", newGame, imageFile);
                     }}
                   >
                     حفظ
@@ -413,11 +426,11 @@ export function TasksManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="system-tasks">مهام عسول</TabsTrigger>
-
+          {/* 
           <TabsTrigger value="parent-tasks" disabled>مهام الأهل</TabsTrigger>
-          <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger>
+          <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger> */}
         </TabsList>
         <TabsContent value="system-tasks">
           <Card>
@@ -456,16 +469,16 @@ export function TasksManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                               <Eye className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                             <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                            {task.status !== "مكتمل" ? (
+                            {/* {task.status !== "مكتمل" ? (
                               <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
                                 <CheckCircle className="h-4 w-4 text-green-500" />
                               </Button>
@@ -473,7 +486,7 @@ export function TasksManagement() {
                               <Button variant="ghost" size="icon" onClick={() => handleRejectTask(task)}>
                                 <XCircle className="h-4 w-4 text-red-500" />
                               </Button>
-                            )}
+                            )} */}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -491,7 +504,7 @@ export function TasksManagement() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="parent-tasks">
+        {/* <TabsContent value="parent-tasks">
           <Card>
             <CardHeader>
               <CardTitle>مهام الأهل</CardTitle>
@@ -603,7 +616,7 @@ export function TasksManagement() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
       </Tabs>
 
@@ -616,8 +629,8 @@ export function TasksManagement() {
         onReject={handleRejectTask}
       />
 
-      <TaskEditDialog
-        task={selectedTask}
+      <SystemTasksEditDialog
+        game={selectedTask}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={handleSaveTask}

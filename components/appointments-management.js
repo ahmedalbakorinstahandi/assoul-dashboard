@@ -257,7 +257,7 @@ export function AppointmentsManagement() {
     handleAddEntity("schedules/appointments", updatedItem)
   }
   const handleSaveItem = (updatedItem) => {
-    console.log(updatedItem);
+    // console.log(updatedItem);
     handleUpdateEntity("schedules/appointments", updatedItem)
   }
 
