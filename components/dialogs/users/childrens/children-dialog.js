@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { statusUser } from "@/data/data"
 import { Eye, EyeOff } from "lucide-react";
-export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
+export function ChildrenDialog({ isOpen, onClose, onSave, initialData, gamesIds }) {
     // Initialize form data state using a similar pattern to the InsulinDosesDialog
     const initialForm = {
         first_name: initialData?.user?.first_name || "",
@@ -20,7 +20,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
         height: initialData?.height || "",
         weight: initialData?.weight || "",
         diabetes_diagnosis_age: initialData?.diabetes_diagnosis_age || "",
-
+        guardian_id: initialData?.guardian?.[0]?.id || "",  // ✅ حل المشكلة هنا
 
     };
     const [isLoading, setIsLoading] = useState(false)
@@ -29,7 +29,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
 
     useEffect(() => {
         if (initialData) {
-            console.log(initialData);
+            // console.log(initialData);
 
             setFormData({
                 first_name: initialData?.user?.first_name || "",
@@ -38,15 +38,20 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
                 birth_date: initialData?.birth_date || "",
                 height: initialData?.height || "",
                 weight: initialData?.weight || "",
+                guardian_id: initialData?.guardian?.[0]?.id || "",  // ✅ حل المشكلة هنا
+
                 diabetes_diagnosis_age: initialData?.diabetes_diagnosis_age || "",
             });
+            setImagePreview(initialData?.user?.avatar)
         } else {
             setFormData(initialForm);
         }
     }, [initialData]);
 
     const [imagePreview, setImagePreview] = useState(initialData?.user?.avatar || "");
-    const [imageLink, setImageLink] = useState(initialData?.user?.avatar || "");
+    // console.log(initialData?.user?.avatar);
+    
+    const [imageLink, setImageLink] = useState(null);
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }))
@@ -54,13 +59,13 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
     const handleImageChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const response = await postData("general/upload-image", { image: file, folder: "games" }, {});
-            if (response.success) {
-                setImageLink(response.data.image_name);
-                setImagePreview(URL.createObjectURL(file));
-            } else {
-                toast.error("فشل رفع الصورة");
-            }
+            // const response = await postData("general/upload-image", { image: file, folder: "games" }, {});
+            // if (response.success) {
+            setImageLink(file);
+            setImagePreview(URL.createObjectURL(file));
+            // } else {
+            //     toast.error("فشل رفع الصورة");
+            // }
         }
     };
 
@@ -88,7 +93,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
             height: formData?.height,
             weight: formData?.weight,
             diabetes_diagnosis_age: formData?.diabetes_diagnosis_age,
-
+            guardian_id: formData.guardian_id
 
         };
 
@@ -128,7 +133,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
                                     checked={formData.gender === "male"}
                                     onChange={(e) => handleChange("gender", e.target.value)}
                                 />
-                                <span style={{marginInline:"0.5rem"}}>ذكر</span>
+                                <span style={{ marginInline: "0.5rem" }}>ذكر</span>
                             </label>
                             <label className="flex items-center space-x-2 cursor-pointer">
                                 <Input
@@ -138,7 +143,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
                                     checked={formData.gender === "female"}
                                     onChange={(e) => handleChange("gender", e.target.value)}
                                 />
-                                <span style={{marginInline:"0.5rem"}}>أنثى</span>
+                                <span style={{ marginInline: "0.5rem" }}>أنثى</span>
                             </label>
                         </div>
                     </div>
@@ -161,6 +166,27 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData }) {
                     <div className="space-y-2">
                         <Label>    تشخيص مرض السكري حسب العمر</Label>
                         <Input type="number" name="diabetes_diagnosis_age" value={formData.diabetes_diagnosis_age} onChange={(e) => handleChange("diabetes_diagnosis_age", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="game_id">ولي الأمر</Label>
+                        <Select
+                            // disabled
+
+                            name="guardian_id"
+                            value={formData.guardian_id}
+                            onValueChange={(value) => handleChange("guardian_id", value)}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="اختر ولي الأمر" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {gamesIds.map((game, idx) => (
+                                    <SelectItem key={idx} value={game.id.toString()}>
+                                        {game.user.first_name + " " + game.user.last_name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>الصورة الشخصية</Label>

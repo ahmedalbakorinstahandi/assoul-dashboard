@@ -27,6 +27,7 @@ import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmati
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { PaginationControls } from "./ui/pagination-controls"
 import toast from "react-hot-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 
 export function UserManagement() {
   const [activeTab, setActiveTab] = useState("guardians")
@@ -35,7 +36,7 @@ export function UserManagement() {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
   const [isAddAnswerOpen, setIsAddAnswerOpen] = useState(false)
-  const initialFilter = { game_id: "", level_id: "", question_id: "" };
+  const initialFilter = { guardian_id: "", level_id: "", question_id: "" };
   const [filter, setFilter] = useState(initialFilter)
 
   const [isEnabled, setIsEnabled] = useState(true);
@@ -90,6 +91,17 @@ export function UserManagement() {
   const [gamesIds, setGamesId] = useState([]);
   const [levelsIds, setLevelsId] = useState([]);
   const [questionsIds, setQuestionsId] = useState([]);
+  useEffect(() => {
+    const fetchGamesId = async () => {
+      const response = await getData(`users/guardians`);
+      // console.log("ddd", response);
+
+      setGamesId(response.data);
+    };
+
+
+    fetchGamesId();
+  }, [selectedItem, selectedLevelId]);
 
   const typQuestions = [
     { id: 1, name: "DragDrop" },
@@ -196,7 +208,13 @@ export function UserManagement() {
 
 
   const handleUpdateEntity = async (endpoint, updatedEntity) => {
-    const response = await putData(endpoint + `/${selectedItem.id}`, updatedEntity)
+    let response
+    if (endpoint.includes("children")) {
+      response = await putData(endpoint + `/${selectedItem.id}`, updatedEntity, true)
+    } else {
+      response = await putData(endpoint + `/${selectedItem.id}`, updatedEntity)
+
+    }
     console.log(response);
 
     if (response.success) {
@@ -255,7 +273,14 @@ export function UserManagement() {
     setSelectedItem(user)
     setViewDialogOpen(true)
   }
-
+  const handleViewChildren = (value) => {
+    // setSelectedItem(user)
+    setFilter((prev) => ({
+      ...prev,
+      guardian_id: prev.guardian_id == value ? "" : value,
+    }))
+    setActiveTab("children")
+  }
   // معالجة تعديل المستخدم
   const handleEditUser = (user) => {
     setSelectedItem(user)
@@ -378,6 +403,35 @@ export function UserManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        {activeTab === "children" && <>
+          <div className="space-y-2 " style={{ width: "10rem" }}>
+            {/* <Label htmlFor="game">اللعبة</Label> */}
+            <Select name="guardian_id"
+              value={filter.guardian_id}
+
+              onValueChange={(value) =>
+                setFilter((prev) => ({
+                  ...prev,
+                  guardian_id: prev.guardian_id == value ? "" : value,
+                }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="اختر ولي الأمر" />
+              </SelectTrigger>
+              <SelectContent>
+                {gamesIds.map((game, idx) => (
+                  <SelectItem key={idx} value={game.id.toString()}>
+                    {game.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" onClick={() => setFilter(initialFilter)}>
+            مسح الكل
+          </Button>
+        </>}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -426,9 +480,9 @@ export function UserManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewUser(parent)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
                               <Eye className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditUser(parent)}>
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -597,12 +651,15 @@ export function UserManagement() {
         isOpen={isAddQuestionOpen}
         onClose={() => setIsAddQuestionOpen(false)}
         onSave={handleAddItem}
+        gamesIds={gamesIds}
       // initialData={selectedItem}
       />
 
       <ChildrenDialog
         isOpen={editChildDialogOpen}
         onClose={() => setEditChildDialogOpen(false)}
+        gamesIds={gamesIds}
+
         onSave={handleSaveItem}
         initialData={selectedItem}
       />
