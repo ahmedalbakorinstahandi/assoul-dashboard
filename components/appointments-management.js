@@ -433,7 +433,7 @@ export function AppointmentsManagement() {
                   <TableHead className="text-nowrap"> التاريخ والوقت</TableHead>
                   <TableHead>العنوان</TableHead>
 
-                  <TableHead>الوصف</TableHead>
+                  <TableHead className="text-nowrap">الوصف</TableHead>
                   <TableHead>الحالة</TableHead>
                   <TableHead>الإجراءات</TableHead>
                 </TableRow>
@@ -445,8 +445,8 @@ export function AppointmentsManagement() {
                     <TableCell className="text-nowrap">{appointment.guardian?.user?.first_name + " " + appointment.guardian?.user?.last_name}</TableCell>
                     <TableCell className="text-nowrap">{appointment.doctor?.user?.first_name + " " + appointment.doctor?.user?.last_name}</TableCell>
                     <TableCell className="text-nowrap">{handleConvertDate(appointment.appointment_date)}</TableCell>
-                    <TableCell>{appointment.title}</TableCell>
-                    <TableCell>{appointment.notes}</TableCell>
+                    <TableCell className="text-nowrap">{appointment.title}</TableCell>
+                    <TableCell className="text-nowrap">{appointment.notes}</TableCell>
 
                     <TableCell className="text-nowrap">{getStatusBadge(appointment.status)}</TableCell>
                     <TableCell>
