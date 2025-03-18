@@ -444,9 +444,9 @@ export function TasksManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>عنوان المهمة</TableHead>
+                      <TableHead>الصورة</TableHead>
                       <TableHead>اللون</TableHead>
                       <TableHead>النقاط</TableHead>
-                      <TableHead>الصورة</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -454,6 +454,9 @@ export function TasksManagement() {
                     {gamesData.map((task) => (
                       <TableRow key={task.id}>
                         <TableCell className="font-medium">{task.title}</TableCell>
+                        <TableCell>
+                          <img src={task.image} className="rounded-lg h-10 w-10 object-cover" />
+                        </TableCell>
                         <TableCell> <div
                           style={{
                             backgroundColor: task.color,
@@ -463,10 +466,7 @@ export function TasksManagement() {
                             display: "inline-block",
                           }}
                         /></TableCell>
-                        <TableCell>{task.points}</TableCell>
-                        <TableCell>
-                          <img src={task.image} className="rounded-lg h-10 w-10 object-cover" />
-                        </TableCell>
+                        <TableCell>{task.points} نقطة</TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
