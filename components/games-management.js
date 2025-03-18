@@ -178,25 +178,7 @@ export function GamesManagement() {
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
     let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
     try {
-      // let imageLink = "";
 
-      // if (file) {
-      //   console.log("Before uploading image:", dataToSend);
-
-      //   // رفع الصورة والحصول على الرابط
-      //   const response = await postData("general/upload-image", { image: file, folder: `games` }, {});
-      //   console.log("Upload response:", response);
-
-      //   if (response.success) {
-      //     imageLink = response.data.image_name;
-      //     dataToSend.image = imageLink; // إضافة رابط الصورة إلى البيانات
-      //   } else {
-      //     toast.error("فشل رفع الصورة");
-      //     return;
-      //   }
-
-      //   console.log("After adding image:", dataToSend);
-      // }
       console.log("imageLink:", imageLink);
 
       if (imageLink.length > 0) {

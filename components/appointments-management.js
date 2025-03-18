@@ -22,6 +22,7 @@ import { AppointmentCancelDialog } from "@/components/dialogs/appointments/appoi
 
 import toast from "react-hot-toast"
 import { DeleteConfirmationDialog } from "./dialogs/delete-confirmation-dialog"
+import { PaginationControls } from "./ui/pagination-controls"
 
 export function AppointmentsManagement() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -473,6 +474,13 @@ export function AppointmentsManagement() {
               </TableBody>
             </Table>
           </div>
+          <PaginationControls
+            currentPage={gamesPage}
+            setPage={setGamesPage}
+            totalItems={gamesMeta.total}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+          />
         </CardContent>
       </Card>
 

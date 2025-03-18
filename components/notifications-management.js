@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,147 +14,269 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { ReminderViewDialog } from "@/components/dialogs/notifications/scheduled-notifications/reminder-view-dialog"
+
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, PencilIcon, TrashIcon } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-
-// أضف استيرادات النوافذ المنبثقة في بداية الملف (بعد الاستيرادات الحالية)
-import { NotificationViewDialog } from "@/components/dialogs/notification-view-dialog"
-import { NotificationEditDialog } from "@/components/dialogs/notification-edit-dialog"
-import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
+import { Badge } from "@/components/ui/badge"
+import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
+import { ScheduledNotificationsDialog } from "@/components/dialogs/notifications/scheduled-notifications/scheduled-notifications-dialog"
+import toast from "react-hot-toast"
+import { DeleteConfirmationDialog } from "./dialogs/delete-confirmation-dialog"
+import { PaginationControls } from "./ui/pagination-controls"
+// استيراد النوافذ المنبثقة من المجلدات الجديدة
+import { NotificationViewDialog } from "@/components/dialogs/notifications/notifications/notifications-view-dialog"
+// import { NotificationEditDialog } from "@/components/dialogs/notifications/notification-edit-dialog"
+// import { DeleteConfirmationDialog } from "@/components/dialogs/common/delete-confirmation-dialog"
 
 export function NotificationsManagement() {
   const [activeTab, setActiveTab] = useState("notifications")
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddNotificationOpen, setIsAddNotificationOpen] = useState(false)
+
   const [isAddReminderOpen, setIsAddReminderOpen] = useState(false)
+  const [isEditReminderOpen, setIsEditReminderOpen] = useState(false)
 
-  // أضف حالة النوافذ المنبثقة في بداية الدالة NotificationsManagement بعد تعريف المتغيرات الحالية
-  const [viewDialogOpen, setViewDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedNotification, setSelectedNotification] = useState(null)
+  const [isEditNotificationOpen, setIsEditNotificationOpen] = useState(false)
 
-  // Mock data for demonstration
-  const notificationsData = [
-    {
-      id: 1,
-      title: "تحديث جديد في التطبيق",
-      content: "تم إضافة ألعاب جديدة للأطفال",
-      target: "الجميع",
-      sentDate: "2023-06-10",
-      status: "مرسل",
-    },
-    {
-      id: 2,
-      title: "نصائح للتعامل مع السكري",
-      content: "مقال جديد عن كيفية التعامل مع ارتفاع السكر",
-      target: "الأهل",
-      sentDate: "2023-06-12",
-      status: "مرسل",
-    },
-    {
-      id: 3,
-      title: "مسابقة جديدة",
-      content: "شارك في مسابقة عسول واربح جوائز قيمة",
-      target: "الأطفال",
-      sentDate: "2023-06-15",
-      status: "مجدول",
-    },
-  ]
+  const initialFilter = { game_id: "", level_id: "", question_id: "" };
+  const [filter, setFilter] = useState(initialFilter)
 
-  const remindersData = [
-    {
-      id: 1,
-      title: "قياس السكر",
-      description: "تذكير بقياس مستوى السكر",
-      target: "الأهل",
-      frequency: "يومي",
-      time: "08:00",
-      status: "نشط",
-    },
-    {
-      id: 2,
-      title: "جرعة الانسولين",
-      description: "تذكير بأخذ جرعة الانسولين",
-      target: "الأهل",
-      frequency: "يومي",
-      time: "12:00, 18:00",
-      status: "نشط",
-    },
-    {
-      id: 3,
-      title: "موعد الطبيب",
-      description: "تذكير بموعد الطبيب القادم",
-      target: "الأهل",
-      frequency: "مرة واحدة",
-      time: "قبل الموعد بيوم",
-      status: "نشط",
-    },
-  ]
+  const [gamesData, setGamesData] = useState([])
+  const [levelsData, setLevelsData] = useState([])
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "مرسل":
-        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">{status}</span>
-      case "مجدول":
-        return <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs">{status}</span>
-      case "نشط":
-        return <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">{status}</span>
-      case "غير نشط":
-        return <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">{status}</span>
-      default:
-        return <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">{status}</span>
+  const [pageSize, setPageSize] = useState(10); // number of items per page
+
+  const [gamesPage, setGamesPage] = useState(1);
+  const [levelsPage, setLevelsPage] = useState(1);
+
+
+  const [gamesMeta, setGamesMeta] = useState({});
+  const [levelsMeta, setLevelsMeta] = useState({});
+
+  const [gamesIds, setGamesId] = useState([]);
+  const [levelsIds, setLevelsId] = useState([]);
+  const [questionsIds, setQuestionsId] = useState([]);
+  const [loading, setLoading] = useState(false)
+  const handleConvertDate = (dateaa) => {
+    const date = new Date(dateaa);
+    const formattedDate = new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: "UTC",
+
+    }).format(date);
+
+    const formattedTime = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+
+      hour12: true,
+    }).format(date);
+
+    return (
+      <span>
+        {formattedDate.replace(/\//g, " \\ ")} •{" "}
+        {formattedTime.toLowerCase()}
+      </span>
+    );
+  }
+  const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
+    setLoading(true)
+    const response = await getData(
+      `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
+    );
+    if (response.success) {
+      setData(response.data);
+      setMeta(response.meta); // Save metadata for pagination logic
+      setLoading(false)
+    } else {
+      toast.error(response.message);
+    }
+  };
+  useEffect(() => {
+    if (activeTab === "notifications") {
+      fetchEntityData("notifications/notifications", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+    } else if (activeTab === "reminders") {
+      fetchEntityData("notifications/scheduled-notifications", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+    }
+  }, [activeTab, gamesPage, levelsPage, searchTerm, pageSize, filter]);
+
+  const handleAddEntity = async (endpoint, newEntity, file = null) => {
+    let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
+    try {
+
+
+      console.log("Sending Data:", dataToSend);
+
+      // إرسال البيانات كـ JSON
+      const response = await postData(endpoint, dataToSend, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      console.log(response);
+      if (response.success) {
+        toast.success(response.message);
+
+        // تحديث البيانات حسب نوع الكيان المضاف
+        if (endpoint.includes("notifications")) {
+          setIsAddNotificationOpen(false);
+
+          fetchEntityData("notifications/notifications", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+        }
+        if (endpoint.includes("scheduled-notifications")) {
+
+
+          setIsAddReminderOpen(false);
+          // console.log("ssddssdds");
+
+          fetchEntityData("notifications/scheduled-notifications", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+        };
+
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+
+    }
+  };
+
+  const handleAddItem = (updatedItem) => {
+    console.log(updatedItem);
+
+    let endpoint = ""
+    if (activeTab === "notifications") endpoint = "notifications/notifications"
+    if (activeTab === "reminders") endpoint = "notifications/scheduled-notifications"
+    handleAddEntity(endpoint, updatedItem)
+  }
+
+
+  const handleUpdateEntity = async (endpoint, updatedEntity) => {
+    console.log("Sending Data:", updatedEntity);
+
+    const response = await putData(endpoint + `/${selectedNotification.id}`, updatedEntity)
+    console.log(response);
+
+    if (response.success) {
+      toast.success(response.message)
+      if (endpoint.includes("notifications")) {
+        setIsEditNotificationOpen(false);
+
+        fetchEntityData("notifications/notifications", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      }
+      if (endpoint.includes("scheduled-notifications")) {
+
+
+        setIsEditReminderOpen(false);
+
+        fetchEntityData("notifications/scheduled-notifications", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+      };
+
+    } else {
+      toast.error(response.message)
     }
   }
 
-  // أضف الوظائف التالية قبل return
-  // معالجة عرض الإشعار
-  const handleViewNotification = (notification) => {
-    setSelectedNotification(notification)
-    setViewDialogOpen(true)
+
+  const handleDeleteEntity = async (endpoint, entityId) => {
+    const response = await deleteData(endpoint, entityId)
+    if (response.data.success) {
+      toast.success(response.data.message)
+      if (endpoint.includes("notifications")) {
+        // setIsEditNotificationOpen(false);
+
+        fetchEntityData("notifications/notifications", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      }
+      if (endpoint.includes("scheduled-notifications")) {
+
+
+        // setIsEditReminderOpen(false);
+
+        fetchEntityData("notifications/scheduled-notifications", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+      };
+
+
+    } else {
+      toast.error(response.data.message)
+    }
   }
+  const handleConfirmDelete = () => {
+    let endpoint = ""
+    if (activeTab === "notifications") endpoint = "notifications/notifications"
+    if (activeTab === "reminders") endpoint = "notifications/scheduled-notifications"
+
+    handleDeleteEntity(endpoint, selectedNotification?.id)
+    setDeleteDialogOpen(false)
+  }
+
+
+  const handleSaveItem = (updatedItem) => {
+    let endpoint = ""
+    if (activeTab === "notifications") endpoint = "notifications/notifications"
+    if (activeTab === "reminders") endpoint = "notifications/scheduled-notifications"
+
+    handleUpdateEntity(endpoint, updatedItem)
+  }
+
+
+
+  // حالة النوافذ المنبثقة
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [viewReminderDialogOpen, setViewReminderDialogOpen] = useState(false)
+  const [viewNotificationDialogOpen, setViewNotificationDialogOpen] = useState(false)
+
+  const [selectedNotification, setSelectedNotification] = useState(null)
+  const handleViewReminder = (reminder) => {
+    setSelectedNotification(reminder);
+    setViewReminderDialogOpen(true);
+  };
+  const handleViewNotification = (reminder) => {
+    setSelectedNotification(reminder);
+    setViewNotificationDialogOpen(true);
+  };
+
+
 
   // معالجة تعديل الإشعار
   const handleEditNotification = (notification) => {
     setSelectedNotification(notification)
     setEditDialogOpen(true)
   }
-
-  // معالجة حذف الإشعار
-  const handleDeleteNotification = (notification) => {
+  const handleEditReminders = (notification) => {
     setSelectedNotification(notification)
-    setDeleteDialogOpen(true)
+    setIsEditReminderOpen(true)
   }
+  const handleDeleteReminders = (item) => {
+    setSelectedNotification(item);
+    setDeleteDialogOpen(true);
+  };
+  // معالجة حذف الإشعار
+  const handleDeleteNotification = (item) => {
+    setSelectedNotification(item);
+    setDeleteDialogOpen(true);
+  };
 
-  // معالجة حفظ تعديلات الإشعار
-  const handleSaveNotification = (updatedNotification) => {
-    console.log("تم حفظ التعديلات:", updatedNotification)
-    // هنا يمكن إضافة منطق تحديث البيانات
-  }
 
-  // معالجة تأكيد حذف الإشعار
-  const handleConfirmDeleteNotification = () => {
-    console.log("تم حذف الإشعار:", selectedNotification)
-    // هنا يمكن إضافة منطق حذف البيانات
-  }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <h2 className="text-xl md:text-3xl font-bold">المنبهات والإشعارات</h2>
         <div className="flex gap-2 w-full sm:w-auto">
-          {activeTab === "notifications" && (
+          {activeTab === "notiwwfications" && (
             <Dialog open={isAddNotificationOpen} onOpenChange={setIsAddNotificationOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                  <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة إشعار جديد</span>
-                  <span className="sm:hidden">إضافة</span>
-                </Button>
+
               </DialogTrigger>
               <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
@@ -214,70 +336,20 @@ export function NotificationsManagement() {
             </Dialog>
           )}
 
+          {activeTab === "notifications" && (
+            <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto" onClick={() => setIsAddNotificationOpen(true)}>
+              <Plus className="h-4 w-4 ml-2" />
+              <span className="hidden sm:inline">إضافة إشعار جديد</span>
+              <span className="sm:hidden">إضافة</span>
+            </Button>
+          )}
+
           {activeTab === "reminders" && (
-            <Dialog open={isAddReminderOpen} onOpenChange={setIsAddReminderOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                  <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة منبه جديد</span>
-                  <span className="sm:hidden">إضافة</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[525px]">
-                <DialogHeader>
-                  <DialogTitle>إضافة منبه جديد</DialogTitle>
-                  <DialogDescription>أدخل بيانات المنبه الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">عنوان المنبه</Label>
-                    <Input id="title" placeholder="أدخل عنوان المنبه" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">وصف المنبه</Label>
-                    <Textarea id="description" placeholder="أدخل وصف المنبه" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="target">الفئة المستهدفة</Label>
-                    <Select>
-                      <SelectTrigger id="target">
-                        <SelectValue placeholder="اختر الفئة المستهدفة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="parents">الأهل</SelectItem>
-                        <SelectItem value="children">الأطفال</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="frequency">تكرار المنبه</Label>
-                    <Select>
-                      <SelectTrigger id="frequency">
-                        <SelectValue placeholder="اختر تكرار المنبه" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="daily">يومي</SelectItem>
-                        <SelectItem value="weekly">أسبوعي</SelectItem>
-                        <SelectItem value="monthly">شهري</SelectItem>
-                        <SelectItem value="once">مرة واحدة</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="time">وقت المنبه</Label>
-                    <Input id="time" type="time" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddReminderOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button className="bg-[#ffac33] hover:bg-[#f59f00]" onClick={() => setIsAddReminderOpen(false)}>
-                    حفظ
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto" onClick={() => setIsAddReminderOpen(true)}>
+              <Plus className="h-4 w-4 ml-2" />
+              <span className="hidden sm:inline">إضافة منبه جديد</span>
+              <span className="sm:hidden">إضافة</span>
+            </Button>
           )}
         </div>
       </div>
@@ -312,48 +384,50 @@ export function NotificationsManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>عنوان الإشعار</TableHead>
-                      <TableHead>المحتوى</TableHead>
-                      <TableHead>الفئة المستهدفة</TableHead>
-                      <TableHead>تاريخ الإرسال</TableHead>
-                      <TableHead>الحالة</TableHead>
+                      <TableHead>الرسالة</TableHead>
+                      <TableHead>النوع</TableHead>
+                      <TableHead>تاريخ القراءة</TableHead>
+                      <TableHead>تاريخ الإنشاء</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {notificationsData.map((notification) => (
-                      <TableRow key={notification.id}>
-                        <TableCell className="font-medium">{notification.title}</TableCell>
-                        <TableCell>
-                          {notification.content.length > 30
-                            ? notification.content.substring(0, 30) + "..."
-                            : notification.content}
+                    {gamesData.map((notification) => (
+                      <TableRow key={notification.id} className="hover:bg-muted/50">
+                        <TableCell className="p-2 text-right text-nowrap">{notification.title}</TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          {notification.message && notification.message.length > 30
+                            ? notification.message.substring(0, 30) + "..."
+                            : notification.message}
                         </TableCell>
-                        <TableCell>{notification.target}</TableCell>
-                        <TableCell>{notification.sentDate}</TableCell>
-                        <TableCell>{getStatusBadge(notification.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                        <TableCell className="p-2 text-right">
+                          <Badge variant={
+                            notification.type === "info" ? "default" :
+                              notification.type === "success" ? "success" :
+                                notification.type === "warning" ? "warning" :
+                                  notification.type === "error" ? "destructive" : notification.type === "alert" ? "destructive" : "default"
+
+                          }>
+                            {notification.type === "info" ? "معلومات" :
+                              notification.type === "success" ? "نجاح" :
+                                notification.type === "warning" ? "تحذير" :
+                                  notification.type === "error" ? "خطأ" : notification.type === "alert" ? "انذار" : notification.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          {notification.read_at ? new Date(notification.read_at).toLocaleString("EN-ca") : "لم تتم القراءة"}
+                        </TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          {new Date(notification.created_at).toLocaleString("EN-ca")}
+                        </TableCell>
+                        <TableCell className="p-2">
+                          <div className="flex items-center justify-end gap-2">
                             <Button variant="ghost" size="icon" onClick={() => handleViewNotification(notification)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {notification.status === "مجدول" && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEditNotification(notification)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeleteNotification(notification)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteNotification(notification)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -376,37 +450,50 @@ export function NotificationsManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>عنوان المنبه</TableHead>
-                      <TableHead>الوصف</TableHead>
-                      <TableHead>الفئة المستهدفة</TableHead>
-                      <TableHead>التكرار</TableHead>
+                      <TableHead className="text-nowrap">عنوان المنبه</TableHead>
+                      <TableHead>المحتوى</TableHead>
+                      <TableHead>النوع</TableHead>
+                      <TableHead>اليوم/الشهر</TableHead>
                       <TableHead>الوقت</TableHead>
                       <TableHead>الحالة</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {remindersData.map((reminder) => (
-                      <TableRow key={reminder.id}>
-                        <TableCell className="font-medium">{reminder.title}</TableCell>
-                        <TableCell>
-                          {reminder.description.length > 30
-                            ? reminder.description.substring(0, 30) + "..."
-                            : reminder.description}
+                    {levelsData.map((reminder) => (
+                      <TableRow key={reminder.id} className="hover:bg-muted/50">
+                        <TableCell className="p-2 text-right text-nowrap">{reminder.title}</TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          {reminder.content && reminder.content.length > 30
+                            ? reminder.content.substring(0, 30) + "..."
+                            : reminder.content}
                         </TableCell>
-                        <TableCell>{reminder.target}</TableCell>
-                        <TableCell>{reminder.frequency}</TableCell>
-                        <TableCell>{reminder.time}</TableCell>
-                        <TableCell>{getStatusBadge(reminder.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewNotification(reminder)}>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          {reminder.type === 'yearly' ? 'سنوي' :
+                            reminder.type === 'monthly' ? 'شهري' :
+                              reminder.type === 'weekly' ? 'أسبوعي' :
+                                reminder.type === 'daily' ? 'يومي' : reminder.type}
+                        </TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          {reminder.type === 'yearly' || reminder.type === 'monthly' ? `الشهر ${reminder.month}` : ''}
+                          {reminder.type === 'weekly' ? `الأسبوع ${reminder.week}` : ''}
+                          {reminder.day ? `  اليوم ${reminder.day}` : ''}
+                        </TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">{handleConvertDate(reminder.time)}</TableCell>
+                        <TableCell className="p-2 text-right text-nowrap">
+                          <Badge variant={reminder.status === 'active' ? 'success' : 'destructive'}>
+                            {reminder.status === 'active' ? 'نشط' : 'غير نشط'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="p-2">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleViewReminder(reminder)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditNotification(reminder)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditReminders(reminder)}>
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteNotification(reminder)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteReminders(reminder)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -414,34 +501,56 @@ export function NotificationsManagement() {
                       </TableRow>
                     ))}
                   </TableBody>
+
                 </Table>
               </div>
+              <PaginationControls
+                currentPage={levelsPage}
+                setPage={setLevelsPage}
+                totalItems={levelsMeta.total}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-      {/* نوافذ العرض والتعديل والحذف */}
+      <ScheduledNotificationsDialog
+        initialData={selectedNotification}
+        isOpen={isAddReminderOpen}
+        onClose={() => setIsAddReminderOpen(false)}
+        onSave={handleAddItem}
+
+      />
+      <ScheduledNotificationsDialog
+        initialData={selectedNotification}
+        isOpen={isEditReminderOpen}
+        onClose={() => {
+          setSelectedNotification(null)
+          setIsEditReminderOpen(false)
+        }}
+        onSave={handleSaveItem}
+
+      />
+      <ReminderViewDialog
+        reminder={selectedNotification}
+        open={viewReminderDialogOpen}
+        onOpenChange={setViewReminderDialogOpen}
+      />
+
       <NotificationViewDialog
         notification={selectedNotification}
-        open={viewDialogOpen}
-        onOpenChange={setViewDialogOpen}
+        open={viewNotificationDialogOpen}
+        onOpenChange={setViewNotificationDialogOpen}
       />
-
-      <NotificationEditDialog
-        notification={selectedNotification}
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        onSave={handleSaveNotification}
-      />
-
       <DeleteConfirmationDialog
-        title={`حذف ${selectedNotification?.content ? "الإشعار" : "المنبه"}`}
-        description={`هل أنت متأكد من حذف ${selectedNotification?.content ? "الإشعار" : "المنبه"} "${selectedNotification?.title}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        title={`حذف ${selectedNotification?.message ? "الإشعار" : "المنبه"}`}
+        description={`هل أنت متأكد من حذف ${selectedNotification?.message ? "الإشعار" : "المنبه"} "${selectedNotification?.title}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleConfirmDeleteNotification}
+        onConfirm={handleConfirmDelete}
       />
+
     </div>
   )
 }
-
