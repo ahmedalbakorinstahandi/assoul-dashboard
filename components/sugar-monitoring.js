@@ -379,7 +379,7 @@ export function SugarMonitoring() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl md:text-3xl mb-2 font-bold"> متابعة سكر الدم</h2>
+        <h2 className="text-xl md:text-3xl mb-2 font-bold"> سجل الحالة الصحية</h2>
         <div className="">
           {activeTab === "blood-sugar-readings" && (
             <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>

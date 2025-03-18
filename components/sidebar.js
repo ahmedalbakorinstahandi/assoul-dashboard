@@ -46,7 +46,7 @@ export function Sidebar({
     },
     {
       id: "/sugar",
-      label: "متابعة السكر",
+      label: " سجل الحالة الصحية",
       icon: Activity,
     },
     {
