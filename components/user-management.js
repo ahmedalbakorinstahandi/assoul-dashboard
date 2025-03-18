@@ -21,6 +21,7 @@ import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
 import { GuardianDialog } from "@/components/dialogs/users/guardians/guardian-dialog"
 import { DoctorDialog } from "@/components/dialogs/users/doctors/doctor-dialog"
+import { ChildrenDialog } from "@/components/dialogs/users/childrens/children-dialog"
 
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
@@ -61,6 +62,7 @@ export function UserManagement() {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editDoctorDialogOpen, setEditDoctorDialogOpen] = useState(false)
+  const [editChildDialogOpen, setEditChildDialogOpen] = useState(false)
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
@@ -160,7 +162,7 @@ export function UserManagement() {
           setSelectedGameId("")
           setIsAddLevelOpen(false);
 
-          fetchEntityData("users/doctors", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+          fetchEntityData("users/doctors", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
         };
         if (endpoint.includes("children")) {
           setSelectedGameId("")
@@ -169,7 +171,7 @@ export function UserManagement() {
           setSelectedQuestionView("")
 
           setIsAddQuestionOpen(false);
-          fetchEntityData("users/children", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+          fetchEntityData("users/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
         }
         if (endpoint.includes("answers")) {
           setSelectedGameId("")
@@ -179,7 +181,7 @@ export function UserManagement() {
           setSelectedQuestionId("")
 
 
-          setIsAddAnswerOpen(false);
+          setIsAddQuestionOpen(false);
           fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter)
 
         };
@@ -187,7 +189,7 @@ export function UserManagement() {
     } catch (error) {
       toast.error(error.message);
       console.log(error);
-      
+
 
     }
   };
@@ -208,8 +210,8 @@ export function UserManagement() {
       if (endpoint.includes("doctors")) {
         // setSelectedGameId("")
         // setIsAddLevelOpen(false);
-
-        fetchEntityData("users/doctors", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+        setEditDoctorDialogOpen(false)
+        fetchEntityData("users/doctors", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
       };
       if (endpoint.includes("children")) {
         // setSelectedGameId("")
@@ -217,8 +219,9 @@ export function UserManagement() {
         // setSelectedLevelId("")
         // setSelectedQuestionView("")
 
-        // setIsAddQuestionOpen(false);
-        fetchEntityData("users/children", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+        setEditChildDialogOpen(false);
+
+        fetchEntityData("users/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
       }
       if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
     } else {
@@ -231,10 +234,13 @@ export function UserManagement() {
     if (response.data.success) {
       toast.success(response.data.message)
       if (endpoint.includes("guardians")) fetchEntityData("users/guardians", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+      ;
 
-      if (endpoint.includes("children")) fetchEntityData("users/children", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+      if (endpoint.includes("children")) fetchEntityData("users/children", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      ;
 
-      if (endpoint.includes("doctors")) fetchEntityData("users/doctors", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter)
+      if (endpoint.includes("doctors")) fetchEntityData("users/doctors", setQuestionsData, setQuestionsMeta, questionsPage, searchTerm, filter);
+
 
       if (endpoint.includes("answers")) fetchEntityData("games/answers", setAnswersData, answersPage)
     } else {
@@ -258,6 +264,10 @@ export function UserManagement() {
   const handleEditDoctor = (user) => {
     setSelectedItem(user)
     setEditDoctorDialogOpen(true)
+  }
+  const handleEditChild = (user) => {
+    setSelectedItem(user)
+    setEditChildDialogOpen(true)
   }
   // معالجة حذف المستخدم
   const handleDeleteUser = (user) => {
@@ -319,6 +329,16 @@ export function UserManagement() {
             <Button onClick={() => setIsAddLevelOpen(true)} className="bg-[#ffac33] hover:bg-[#f59f00]">
               <Plus className="h-4 w-4 ml-2" />
               <span className="hidden sm:inline">إضافة حساب طبيب جديد</span>
+              <span className="sm:hidden">إضافة</span>
+            </Button>
+          </>
+        )}
+        {activeTab === "children" && (
+          <>
+
+            <Button onClick={() => setIsAddQuestionOpen(true)} className="bg-[#ffac33] hover:bg-[#f59f00]">
+              <Plus className="h-4 w-4 ml-2" />
+              <span className="hidden sm:inline">إضافة حساب طفل جديد</span>
               <span className="sm:hidden">إضافة</span>
             </Button>
           </>
@@ -501,7 +521,7 @@ export function UserManagement() {
                       <TableHead>الجنس</TableHead>
                       <TableHead> تارخ الولادة</TableHead>
                       <TableHead>الحالة</TableHead>
-                      {/* <TableHead>الإجراءات</TableHead> */}
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -515,19 +535,19 @@ export function UserManagement() {
                             {child.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
                         </TableCell>
-                        {/* <TableCell>
+                        <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewUser(child)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(child)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditChild(child)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(child)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell> */}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -567,6 +587,22 @@ export function UserManagement() {
       <DoctorDialog
         isOpen={editDoctorDialogOpen}
         onClose={() => setEditDoctorDialogOpen(false)}
+        onSave={handleSaveItem}
+        initialData={selectedItem}
+      />
+
+
+      {/* childern */}
+      <ChildrenDialog
+        isOpen={isAddQuestionOpen}
+        onClose={() => setIsAddQuestionOpen(false)}
+        onSave={handleAddItem}
+      // initialData={selectedItem}
+      />
+
+      <ChildrenDialog
+        isOpen={editChildDialogOpen}
+        onClose={() => setEditChildDialogOpen(false)}
         onSave={handleSaveItem}
         initialData={selectedItem}
       />
