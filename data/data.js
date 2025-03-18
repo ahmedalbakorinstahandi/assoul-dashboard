@@ -62,3 +62,19 @@ export const statusUser = [
     { id: 3, name: "Banned" },
 
 ]
+
+export const patientStatus = [
+    { id: 1, name: "emergency" },
+    { id: 2, name: "needs_follow_up" },
+    { id: 3, name: "stable" },
+
+]
+
+export const statusAppointment = [
+    { id: 1, name: "pending" },
+    { id: 2, name: "confirmed" },
+    { id: 3, name: "cancelled" },
+    { id: 3, name: "completed" },
+
+
+]
