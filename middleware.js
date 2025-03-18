@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 export function middleware(request) {
     const token = cookies().get("token")?.value;
 
-    const protectedRoutes = ["/", "/games", "/users", "/content", "/notifications", "/sugar", "/appointments"];
-    const authRoutes = ["/login", "/signup","/"]; // المسارات التي لا يجب أن يراها المستخدم إذا كان مسجل دخول
+    // إزالة "/" من هنا لتجنب مطابقة كل المسارات بما فيها /login
+    const protectedRoutes = ["/games", "/users", "/content", "/notifications", "/sugar", "/appointments"];
+    const authRoutes = ["/login", "/signup", "/"]; // المسارات التي لا يجب أن يراها المستخدم إذا كان مسجل دخول
 
     if (protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
         if (!token) {
@@ -26,6 +27,6 @@ export const config = {
         "/",
         "/games/:path*", "/users/:path*", "/content/:path*", "/notifications/:path*", "/sugar/:path*", "/appointments/:path*",
         "/settings/:path*",
-        "/login", "/signup" // نضيف صفحات المصادقة أيضاً إلى `matcher`
+        "/login", "/signup"
     ],
 };

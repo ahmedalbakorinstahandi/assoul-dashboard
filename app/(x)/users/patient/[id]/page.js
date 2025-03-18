@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { ClipboardList, FileText, MessageSquare, User, Ruler, Award, Droplet } from "lucide-react"
 
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Spinner } from "@/components/ui/spinner"
+import { getData } from "@/lib/apiHelper"
 
 // هذه البيانات ستأتي من API في التطبيق الحقيقي
 // لكن هنا نستخدمها كبيانات ثابتة للعرض
@@ -102,6 +103,23 @@ const patientData = {
 
 export default function PatientDetails() {
     const params = useParams()
+    const { id } = params;
+
+
+    const [patient, setPatient] = useState({});
+    useEffect(() => {
+        setLoading(true)
+        const fetchPatientData = async () => {
+            const response = await getData(`users/children/${id}`);
+            console.log("ddd", response.data);
+
+            setPatient(response.data);
+            setLoading(false)
+        };
+
+        fetchPatientData();
+    }, [id]);
+
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState("overview")
 
@@ -109,8 +127,8 @@ export default function PatientDetails() {
     // const { id } = params;
     // useEffect(() => { fetchPatientData(id) }, [id]);
 
-    const patient = patientData
-    const fullName = `${patient.user.first_name} ${patient.user.last_name}`
+    // const patient = patientData
+    const fullName = `${patient.user?.first_name} ${patient.user?.last_name}`
 
     // حساب عمر المريض
     const birthDate = new Date(patient.birth_date)
@@ -120,9 +138,9 @@ export default function PatientDetails() {
     // تنسيق التاريخ بالعربية
     const formatDate = (dateString) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString("ar-SA", {
+        return date.toLocaleDateString("EN-ca", {
             year: "numeric",
-            month: "long",
+            month: "numeric",
             day: "numeric",
         })
     }
@@ -134,7 +152,7 @@ export default function PatientDetails() {
         return "bg-green-500"
     }
 
-    if (loading) {
+    if (!patient && !patient.user) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <Spinner size="xl" variant="honey" />
@@ -150,10 +168,10 @@ export default function PatientDetails() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div className="flex items-center gap-4">
                             <Avatar className="h-20 w-20 border-2 border-honey">
-                                <AvatarImage src={patient.user.avatar || "/placeholder.svg?height=80&width=80"} alt={fullName} />
+                                <AvatarImage src={patient.user?.avatar || "/placeholder.svg?height=80&width=80"} alt={fullName} />
                                 <AvatarFallback className="bg-honey/20 text-honey text-xl">
-                                    {patient.user.first_name.charAt(0)}
-                                    {patient.user.last_name.charAt(0)}
+                                    {patient.user?.first_name.charAt(0)}
+                                    {patient.user?.last_name.charAt(0)}
                                 </AvatarFallback>
                             </Avatar>
                             <div>
@@ -175,10 +193,10 @@ export default function PatientDetails() {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="outline" className="border-honey text-honey hover:bg-honey hover:text-white">
+                            {/* <Button variant="outline" className="border-honey text-honey hover:bg-honey hover:text-white">
                                 تعديل البيانات
-                            </Button>
-                            <Button className="bg-honey text-white hover:bg-honey/90">إضافة قراءة سكر</Button>
+                            </Button> */}
+                            {/* <Button className="bg-primary text-white hover:bg-honey/90">إضافة قراءة سكر</Button> */}
                         </div>
                     </div>
                 </CardHeader>
@@ -218,8 +236,8 @@ export default function PatientDetails() {
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">الحالة:</span>
-                                            <Badge variant={patient.user.status === "Active" ? "default" : "outline"}>
-                                                {patient.user.status === "Active" ? "نشط" : "غير نشط"}
+                                            <Badge variant={patient.user?.status === "Active" ? "default" : "outline"}>
+                                                {patient.user?.status === "Active" ? "نشط" : "غير نشط"}
                                             </Badge>
                                         </div>
                                     </CardContent>
@@ -276,38 +294,39 @@ export default function PatientDetails() {
                                 </Card>
 
                                 {/* بطاقة الولي/الوصي */}
-                                <Card className="md:col-span-2 lg:col-span-1">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-lg flex items-center gap-2">
-                                            <User className="h-5 w-5 text-green-500" />
-                                            معلومات الولي/الوصي
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {patient.guardian.map((guardian) => (
-                                            <div key={guardian.id} className="flex items-center gap-4">
-                                                <Avatar>
-                                                    <AvatarImage
-                                                        src={guardian.user.avatar}
-                                                        alt={`${guardian.user.first_name} ${guardian.user.last_name}`}
-                                                    />
-                                                    <AvatarFallback className="bg-green-500/20 text-green-500">
-                                                        {guardian.user.first_name.charAt(0)}
-                                                        {guardian.user.last_name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium">
-                                                        {guardian.user.first_name} {guardian.user.last_name}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">{guardian.user.email}</p>
-                                                    <p className="text-sm text-muted-foreground">{guardian.user.phone}</p>
+                                {patient.guardian && <>
+                                    <Card className="md:col-span-2 lg:col-span-1">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-lg flex items-center gap-2">
+                                                <User className="h-5 w-5 text-green-500" />
+                                                معلومات الولي/الوصي
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {patient.guardian?.map((guardian) => (
+                                                <div key={guardian.id} className="flex items-center gap-4">
+                                                    <Avatar>
+                                                        <AvatarImage
+                                                            src={guardian?.user?.avatar}
+                                                            alt={`${guardian.user?.first_name} ${guardian.user?.last_name}`}
+                                                        />
+                                                        <AvatarFallback className="bg-green-500/20 text-green-500">
+                                                            {guardian.user?.first_name.charAt(0)}
+                                                            {guardian.user?.last_name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="font-medium">
+                                                            {guardian.user?.first_name} {guardian.user?.last_name}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">{guardian.user?.email}</p>
+                                                        <p className="text-sm text-muted-foreground">{guardian.user?.phone}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+                                </>}
                                 {/* بطاقة التقدم والإنجازات */}
                                 <Card className="md:col-span-2">
                                     <CardHeader className="pb-2">
@@ -347,11 +366,11 @@ export default function PatientDetails() {
                                 </Card>
                             </div>
                         </TabsContent>
-
+                        {/* {patient.medical_records && <> */}
                         {/* السجلات الطبية */}
                         <TabsContent value="medical" className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-medium">السجلات الطبية ({patient.medical_records.length})</h3>
+                                <h3 className="text-lg font-medium">السجلات الطبية ({patient?.medical_records?.length})</h3>
                                 <Button size="sm" className="bg-honey text-white hover:bg-honey/90">
                                     <FileText className="h-4 w-4 mr-2" />
                                     إضافة سجل طبي
@@ -359,7 +378,7 @@ export default function PatientDetails() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {patient.medical_records.map((record) => (
+                                {patient?.medical_records?.length <= 0 ? "لا يوجد سجلات طبية" : patient.medical_records?.map((record) => (
                                     <Card key={record.id} className="border-honey/20">
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between">
@@ -373,7 +392,7 @@ export default function PatientDetails() {
                                             <p>{record.description}</p>
                                         </CardContent>
                                         <CardFooter className="pt-0 flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm">
+                                            {/* <Button variant="ghost" size="sm">
                                                 حذف
                                             </Button>
                                             <Button
@@ -382,17 +401,17 @@ export default function PatientDetails() {
                                                 className="border-honey text-honey hover:bg-honey hover:text-white"
                                             >
                                                 تعديل
-                                            </Button>
+                                            </Button> */}
                                         </CardFooter>
                                     </Card>
                                 ))}
                             </div>
                         </TabsContent>
-
+                        {/* </>} */}
                         {/* التعليمات */}
                         <TabsContent value="instructions" className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-medium">التعليمات الطبية ({patient.instructions.length})</h3>
+                                <h3 className="text-lg font-medium">التعليمات الطبية ({patient.instructions?.length})</h3>
                                 <Button size="sm" className="bg-honey text-white hover:bg-honey/90">
                                     <ClipboardList className="h-4 w-4 mr-2" />
                                     إضافة تعليمات
@@ -400,7 +419,7 @@ export default function PatientDetails() {
                             </div>
 
                             <div className="grid grid-cols-1 gap-4">
-                                {patient.instructions.map((instruction) => (
+                                {patient.instructions?.length <= 0 ? "لا يوجد تعليمات" : patient.instructions?.map((instruction) => (
                                     <Card key={instruction.id} className="border-blue-500/20">
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between">
@@ -414,7 +433,7 @@ export default function PatientDetails() {
                                             <p>{instruction.content}</p>
                                         </CardContent>
                                         <CardFooter className="pt-0 flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm">
+                                            {/* <Button variant="ghost" size="sm">
                                                 حذف
                                             </Button>
                                             <Button
@@ -423,7 +442,7 @@ export default function PatientDetails() {
                                                 className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
                                             >
                                                 تعديل
-                                            </Button>
+                                            </Button> */}
                                         </CardFooter>
                                     </Card>
                                 ))}
@@ -433,7 +452,7 @@ export default function PatientDetails() {
                         {/* الملاحظات */}
                         <TabsContent value="notes" className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-medium">الملاحظات ({patient.notes.length})</h3>
+                                <h3 className="text-lg font-medium">الملاحظات ({patient.notes?.length})</h3>
                                 <Button size="sm" className="bg-honey text-white hover:bg-honey/90">
                                     <MessageSquare className="h-4 w-4 mr-2" />
                                     إضافة ملاحظة
@@ -441,7 +460,7 @@ export default function PatientDetails() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {patient.notes.map((note) => (
+                                {patient.notes?.length <= 0 ? "لا يوجد" : patient.notes?.map((note) => (
                                     <Card key={note.id} className="border-pink-500/20">
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between">
@@ -455,7 +474,7 @@ export default function PatientDetails() {
                                             <p>{note.content}</p>
                                         </CardContent>
                                         <CardFooter className="pt-0 flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm">
+                                            {/* <Button variant="ghost" size="sm">
                                                 حذف
                                             </Button>
                                             <Button
@@ -464,7 +483,7 @@ export default function PatientDetails() {
                                                 className="border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white"
                                             >
                                                 تعديل
-                                            </Button>
+                                            </Button> */}
                                         </CardFooter>
                                     </Card>
                                 ))}
