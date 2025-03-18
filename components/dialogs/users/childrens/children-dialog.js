@@ -12,6 +12,8 @@ import { statusUser } from "@/data/data"
 import { Eye, EyeOff } from "lucide-react";
 export function ChildrenDialog({ isOpen, onClose, onSave, initialData, gamesIds }) {
     // Initialize form data state using a similar pattern to the InsulinDosesDialog
+    // console.log(initialData?.guardian?.[0]?.id.toString() );
+
     const initialForm = {
         first_name: initialData?.user?.first_name || "",
         last_name: initialData?.user?.last_name || "",
@@ -20,7 +22,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData, gamesIds 
         height: initialData?.height || "",
         weight: initialData?.weight || "",
         diabetes_diagnosis_age: initialData?.diabetes_diagnosis_age || "",
-        guardian_id: initialData?.guardian?.[0]?.id || "",  // ✅ حل المشكلة هنا
+        guardian_id: initialData?.guardian?.[0]?.id.toString() || "",  // ✅ حل المشكلة هنا
 
     };
     const [isLoading, setIsLoading] = useState(false)
@@ -38,10 +40,12 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData, gamesIds 
                 birth_date: initialData?.birth_date || "",
                 height: initialData?.height || "",
                 weight: initialData?.weight || "",
-                guardian_id: initialData?.guardian?.[0]?.id || "",  // ✅ حل المشكلة هنا
+                guardian_id: initialData?.guardian?.[0]?.id.toString() || "",  // ✅ حل المشكلة هنا
 
                 diabetes_diagnosis_age: initialData?.diabetes_diagnosis_age || "",
             });
+            // console.log("formData", formData);
+
             setImagePreview(initialData?.user?.avatar)
         } else {
             setFormData(initialForm);
@@ -50,7 +54,7 @@ export function ChildrenDialog({ isOpen, onClose, onSave, initialData, gamesIds 
 
     const [imagePreview, setImagePreview] = useState(initialData?.user?.avatar || "");
     // console.log(initialData?.user?.avatar);
-    
+
     const [imageLink, setImageLink] = useState(null);
 
     const handleChange = (field, value) => {
