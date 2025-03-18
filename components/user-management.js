@@ -266,6 +266,10 @@ export function UserManagement() {
     setSelectedItem(user)
     setEditDialogOpen(true)
   }
+  const handleShowAppointments = (doctor) => {
+    localStorage.setItem("doctor_id", doctor.id)
+    router.push("/appointments")
+  }
   const handleEditDoctor = (user) => {
     setSelectedItem(user)
     setEditDoctorDialogOpen(true)
@@ -545,9 +549,9 @@ export function UserManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewUser(doctor)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
                               <Eye className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditDoctor(doctor)}>
                               <Edit className="h-4 w-4" />
                             </Button>

@@ -37,7 +37,7 @@ export function AppointmentsManagement() {
   const [gamesPage, setGamesPage] = useState(1);
   const [gamesMeta, setGamesMeta] = useState({});
   const [pageSize, setPageSize] = useState(10); // number of items per page
-  const initialFilter = { patient_id: "", guardian_id: "", doctor_id: "" };
+  const initialFilter = { patient_id: "", guardian_id: "", doctor_id: "", status: "all" };
   const [filter, setFilter] = useState(initialFilter)
   const [loading, setLoading] = useState(false)
   const [gamesIds, setGamesId] = useState([]);
@@ -71,6 +71,13 @@ export function AppointmentsManagement() {
 
   const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
     setLoading(true)
+    if (filter.status === "all") {
+      // console.log("while be change her boy");
+      filter.status = ""
+      // console.log(filter.status);
+
+
+    }
     const response = await getData(
       `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
     );
@@ -82,14 +89,20 @@ export function AppointmentsManagement() {
       toast.error(response.message);
     }
   };
+  useEffect(() => {
+    // تحديث filter لمرة واحدة عند تحميل المكون
+    const doctor = localStorage.getItem("doctor_id");
+    if (doctor && filter.doctor_id !== doctor.toString()) {
+      setFilter((prev) => ({ ...prev, doctor_id: doctor.toString() }));
+    }
+  }, []);
 
   useEffect(() => {
-    // if (activeTab === "games") {
+    // جلب البيانات بناءً على المعايير المحددة
     fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
     console.log("gamesData", gamesData);
-
-
   }, [gamesPage, searchTerm, pageSize, filter]);
+
   // Mock data for demonstration
 
   const handleDeleteItem = (item) => {
@@ -373,19 +386,30 @@ export function AppointmentsManagement() {
           </Select>
         </div>
 
-        <div className="w-full sm:w-auto">
-          <Select defaultValue="all">
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="حالة الموعد" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">جميع المواعيد</SelectItem>
-              <SelectItem value="upcoming">المواعيد القادمة</SelectItem>
-              <SelectItem value="completed">المواعيد المكتملة</SelectItem>
-              <SelectItem value="cancelled">المواعيد الملغاة</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select
+          defaultValue={filter.status === "" ? undefined : filter.status}
+          value={filter.status === "" ? undefined : filter.status}
+          onValueChange={(value) =>
+            setFilter((prev) => ({
+              ...prev,
+              // إذا كان القيمة الجديدة هي نفسها الحالة الحالية يتم تفريغها
+              status: prev.status === value ? "" : value,
+            }))
+          }
+        >
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="حالة الموعد" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">جميع المواعيد</SelectItem>
+            <SelectItem value="pending">المواعيد قيد الانتظار</SelectItem>
+            <SelectItem value="completed">المواعيد المكتملة</SelectItem>
+            <SelectItem value="confirmed">المواعيد المقبولة</SelectItem>
+            <SelectItem value="cancelled">المواعيد الملغاة</SelectItem>
+          </SelectContent>
+        </Select>
+
+
         <Button variant="outline" onClick={() => setFilter(initialFilter)}>
           مسح الكل
         </Button>
