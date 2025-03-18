@@ -16,15 +16,15 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, FileText, Video, Image } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, FileText, Video, Image, ExternalLink } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // أضف استيرادات النوافذ المنبثقة في بداية الملف (بعد الاستيرادات الحالية)
 import { ContentViewDialog } from "@/components/dialogs/content-view-dialog"
-import { ContentEditDialog } from "@/components/dialogs/content-edit-dialog"
+import { ContentEditDialog } from "@/components/dialogs/content/video-edit-dialog"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
-import { getData, postData } from "@/lib/apiHelper"
+import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import toast from "react-hot-toast"
 import { Switch } from "./ui/switch"
 import { PaginationControls } from "./ui/pagination-controls"
@@ -36,6 +36,7 @@ export function ContentManagement() {
   const initialFilter = { game_id: "", level_id: "", question_id: "" };
   const [filter, setFilter] = useState(initialFilter)
   const [isEnabled, setIsEnabled] = useState(true);
+  const [link, setLink] = useState("");
 
   // أضف حالة النوافذ المنبثقة في بداية الدالة ContentManagement بعد تعريف المتغيرات الحالية
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
@@ -140,71 +141,7 @@ export function ContentManagement() {
     }
   };
 
-  // Mock data for demonstration
-  const articlesData = [
-    {
-      id: 1,
-      title: "كيف تتعامل مع نوبات انخفاض السكر",
-      category: "تعليمي",
-      author: "د. فاطمة أحمد",
-      publishDate: "2023-05-10",
-      status: "منشور",
-    },
-    {
-      id: 2,
-      title: "الغذاء الصحي لمرضى السكري",
-      category: "تغذية",
-      author: "د. خالد عبدالله",
-      publishDate: "2023-05-15",
-      status: "منشور",
-    },
-    {
-      id: 3,
-      title: "الرياضة وتأثيرها على مستوى السكر",
-      category: "رياضة",
-      author: "د. فاطمة أحمد",
-      publishDate: "2023-05-20",
-      status: "مسودة",
-    },
-  ]
 
-  const videosData = [
-    {
-      id: 1,
-      title: "كيفية استخدام جهاز قياس السكر",
-      category: "تعليمي",
-      duration: "5:30",
-      publishDate: "2023-05-12",
-      status: "منشور",
-    },
-    {
-      id: 2,
-      title: "قصة عسول وأصدقاؤه",
-      category: "ترفيهي",
-      duration: "8:45",
-      publishDate: "2023-05-18",
-      status: "منشور",
-    },
-  ]
-
-  const imagesData = [
-    {
-      id: 1,
-      title: "رسم توضيحي لأنواع الطعام الصحي",
-      category: "تغذية",
-      dimensions: "1200x800",
-      publishDate: "2023-05-14",
-      status: "منشور",
-    },
-    {
-      id: 2,
-      title: "شخصية عسول",
-      category: "شخصيات",
-      dimensions: "800x800",
-      publishDate: "2023-05-16",
-      status: "منشور",
-    },
-  ]
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -217,7 +154,23 @@ export function ContentManagement() {
     }
   }
 
+  // استخراج ID الفيديو من رابط YouTube
+  const getYouTubeEmbedUrl = (url) => {
+    const regex =
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([^?&]+)/;
+    const match = url.match(regex);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : "";
+  };
 
+  // استخراج ID الفيديو من رابط Vimeo
+  const getVimeoEmbedUrl = (url) => {
+    const regex = /vimeo\.com\/(\d+)/;
+    const match = url.match(regex);
+    return match ? `https://player.vimeo.com/video/${match[1]}` : "";
+  };
+
+  // تحديد رابط المعاينة بناءً على نوع الفيديو
+  const embedUrl = getYouTubeEmbedUrl(link) || getVimeoEmbedUrl(link);
 
   // أضف الوظائف التالية قبل return
   // معالجة عرض المحتوى
@@ -237,17 +190,44 @@ export function ContentManagement() {
     setSelectedContent(content)
     setDeleteDialogOpen(true)
   }
+  const handleUpdateEntity = async (endpoint, updatedEntity) => {
+    console.log("Sending Data:", updatedEntity);
+
+    const response = await putData(endpoint + `/${selectedContent.id}`, updatedEntity)
+    console.log(response);
+
+    if (response.success) {
+      toast.success(response.message)
+      setEditDialogOpen(false)
+      fetchEntityData("general/educational-contents", setContentData, setContentMeta, contentPage, searchTerm, filter);
+    } else {
+      toast.error(response.message)
+    }
+  }
 
   // معالجة حفظ تعديلات المحتوى
   const handleSaveContent = (updatedContent) => {
-    console.log("تم حفظ التعديلات:", updatedContent)
-    // هنا يمكن إضافة منطق تحديث البيانات
+    handleUpdateEntity("general/educational-contents", updatedContent)
+
   }
 
+  const handleDeleteEntity = async (endpoint, entityId) => {
+    const response = await deleteData(endpoint, entityId)
+    if (response.data.success) {
+      toast.success(response.data.message)
+      setDeleteDialogOpen(false)
+      fetchEntityData("general/educational-contents", setContentData, setContentMeta, contentPage, searchTerm, filter);
+
+
+    } else {
+      toast.error(response.data.message)
+    }
+  }
   // معالجة تأكيد حذف المحتوى
   const handleConfirmDeleteContent = () => {
     console.log("تم حذف المحتوى:", selectedContent)
-    // هنا يمكن إضافة منطق حذف البيانات
+    handleDeleteEntity("general/educational-contents", selectedContent?.id)
+
   }
 
   return (
@@ -271,45 +251,42 @@ export function ContentManagement() {
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
+
                   <div className="space-y-2">
-                    <Label htmlFor="level">عنوان فريد </Label>
-                    <Select name="level_id"
-                      value={selectedQuestionId}
-                      onValueChange={(value) => setSelectedQuestionId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر عنوان فريد" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {keys.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* <div className="space-y-2">
-                    <Label htmlFor="key">عنوان فريد </Label>
-                    <Input id="key" placeholder="أدخل عنوان فريد" />
-                  </div> */}
-                  <div className="space-y-2">
-                    <Label htmlFor="title">عنوان المحتوى </Label>
-                    <Input id="title" placeholder="أدخل عنوان المحتوى" />
+                    <Label htmlFor="title">عنوان الفديو </Label>
+                    <Input id="title" placeholder="أدخل عنوان الفديو" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="link">رابط الفديو </Label>
-                    <Input id="link" placeholder="أدخل رابط الفديو" />
+                    <Input id="link" onChange={(e) => setLink(e.target.value)}
+                      placeholder="أدخل رابط الفديو" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="duration">مدة الفديو </Label>
-                    <Input id="duration" placeholder="أدخل مدة الفديو" type="number" />
+                    <Input typeof="number" min={0} id="duration" placeholder="أدخل مدة الفديو" type="number" />
+
                   </div>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="is_visible">قابلية الظهور</Label>
-                    <Switch id="is_visible" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
-
+                    <div className="flex align-middle justify-center">
+                      <span className="mx-2">{isEnabled ? "منشور" : "مسودة"}</span>
+                      <Switch id="is_visible" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+                    </div>
                   </div>
+                  {/* معاينة الفيديو داخل iframe إذا كان الرابط صحيحًا */}
+                  {embedUrl && (
+                    <div className="mt-4">
+                      <p className="mb-4">📽️ معاينة الفيديو:</p>
+                      <iframe
+                        width="100%"
+                        height="315"
+                        src={embedUrl}
+                        title="معاينة الفيديو"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    </div>)}
 
 
                 </div>
@@ -324,7 +301,7 @@ export function ContentManagement() {
                         title: document.getElementById("title").value,
                         link: document.getElementById("link").value,
                         duration: document.getElementById("duration").value,
-                        key:selectedQuestionId,
+                        key: selectedQuestionId,
 
                         // question_id: selectedQuestionId,
                         is_visible: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
@@ -437,22 +414,27 @@ export function ContentManagement() {
                   <TableBody>
                     {contentData.map((video) => (
                       <TableRow key={video.id}>
-                        <TableCell className="font-medium">{video.title}</TableCell>
-                        <TableCell><a href={video.link} target="_blank" rel="noopener noreferrer">{video.link}</a></TableCell>
-                        <TableCell>{video.duration} دقيقة</TableCell>
-                        <TableCell>{new Date(video.created_at).toLocaleDateString("EN-ca")}</TableCell>
+                        <TableCell className="font-medium text-nowrap">{video.title}</TableCell>
+                        <TableCell>
+                          <a href={video.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-500 hover:underline">
+                            {video.link.slice(0, 30)}...
+                            <ExternalLink size={18} />
+                          </a>
+                        </TableCell>
+                        <TableCell className="text-nowrap">{video.duration} دقيقة</TableCell>
+                        <TableCell className="text-nowrap">{new Date(video.created_at).toLocaleDateString("EN-ca")}</TableCell>
                         <TableCell>{getStatusBadge(video.is_visible)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleViewContent(video)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleEditContent(video)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditContent(video)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(video)}>
                               <Trash2 className="h-4 w-4" />
-                            </Button> */}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -525,7 +507,7 @@ export function ContentManagement() {
       <ContentViewDialog content={selectedContent} open={viewDialogOpen} onOpenChange={setViewDialogOpen} />
 
       <ContentEditDialog
-        content={selectedContent}
+        game={selectedContent}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={handleSaveContent}
@@ -533,7 +515,7 @@ export function ContentManagement() {
 
       <DeleteConfirmationDialog
         title="حذف المحتوى"
-        description={`هل أنت متأكد من حذف المحتوى "${selectedContent?.title}"؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        description={`هل أنت متأكد من حذف المحتوى ؟ هذا الإجراء لا يمكن التراجع عنه.`}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDeleteContent}

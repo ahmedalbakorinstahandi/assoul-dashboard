@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { ExternalLink } from "lucide-react"
 
 
 export function ContentViewDialog({ content, open, onOpenChange }) {
@@ -18,7 +19,22 @@ export function ContentViewDialog({ content, open, onOpenChange }) {
   const isArticle = content.author !== undefined
   const isVideo = content.duration !== undefined
   const isImage = content.dimensions !== undefined
+  const getYouTubeEmbedUrl = (url) => {
+    const regex =
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([^?&]+)/;
+    const match = url.match(regex);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : "";
+  };
 
+  // استخراج ID الفيديو من رابط Vimeo
+  const getVimeoEmbedUrl = (url) => {
+    const regex = /vimeo\.com\/(\d+)/;
+    const match = url.match(regex);
+    return match ? `https://player.vimeo.com/video/${match[1]}` : "";
+  };
+
+  // تحديد رابط المعاينة بناءً على نوع الفيديو
+  const embedUrl = getYouTubeEmbedUrl(content.link) || getVimeoEmbedUrl(content.link);
   const getStatusBadge = (status) => {
     switch (status) {
       case true:
@@ -32,7 +48,7 @@ export function ContentViewDialog({ content, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]" style={{maxWidth:"800px"}}>
+      <DialogContent className="sm:max-w-[525px]" style={{ maxWidth: "800px" }}>
         <DialogHeader>
           <DialogTitle>عرض بيانات المحتوى</DialogTitle>
           <DialogDescription>عرض تفاصيل المحتوى {content.title}</DialogDescription>
@@ -43,7 +59,7 @@ export function ContentViewDialog({ content, open, onOpenChange }) {
               {isArticle ? "مـ" : isVideo ? "فـ" : "صـ"}
             </div>
             <div>
-              <h3 className="text-lg font-bold">{content.title}</h3>
+              <h3 className="text-lg font-bold mb-2">{content.title}</h3>
               <p className="text-sm text-gray-500">{getStatusBadge(content.is_visible)}</p>
             </div>
           </div>
@@ -55,7 +71,13 @@ export function ContentViewDialog({ content, open, onOpenChange }) {
             </div>
             <div>
               <Label className="text-sm text-gray-500">رابط الفديو</Label>
-              <p className="font-medium"><a href={content.link} target="_blank" rel="noopener noreferrer">{content.link}</a></p>
+              <p className="font-medium">
+                <a href={content.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-500 hover:underline">
+                  {content.link.slice(0, 30)}...
+                  <ExternalLink size={18} />
+                </a>
+
+              </p>
             </div>
             <div>
               <Label className="text-sm text-gray-500">تاريخ النشر</Label>
@@ -76,7 +98,7 @@ export function ContentViewDialog({ content, open, onOpenChange }) {
             {isVideo && (
               <div>
                 <Label className="text-sm text-gray-500">المدة</Label>
-                <p className="font-medium">{content.duration}</p>
+                <p className="font-medium">{content.duration} دقيقة</p>
               </div>
             )}
 
@@ -87,7 +109,19 @@ export function ContentViewDialog({ content, open, onOpenChange }) {
               </div>
             )}
           </div>
-
+          {embedUrl && (
+            <div className="mt-4">
+              <p className="mb-4">📽️ معاينة الفيديو:</p>
+              <iframe
+                width="100%"
+                height="315"
+                src={embedUrl}
+                title="معاينة الفيديو"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>)}
           {/* <div className="mt-6 border-t pt-4">
             <Label className="text-sm text-gray-500 mb-2 block">
               {isArticle ? "مقتطف من المقال" : isVideo ? "وصف الفيديو" : "وصف الصورة"}
