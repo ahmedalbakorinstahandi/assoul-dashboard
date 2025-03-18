@@ -29,8 +29,10 @@ import { PaginationControls } from "./ui/pagination-controls"
 import toast from "react-hot-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { calculateAge } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 export function UserManagement() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("guardians")
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddGameOpen, setIsAddGameOpen] = useState(false)
@@ -615,7 +617,7 @@ export function UserManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
                               <Code className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleViewUser(child)}>
+                            <Button variant="ghost" size="icon" onClick={() => { router.push(`users/patient/${child.id}`) }} >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditChild(child)}>
@@ -695,7 +697,7 @@ export function UserManagement() {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </div >
   )
 }
 

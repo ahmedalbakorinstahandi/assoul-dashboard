@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { getCookie } from "cookies-next/client";
+import Link from "next/link";
 
 
 
@@ -29,42 +30,42 @@ export function Sidebar({
   const menuItems = [
 
     {
-      id: "dashboard",
+      id: "/dashboard",
       label: "الرئيسية",
       icon: HomeIcon,
     },
     {
-      id: "users",
+      id: "/users",
       label: "إدارة المستخدمين",
       icon: Users,
     },
     {
-      id: "games",
+      id: "/games",
       label: "إدارة الألعاب",
       icon: GamepadIcon,
     },
     {
-      id: "sugar",
+      id: "/sugar",
       label: "متابعة السكر",
       icon: Activity,
     },
     {
-      id: "tasks",
+      id: "/tasks",
       label: "إدارة المهام",
       icon: CheckSquare,
     },
     {
-      id: "content",
+      id: "/content",
       label: "المحتوى التعليمي",
       icon: BookOpen,
     },
     {
-      id: "appointments",
+      id: "/appointments",
       label: "إدارة المواعيد",
       icon: Calendar,
     },
     {
-      id: "notifications",
+      id: "/notifications",
       label: "المنبهات والإشعارات",
       icon: Bell,
     },
@@ -115,7 +116,7 @@ export function Sidebar({
           <ul className="space-y-2">
             {menuItems.map((item) => (
               <li key={item.id}>
-                <a
+                <Link
                   href={item.id}
                   className={cn(
                     "flex items-center gap-3 w-full p-3 rounded-lg transition-colors",
@@ -126,7 +127,7 @@ export function Sidebar({
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
                   <span className="truncate">{item.label}</span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

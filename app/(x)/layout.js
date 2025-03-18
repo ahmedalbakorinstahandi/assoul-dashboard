@@ -5,7 +5,7 @@ import "@/styles/globals.css";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Menu } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation"; // استيراد usePathname
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "react-hot-toast";
 import { Sidebar } from "@/components/sidebar";
@@ -13,20 +13,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { toast } from "sonner";
 import { deleteCookie, getCookie } from "cookies-next";
 import axios from "axios";
+import { Spinner } from "@/components/ui/spinner";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   const pathname = usePathname(); // الحصول على المسار الحالي
-  const [activeSection, setActiveSection] = useState("users");
+  const [activeSection, setActiveSection] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter()
 
 
   // تحديث activeSection بناءً على المسار
   useEffect(() => {
-    const section = pathname.split("/")[1] || "dashboard"; // استخراج القسم الأول من المسار
-    setActiveSection(section);
+    const section = pathname.split("/")[1] || "/dashboard"; // استخراج القسم الأول من المسار
+    setActiveSection(`/${section}`);
   }, [pathname]);
 
   const toggleSidebar = () => {
@@ -111,11 +112,12 @@ export default function RootLayout({ children }) {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-3 md:p-6">
-          <Toaster position="top-right" reverseOrder={false} />
-
-          {children}
-        </main>
+        <Suspense fallback={<Spinner />}>
+          <main className="flex-1 overflow-auto p-3 md:p-6">
+            <Toaster position="top-right" reverseOrder={false} />
+            {children}
+          </main>
+        </Suspense>
       </div>
     </div>
     //     </Providers>
