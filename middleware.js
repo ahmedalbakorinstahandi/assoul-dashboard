@@ -5,7 +5,7 @@ export function middleware(request) {
     const token = cookies().get("token")?.value;
 
     // إزالة "/" من هنا لتجنب مطابقة كل المسارات بما فيها /login
-    const protectedRoutes = ["/games", "/users", "/content", "/notifications", "/sugar", "/appointments"];
+    const protectedRoutes = ["/games", "/users", "/content", "/notifications", "/sugar", "/appointments", "/"];
     const authRoutes = ["/login", "/signup"]; // المسارات التي لا يجب أن يراها المستخدم إذا كان مسجل دخول
 
     if (protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
