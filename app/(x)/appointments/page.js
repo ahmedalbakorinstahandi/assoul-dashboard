@@ -1,9 +1,5 @@
-import dynamic from "next/dynamic";
-
-// استيراد مكون AppointmentsManagement ديناميكيًا
-const AppointmentsManagement = dynamic(() => import('@/components/appointments-management'), {
-  ssr: false // تعطيل التوليد المسبق (SSR)
-});
+"use client"
+import { AppointmentsManagement } from "@/components/appointments-management";
 
 export default function Page() {
   return <AppointmentsManagement />;
