@@ -298,9 +298,9 @@ export function ContentManagement() {
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
                       const newGame = {
-                        title: document.getElementById("title").value,
-                        link: document.getElementById("link").value,
-                        duration: document.getElementById("duration").value,
+                        title: typeof document !== 'undefined' && document.getElementById("title").value,
+                        link:typeof document !== 'undefined' &&  document.getElementById("link").value,
+                        duration:typeof document !== 'undefined' &&  document.getElementById("duration").value,
                         key: selectedQuestionId,
 
                         // question_id: selectedQuestionId,

@@ -484,12 +484,12 @@ export function SugarMonitoring() {
                   <Button
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
-                      const measuredAtInput = document.getElementById("measured_at").value;
+                      const measuredAtInput =typeof document !== 'undefined' &&  document.getElementById("measured_at").value;
                       const formattedMeasuredAt = measuredAtInput.replace("T", " ") + ":00";
 
                       const newGame = {
-                        value: document.getElementById("value").value,
-                        notes: document.getElementById("notes").value,
+                        value:typeof document !== 'undefined' &&  document.getElementById("value").value,
+                        notes:typeof document !== 'undefined' &&  document.getElementById("notes").value,
                         measured_at: formattedMeasuredAt,
                         measurement_type: selectedQuestionType,
                         unit: selectedUnit, // تحويل الحالة إلى 1 أو 0
@@ -608,9 +608,9 @@ export function SugarMonitoring() {
                     onClick={() => {
 
                       const newGame = {
-                        dose_units: document.getElementById("dose_units").value,
-                        insulin_type: document.getElementById("insulin_type").value,
-                        taken_date: document.getElementById("taken_date").value,
+                        dose_units:typeof document !== 'undefined' &&  document.getElementById("dose_units").value,
+                        insulin_type:typeof document !== 'undefined' &&  document.getElementById("insulin_type").value,
+                        taken_date:typeof document !== 'undefined' &&  document.getElementById("taken_date").value,
                         injection_site: selectedUnit,
                         patient_id: selectedGameId,
                         taken_time: selectedQuestionType
@@ -731,10 +731,10 @@ export function SugarMonitoring() {
                     onClick={() => {
 
                       const newGame = {
-                        activity_date: document.getElementById("activity_date").value,
-                        description: document.getElementById("description").value,
-                        duration: document.getElementById("duration").value,
-                        notes: document.getElementById("notes").value,
+                        activity_date:typeof document !== 'undefined' &&  document.getElementById("activity_date").value,
+                        description:typeof document !== 'undefined' &&  document.getElementById("description").value,
+                        duration:typeof document !== 'undefined' &&  document.getElementById("duration").value,
+                        notes:typeof document !== 'undefined' &&  document.getElementById("notes").value,
                         patient_id: selectedGameId,
 
                         intensity: selectedUnit,
@@ -837,10 +837,10 @@ export function SugarMonitoring() {
                     onClick={() => {
 
                       const newGame = {
-                        consumed_date: document.getElementById("consumed_date").value,
-                        carbohydrates_calories: document.getElementById("carbohydrates_calories").value,
-                        description: document.getElementById("description").value,
-                        notes: document.getElementById("notes").value,
+                        consumed_date:typeof document !== 'undefined' &&  document.getElementById("consumed_date").value,
+                        carbohydrates_calories:typeof document !== 'undefined' &&  document.getElementById("carbohydrates_calories").value,
+                        description:typeof document !== 'undefined' &&  document.getElementById("description").value,
+                        notes:typeof document !== 'undefined' &&  document.getElementById("notes").value,
 
                         patient_id: selectedGameId,
 

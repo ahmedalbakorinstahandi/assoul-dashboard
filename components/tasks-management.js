@@ -390,14 +390,14 @@ export function TasksManagement() {
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
                       const newGame = {
-                        title: document.getElementById("title").value,
+                        title:typeof document !== 'undefined' &&  document.getElementById("title").value,
                         // description: document.getElementById("description").value,
-                        points: document.getElementById("points").value,
+                        points:typeof document !== 'undefined' &&  document.getElementById("points").value,
                         color: gameColor, // إرسال اللون المختار
 
                       };
 
-                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+                      const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
 
                       handleAddEntity("tasks/system-tasks", newGame, imageFile);
                     }}

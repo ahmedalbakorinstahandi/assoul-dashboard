@@ -459,16 +459,16 @@ export function GamesManagement() {
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
                       const newGame = {
-                        name: document.getElementById("name").value,
+                        name:typeof document !== 'undefined' &&  document.getElementById("name").value,
                         // description: document.getElementById("description").value,
-                        order: document.getElementById("order").value,
+                        order:typeof document !== 'undefined' &&  document.getElementById("order").value,
 
                         is_enable: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
                         color: gameColor, // إرسال اللون المختار
 
                       };
 
-                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+                      const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
 
                       handleAddEntity("games/games", newGame, imageFile);
                     }}
@@ -543,8 +543,8 @@ export function GamesManagement() {
                     className="bg-[#ffac33] hover:bg-[#f59f00]"
                     onClick={() => {
                       const newLevel = {
-                        number: document.getElementById("number").value,
-                        title: document.getElementById("title").value,
+                        number:typeof document !== 'undefined' &&  document.getElementById("number").value,
+                        title:typeof document !== 'undefined' &&  document.getElementById("title").value,
                         game_id: filter.game_id, // use the selected game ID from state
                         status: isEnabled ? "published" : "pending", // تحويل الحالة إلى 1 أو 0
 
@@ -700,8 +700,8 @@ export function GamesManagement() {
                       const newQuestion = {
                         game_id: selectedGameId,
                         level_id: filter.level_id,
-                        text: document.getElementById("text").value,
-                        points: document.getElementById("points").value,
+                        text:typeof document !== 'undefined' &&  document.getElementById("text").value,
+                        points:typeof document !== 'undefined' &&  document.getElementById("points").value,
 
                         type: selectedQuestionType,
                         type: selectedQuestionType,
@@ -711,7 +711,7 @@ export function GamesManagement() {
 
                       //   handleAddEntity("games/questions", newQuestion)
                       // } else {
-                      const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+                      const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
                       handleAddEntity("games/questions", newQuestion, imageFile)
 
                       // }
@@ -850,10 +850,10 @@ export function GamesManagement() {
                         // answers_view: selectedQuestionView
                       }
                       if (questionsIds.find(e => e.id == filter.question_id)?.answers_view == "text") {
-                        newQuestion.text = document.getElementById("text").value
+                        newQuestion.text =typeof document !== 'undefined' &&  document.getElementById("text").value
                         handleAddEntity("games/answers", newQuestion)
                       } else {
-                        const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+                        const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
                         handleAddEntity("games/answers", newQuestion, imageFile)
 
                       }
