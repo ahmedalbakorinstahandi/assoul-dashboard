@@ -1,11 +1,6 @@
-"use client";
-import dynamic from 'next/dynamic';
-
-const SafeAppointmentsManagement = dynamic(
-  () => import('@/components/appointments-management'),
-  { ssr: false }
-);
+// page.js (Server Component)
+import ClientAppointments from './ClientAppointments';
 
 export default function Page() {
-  return <SafeAppointmentsManagement />;
+  return <ClientAppointments />;
 }
