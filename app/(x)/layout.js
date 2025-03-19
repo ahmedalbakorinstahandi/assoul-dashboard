@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
 
   // تحديث activeSection بناءً على المسار
   useEffect(() => {
-    const section = pathname.split("/")[1] || "/dashboard"; // استخراج القسم الأول من المسار
+    const section = pathname.split("/")[1] || ""; // استخراج القسم الأول من المسار
     setActiveSection(`/${section}`);
   }, [pathname]);
 

@@ -21,7 +21,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
-    clientSideOnly: true,
+    // clientSideOnly: true,
 
   },
  

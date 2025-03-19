@@ -50,7 +50,7 @@ export default function LoginPage() {
         setCookie("name", name);
 
         toast.success(response.data.message);
-        router.push("/dashboard");
+        router.push("/");
       } else {
         toast.error(response.message || "Login failed!");
         setError(response.message);
