@@ -1,6 +1,5 @@
 // page.js (Server Component)
-import ClientAppointments from './ClientAppointments';
-
+import { AppointmentsManagement } from "@/components/appointments-management"
 export default function Page() {
-  return <ClientAppointments />;
+  return <AppointmentsManagement />;
 }

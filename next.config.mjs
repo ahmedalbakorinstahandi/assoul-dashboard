@@ -7,6 +7,7 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -21,6 +22,7 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  output: 'serverless', // Use this instead of target
 }
 
 mergeConfig(nextConfig, userConfig)
