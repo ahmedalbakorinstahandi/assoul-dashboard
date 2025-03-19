@@ -30,7 +30,7 @@ export function Sidebar({
   const menuItems = [
 
     {
-      id: "/",
+      id: "/dashboard",
       label: "الرئيسية",
       icon: HomeIcon,
     },
