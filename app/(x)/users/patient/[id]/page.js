@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { ClipboardList, FileText, MessageSquare, User, Ruler, Award, Droplet } from "lucide-react"
+import Lottie from 'lottie-react';
+import animationData from '@/public/loading.json'; // Adjust the path to your Lottie JSON file
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -11,95 +13,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Spinner } from "@/components/ui/spinner"
-import { getData } from "@/lib/apiHelper"
-
-// هذه البيانات ستأتي من API في التطبيق الحقيقي
-// لكن هنا نستخدمها كبيانات ثابتة للعرض
-const patientData = {
-    id: 2,
-    user_id: 2,
-    gender: "male",
-    birth_date: "2018-05-15",
-    height: 130,
-    weight: 45,
-    insulin_doses: 5,
-    points: 2065,
-    diabetes_diagnosis_age: 4,
-    created_at: "2025-03-04 06:55:13",
-    updated_at: "2025-03-17 17:44:37",
-    user: {
-        id: 2,
-        first_name: "محمد",
-        last_name: "أحمد",
-        email: null,
-        role: "patient",
-        phone: null,
-        verified: true,
-        avatar: null,
-        status: "Active",
-        otp: "22222",
-        otp_expide_at: "2025-04-23T06:55:13.000000Z",
-        created_at: "2025-03-04 06:55:13",
-        updated_at: "2025-03-04 06:55:13",
-    },
-    guardian: [
-        {
-            id: 1,
-            user_id: 4,
-            created_at: "2025-03-04 06:55:14",
-            updated_at: "2025-03-04 06:55:14",
-            user: {
-                id: 4,
-                first_name: "John",
-                last_name: "Doe1",
-                email: "john.doe@example.com",
-                role: "guardian",
-                phone: "1234567890",
-                verified: true,
-                avatar: "https://assoul-backend.ahmed-albakor.com/storage/avatars/67d76e2a5ec1b.jpg",
-                status: "Active",
-                created_at: "2025-03-04 06:55:14",
-                updated_at: "2025-03-18 00:12:05",
-            },
-        },
-    ],
-    medical_records: [
-        {
-            id: 2,
-            title: "test title",
-            description: "test description",
-            patient_id: 2,
-            added_by: 14,
-            created_at: "2025-03-17T20:52:50.000000Z",
-            updated_at: "2025-03-17T20:52:50.000000Z",
-            deleted_at: null,
-        },
-        // ... باقي السجلات الطبية
-    ],
-    instructions: [
-        {
-            id: 2,
-            content: "content title",
-            patient_id: 2,
-            added_by: 14,
-            created_at: "2025-03-17T22:24:21.000000Z",
-            updated_at: "2025-03-17T22:24:21.000000Z",
-            deleted_at: null,
-        },
-    ],
-    notes: [
-        {
-            id: 3,
-            content: "content title",
-            patient_id: 2,
-            added_by: 22,
-            created_at: "2025-03-17T22:25:44.000000Z",
-            updated_at: "2025-03-17T22:25:44.000000Z",
-            deleted_at: null,
-        },
-        // ... باقي الملاحظات
-    ],
-}
+import { deleteData, getData } from "@/lib/apiHelper"
+import { MedicalRecordsDialog } from "@/components/dialogs/patient/medical-records/medical-records-dialog"
+import toast from "react-hot-toast"
+import { NoteDialog } from "@/components/dialogs/patient/notes/notes-dialog"
+import { InstructionDialog } from "@/components/dialogs/patient/instructions/instructions-dialog"
 
 export default function PatientDetails() {
     const params = useParams()
@@ -107,6 +25,60 @@ export default function PatientDetails() {
 
 
     const [patient, setPatient] = useState({});
+    const [isAddMedical, setIsAddMedical] = useState(false);
+    const [isEditMedical, setIsEditMedical] = useState(false);
+
+    const [isAddNote, setIsAddNote] = useState(false);
+    const [isEditNote, setIsEditNote] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+
+    const [isAddInstruction, setIsAddInstruction] = useState(false);
+    const [isEditInstruction, setIsEditInstruction] = useState(false);
+
+    const fetchPatientData = async () => {
+        const response = await getData(`users/children/${id}`);
+        console.log("ddd", response.data);
+
+        setPatient(response.data);
+        setLoading(false)
+    };
+    const refreshDataMedical = async () => {
+        fetchPatientData()
+        setActiveTab("medical")
+    };
+    const handleDeleteMedical = async (recordId) => {
+        const response = await deleteData("patients/medical-records", recordId)
+        if (response.data.success) {
+            toast.success(response.data.message)
+            fetchPatientData()
+            setActiveTab("medical")
+        } else {
+            toast.error(response.data.message)
+        }
+    }
+    const handleDeleteNote = async (recordId) => {
+        const response = await deleteData("patients/notes", recordId)
+        if (response.data.success) {
+            toast.success(response.data.message)
+            fetchPatientData()
+            setActiveTab("notes")
+
+        } else {
+            toast.error(response.data.message)
+        }
+    }
+    const handleDeleteInstruction = async (recordId) => {
+        const response = await deleteData("patients/instructions", recordId)
+        if (response.data.success) {
+            toast.success(response.data.message)
+            fetchPatientData()
+            setActiveTab("instructions")
+
+        } else {
+            toast.error(response.data.message)
+        }
+    }
+
     useEffect(() => {
         setLoading(true)
         const fetchPatientData = async () => {
@@ -152,11 +124,11 @@ export default function PatientDetails() {
         return "bg-green-500"
     }
 
-    if (!patient && !patient.user) {
+    if (!patient) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <Spinner size="xl" variant="honey" />
-            </div>
+            <div className="flex h-[70vh] items-center justify-center">
+            <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+        </div>
         )
     }
 
@@ -371,7 +343,7 @@ export default function PatientDetails() {
                         <TabsContent value="medical" className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-medium">السجلات الطبية ({patient?.medical_records?.length})</h3>
-                                <Button size="sm" className="bg-honey text-white hover:bg-honey/90">
+                                <Button size="sm" className="bg-primary text-white hover:bg-honey/90" onClick={() => setIsAddMedical(true)}>
                                     <FileText className="h-4 w-4 mr-2" />
                                     إضافة سجل طبي
                                 </Button>
@@ -392,16 +364,23 @@ export default function PatientDetails() {
                                             <p>{record.description}</p>
                                         </CardContent>
                                         <CardFooter className="pt-0 flex justify-end gap-2">
-                                            {/* <Button variant="ghost" size="sm">
+                                            <Button variant="ghost" size="sm"
+                                                onClick={() => handleDeleteMedical(record.id)}
+                                            >
                                                 حذف
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
+                                                onClick={() => {
+                                                    setSelectedItem(record)
+                                                    setIsEditMedical(true)
+                                                }
+                                                }
                                                 className="border-honey text-honey hover:bg-honey hover:text-white"
                                             >
                                                 تعديل
-                                            </Button> */}
+                                            </Button>
                                         </CardFooter>
                                     </Card>
                                 ))}
@@ -412,7 +391,9 @@ export default function PatientDetails() {
                         <TabsContent value="instructions" className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-medium">التعليمات الطبية ({patient.instructions?.length})</h3>
-                                <Button size="sm" className="bg-honey text-white hover:bg-honey/90">
+                                <Button size="sm" className="bg-blue-500 text-white hover:bg-honey/90"
+                                    onClick={() => setIsAddInstruction(true)}
+                                >
                                     <ClipboardList className="h-4 w-4 mr-2" />
                                     إضافة تعليمات
                                 </Button>
@@ -433,16 +414,23 @@ export default function PatientDetails() {
                                             <p>{instruction.content}</p>
                                         </CardContent>
                                         <CardFooter className="pt-0 flex justify-end gap-2">
-                                            {/* <Button variant="ghost" size="sm">
+                                            <Button variant="ghost" size="sm"
+                                                onClick={() => handleDeleteInstruction(instruction.id)}
+
+                                            >
                                                 حذف
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
+                                                onClick={() => {
+                                                    setSelectedItem(instruction)
+                                                    setIsEditInstruction(true)
+                                                }}
                                                 className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
                                             >
                                                 تعديل
-                                            </Button> */}
+                                            </Button>
                                         </CardFooter>
                                     </Card>
                                 ))}
@@ -453,7 +441,9 @@ export default function PatientDetails() {
                         <TabsContent value="notes" className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-medium">الملاحظات ({patient.notes?.length})</h3>
-                                <Button size="sm" className="bg-honey text-white hover:bg-honey/90">
+                                <Button size="sm" className="bg-pink-500 text-white hover:bg-honey/90"
+                                    onClick={() => setIsAddNote(true)}
+                                >
                                     <MessageSquare className="h-4 w-4 mr-2" />
                                     إضافة ملاحظة
                                 </Button>
@@ -474,16 +464,23 @@ export default function PatientDetails() {
                                             <p>{note.content}</p>
                                         </CardContent>
                                         <CardFooter className="pt-0 flex justify-end gap-2">
-                                            {/* <Button variant="ghost" size="sm">
+                                            <Button variant="ghost" size="sm"
+                                                onClick={() => handleDeleteNote(note.id)}
+
+                                            >
                                                 حذف
                                             </Button>
                                             <Button
                                                 variant="outline"
+                                                onClick={() => {
+                                                    setSelectedItem(note)
+                                                    setIsEditNote(true)
+                                                }}
                                                 size="sm"
                                                 className="border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white"
                                             >
                                                 تعديل
-                                            </Button> */}
+                                            </Button>
                                         </CardFooter>
                                     </Card>
                                 ))}
@@ -492,6 +489,99 @@ export default function PatientDetails() {
                     </Tabs>
                 </CardContent>
             </Card>
+            <MedicalRecordsDialog
+                isOpen={isAddMedical}
+                onClose={() => {
+
+                    setSelectedItem(null)
+
+                    setIsAddMedical(false)
+                }}
+                id={id}
+                // initialData={patient?.medical_records}
+                refreshData={() => {
+                    fetchPatientData()
+                    setActiveTab("medical")
+
+
+                }}
+            />
+            <MedicalRecordsDialog
+                isOpen={isEditMedical}
+                onClose={() =>
+
+                    setIsEditMedical(false)}
+                id={id}
+                initialData={selectedItem}
+                refreshData={() => {
+                    fetchPatientData()
+                    setActiveTab("medical")
+                    setSelectedItem(null)
+                }}
+            />
+            <NoteDialog
+                isOpen={isAddNote}
+                onClose={() => {
+
+                    setSelectedItem(null)
+
+                    setIsAddNote(false)
+                }}
+                id={id}
+                // initialData={patient?.medical_records}
+                refreshData={() => {
+                    fetchPatientData()
+                    setActiveTab("notes")
+
+
+                }}
+            />
+            <NoteDialog
+                isOpen={isEditNote}
+                onClose={() =>
+
+                    setIsEditNote(false)}
+                id={id}
+                initialData={selectedItem}
+                refreshData={() => {
+                    fetchPatientData()
+                    setActiveTab("notes")
+                    setSelectedItem(null)
+                }}
+            />
+
+
+            <InstructionDialog
+                isOpen={isAddInstruction}
+                onClose={() => {
+
+                    setSelectedItem(null)
+
+                    setIsAddInstruction(false)
+                }}
+                id={id}
+                // initialData={patient?.medical_records}
+                refreshData={() => {
+                    fetchPatientData()
+                    setActiveTab("instructions")
+
+
+                }}
+            />
+            <InstructionDialog
+                isOpen={isEditInstruction}
+                onClose={() =>
+
+                    setIsEditInstruction(false)}
+                id={id}
+                initialData={selectedItem}
+                refreshData={() => {
+                    fetchPatientData()
+                    setActiveTab("instructions")
+                    setSelectedItem(null)
+                }}
+            />
+
         </div>
     )
 }
