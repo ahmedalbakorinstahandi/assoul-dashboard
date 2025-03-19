@@ -21,8 +21,10 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    clientSideOnly: true,
+
   },
-  output: 'serverless', // Use this instead of target
+ 
 }
 
 mergeConfig(nextConfig, userConfig)
