@@ -1,5 +1,5 @@
 import { TasksManagement } from "@/components/tasks-management";
 
-export default function Page() {
+export default async function Page() {
   return <TasksManagement />;
 }

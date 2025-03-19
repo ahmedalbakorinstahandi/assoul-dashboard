@@ -1,6 +1,5 @@
-"use client";
 import { UserManagement } from "@/components/user-management";
 
-export default function Page() {
+export default async function Page() {
   return <UserManagement />;
 }

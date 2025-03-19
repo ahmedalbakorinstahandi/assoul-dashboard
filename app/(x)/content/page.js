@@ -1,5 +1,5 @@
 import { ContentManagement } from "@/components/content-management";
 
-export default function Page() {
+export default async function Page() {
   return <ContentManagement />;
 }

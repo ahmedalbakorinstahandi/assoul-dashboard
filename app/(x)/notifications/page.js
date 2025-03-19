@@ -1,5 +1,5 @@
 import { NotificationsManagement } from "@/components/notifications-management";
 
-export default function Page() {
+export default async function Page() {
   return <NotificationsManagement />;
 }
