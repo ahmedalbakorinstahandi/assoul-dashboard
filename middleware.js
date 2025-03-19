@@ -1,25 +1,30 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-    const token = cookies().get("token")?.value;
+    const token = request.cookies.get("token")?.value;
+    const path = request.nextUrl.pathname;
 
-    // إزالة "/" من هنا لتجنب مطابقة كل المسارات بما فيها /login
-    const protectedRoutes = ["/games", "/users", "/content", "/notifications", "/sugar", "/appointments"];
-    const authRoutes = ["/login", "/signup", "/"]; // المسارات التي لا يجب أن يراها المستخدم إذا كان مسجل دخول
+    const protectedRoutes = ["/", "/games", "/users", "/content", "/notifications", "/sugar", "/appointments"];
+    const authRoutes = ["/login", "/signup"];
+    if (path === "/" && token) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    // ✅ حلقة إعادة التوجيه تحدث إذا لم يكن هناك فحص إضافي هنا:
+    if (authRoutes.includes(path)) {
+        if (token) {
+            return NextResponse.redirect(new URL("/", request.url)); // توجيه المستخدم إلى الصفحة الرئيسية فقط إذا كان مسجلاً
+        }
+        return NextResponse.next(); // السماح للمستخدم غير المسجل بالبقاء في صفحة /login
+    }
 
-    if (protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
+    // ✅ التأكد من أن المستخدم غير المسجل لا يمكنه الوصول إلى الصفحات المحمية
+    if (protectedRoutes.some((route) => path.startsWith(route))) {
         if (!token) {
-            return NextResponse.redirect(new URL("/login", request.url));
+            return NextResponse.redirect(new URL("/login", request.url)); // إذا لم يكن هناك `token`، إعادة التوجيه إلى `/login`
         }
     }
 
-    // إذا كان المستخدم مسجلاً الدخول وحاول الوصول إلى صفحات تسجيل الدخول، نوجهه إلى /dashboard
-    if (authRoutes.includes(request.nextUrl.pathname) && token) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-
-    return NextResponse.next();
+    return NextResponse.next(); // السماح بالوصول إذا لم يتم استيفاء أي من الشروط أعلاه
 }
 
 export const config = {
