@@ -21,7 +21,7 @@ export function GameEditDialog({ game, open, onOpenChange, onSave, handleAddEnti
   // If editing an existing game, load its data; otherwise, use default values.
   const initialForm = {
     name: game?.name || "",
-    description: game?.description || "",
+    // description: game?.description || "",
     order: game?.order || "",
     is_enable: game ? Boolean(game.is_enable) : false,
     color: game?.color || "#000000",
@@ -37,7 +37,7 @@ export function GameEditDialog({ game, open, onOpenChange, onSave, handleAddEnti
     if (game) {
       setForm({
         name: game.name || "",
-        description: game.description || "",
+        // description: game.description || "",
         order: game.order || "",
         is_enable: Boolean(game.is_enable),
         color: game.color || "#000000",
@@ -82,7 +82,7 @@ export function GameEditDialog({ game, open, onOpenChange, onSave, handleAddEnti
     // Construct newGame object from form state.
     const newGame = {
       name: form.name,
-      description: form.description,
+      // description: form.description,
       order: form.order,
       is_enable: form.is_enable ? 1 : 0, // convert boolean to 1 or 0
       color: form.color,
@@ -123,7 +123,7 @@ export function GameEditDialog({ game, open, onOpenChange, onSave, handleAddEnti
             />
           </div>
           {/* Description */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="description">وصف اللعبة</Label>
             <Textarea
               id="description"
@@ -131,7 +131,7 @@ export function GameEditDialog({ game, open, onOpenChange, onSave, handleAddEnti
               value={form.description}
               onChange={(e) => handleChange("description", e.target.value)}
             />
-          </div>
+          </div> */}
           {/* Switch for is_enable */}
           <div className="flex items-center justify-between">
             <Label htmlFor="is_enable">تفعيل اللعبة</Label>

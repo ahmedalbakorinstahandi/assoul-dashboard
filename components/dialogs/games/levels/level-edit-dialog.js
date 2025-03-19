@@ -135,12 +135,18 @@ export function LevelDialog({ level, open, onOpenChange, onSave }) {
           {/* Status Switch */}
           <div className="flex items-center justify-between">
             <Label htmlFor="status">حالة المستوى</Label>
-            <Switch
-              id="status"
-              color="primary"
-              checked={form.status}
-              onCheckedChange={(checked) => handleChange("status", checked)}
-            />
+            <div className="flex gap-3 align-middle justify-center">
+              <span>
+                {form.status ? "مفعل" : "مغلق"}
+              </span>
+              <Switch
+                id="status"
+                color="primary"
+                checked={form.status}
+                onCheckedChange={(checked) => handleChange("status", checked)}
+              />
+
+            </div>
           </div>
         </div>
 

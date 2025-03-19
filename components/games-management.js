@@ -17,7 +17,7 @@ import {
 import { Label } from "@/components/ui/label"
 
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, FileQuestion } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, FileQuestion, LucideChevronLeftCircle } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
@@ -122,6 +122,34 @@ export function GamesManagement() {
     { id: 2, name: "image", title: "صورة" },
 
   ]
+  const filteredViewQuestions = () => {
+    switch (selectedQuestionType) {
+      case "DragDrop":
+        return viewQuestions.filter((q) => q.name === "image");
+      case "LetterArrangement":
+        return viewQuestions.filter((q) => q.name === "text");
+      case "MCQ":
+        return viewQuestions;
+      default:
+        return [];
+    }
+  };
+  const handleTabChange = (newTab, newFilter) => {
+    setFilter((prev) => ({ ...prev, ...newFilter }));
+    setActiveTab(newTab);
+  };
+
+  // دالة الرجوع إلى تبويب سابق دون مسح الفلاتر السابقة
+  const handleBackTab = (prevTab) => {
+    if (prevTab === "games") {
+      setFilter(initialFilter); // حذف جميع الفلاتر عند العودة للألعاب
+    } else if (prevTab === "levels") {
+      setFilter((prev) => ({ game_id: prev.game_id, level_id: "", question_id: "" }));
+    } else if (prevTab === "questions") {
+      setFilter((prev) => ({ game_id: prev.game_id, level_id: prev.level_id, question_id: "" }));
+    }
+    setActiveTab(prevTab);
+  };
   useEffect(() => {
     const fetchGamesId = async () => {
       const response = await getData(`games/games`);
@@ -136,15 +164,15 @@ export function GamesManagement() {
       setLevelsId(response.data);
     };
     const fetchQuestionId = async () => {
-      const response = await getData(`games/questions?game_id=${selectedGameId}&level_id=${selectedLevelId}`);
-      // console.log("ddd", response);
+      const response = await getData(`games/questions?level_id=${selectedLevelId}`);
+      console.log("ddd", response);
 
       setQuestionsId(response.data);
     };
     fetchLevelId()
     fetchQuestionId()
     fetchGamesId();
-  }, [selectedGameId, selectedLevelId]);
+  }, [filter]);
 
   // بيانات وهمية لل
   // الدالة المسؤولة عن جلب البيانات مع pagination والبحث
@@ -385,10 +413,10 @@ export function GamesManagement() {
                     <Label htmlFor="name">اسم اللعبة</Label>
                     <Input id="name" placeholder="أدخل اسم اللعبة" />
                   </div>
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label htmlFor="description">وصف اللعبة</Label>
                     <Textarea id="description" placeholder="أدخل وصف اللعبة" />
-                  </div>
+                  </div> */}
                   <div className="flex items-center justify-between">
                     <Label htmlFor="is_enable">تفعيل اللعبة</Label>
                     <Switch id="is_enable" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
@@ -432,7 +460,7 @@ export function GamesManagement() {
                     onClick={() => {
                       const newGame = {
                         name: document.getElementById("name").value,
-                        description: document.getElementById("description").value,
+                        // description: document.getElementById("description").value,
                         order: document.getElementById("order").value,
 
                         is_enable: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
@@ -471,7 +499,8 @@ export function GamesManagement() {
                   <div className="space-y-2">
                     <Label htmlFor="game">اللعبة</Label>
                     <Select name="game_id"
-                      value={selectedGameId}
+                      value={filter.game_id}
+                      disabled
                       onValueChange={(value) => setSelectedGameId(value)}
                     >
                       <SelectTrigger className="w-full">
@@ -496,8 +525,12 @@ export function GamesManagement() {
                   </div>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="status"> حالة المستوى</Label>
-                    <Switch id="status" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
-
+                    <div className="flex gap-3 align-middle justify-center">
+                      <span>
+                        {isEnabled ? "مفعل" : "مغلق"}
+                      </span>
+                      <Switch id="status" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
@@ -512,7 +545,7 @@ export function GamesManagement() {
                       const newLevel = {
                         number: document.getElementById("number").value,
                         title: document.getElementById("title").value,
-                        game_id: selectedGameId, // use the selected game ID from state
+                        game_id: filter.game_id, // use the selected game ID from state
                         status: isEnabled ? "published" : "pending", // تحويل الحالة إلى 1 أو 0
 
                       }
@@ -545,7 +578,8 @@ export function GamesManagement() {
                   <div className="space-y-2">
                     <Label htmlFor="game">اللعبة</Label>
                     <Select name="game_id"
-                      value={selectedGameId}
+                      value={filter.game_id}
+                      disabled
                       onValueChange={(value) => setSelectedGameId(value)}
                     >
                       <SelectTrigger className="w-full">
@@ -563,7 +597,8 @@ export function GamesManagement() {
                   <div className="space-y-2">
                     <Label htmlFor="level">المستوى</Label>
                     <Select name="level_id"
-                      value={selectedLevelId}
+                      value={filter.level_id}
+                      disabled
                       onValueChange={(value) => setSelectedLevelId(value)}
                     >
                       <SelectTrigger className="w-full">
@@ -579,52 +614,61 @@ export function GamesManagement() {
                     </Select>
                   </div>
 
-
                   <div className="space-y-2">
-                    <Label htmlFor="points">نقاط السؤال</Label>
-                    <Input id="points" type="points" placeholder="ادخل نقاط السؤال" min={0} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="type">مزع السؤال</Label>
-                    <Select name="type"
+                    <Label htmlFor="type">نوع السؤال</Label>
+                    <Select
+                      name="type"
                       value={selectedQuestionType}
-                      onValueChange={(value) => setSelectedQuestionType(value)}
+                      onValueChange={(value) => {
+                        setSelectedQuestionType(value);
+                        setSelectedQuestionView(""); // إعادة تعيين نوع الجواب عند تغيير نوع السؤال
+                      }}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="اختر نوع السؤال" />
                       </SelectTrigger>
                       <SelectContent>
-                        {typQuestions.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                        {typQuestions.map((question, idx) => (
+                          <SelectItem key={idx} value={question.name}>
+                            {question.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="type">عرض السؤال</Label>
-                    <Select name="type"
-                      value={selectedQuestionView}
-                      onValueChange={(value) => setSelectedQuestionView(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر عرض السؤال" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {viewQuestions.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* {selectedQuestionView == "text" ? <> */}
+
+                  {/* نص السؤال */}
                   <div className="space-y-2">
                     <Label htmlFor="text">نص السؤال</Label>
                     <Textarea id="text" placeholder="أدخل نص السؤال" />
                   </div>
+
+                  {/* نوع الجواب */}
+                  <div className="space-y-2">
+                    <Label htmlFor="answerType">نوع الجواب</Label>
+                    <Select
+                      name="answerType"
+                      value={selectedQuestionView}
+                      onValueChange={(value) => setSelectedQuestionView(value)}
+                      disabled={!selectedQuestionType} // تعطيل الاختيار حتى يتم تحديد نوع السؤال
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر نوع الجواب" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredViewQuestions().map((view, idx) => (
+                          <SelectItem key={idx} value={view.name}>
+                            {view.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="points">نقاط السؤال</Label>
+                    <Input id="points"  type="number"  placeholder="ادخل نقاط السؤال" min={0} />
+                  </div>
+                  {/* {selectedQuestionView == "text" ? <> */}
                   {/* </> : <> */}
                   <div className="space-y-2">
                     <Label htmlFor="image">صورة السؤال</Label>
@@ -655,7 +699,7 @@ export function GamesManagement() {
                     onClick={() => {
                       const newQuestion = {
                         game_id: selectedGameId,
-                        level_id: selectedLevelId,
+                        level_id: filter.level_id,
                         text: document.getElementById("text").value,
                         points: document.getElementById("points").value,
 
@@ -698,7 +742,8 @@ export function GamesManagement() {
                   <div className="space-y-2">
                     <Label htmlFor="game">اللعبة</Label>
                     <Select name="game_id"
-                      value={selectedGameId}
+                      value={filter.game_id}
+                      disabled
                       onValueChange={(value) => setSelectedGameId(value)}
                     >
                       <SelectTrigger className="w-full">
@@ -716,7 +761,8 @@ export function GamesManagement() {
                   <div className="space-y-2">
                     <Label htmlFor="level">المستوى</Label>
                     <Select name="level_id"
-                      value={selectedLevelId}
+                      value={filter.level_id}
+                      disabled
                       onValueChange={(value) => setSelectedLevelId(value)}
                     >
                       <SelectTrigger className="w-full">
@@ -732,9 +778,10 @@ export function GamesManagement() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="level">السؤال</Label>
-                    <Select name="level_id"
-                      value={selectedQuestionId}
+                    <Label htmlFor="question_id">السؤال</Label>
+                    <Select name="question_id"
+                      value={filter.question_id}
+                      disabled
                       onValueChange={(value) => setSelectedQuestionId(value)}
                     >
                       <SelectTrigger className="w-full">
@@ -751,7 +798,7 @@ export function GamesManagement() {
                   </div>
 
 
-                  {questionsIds && questionsIds.find(e => e.id == selectedQuestionId)?.answers_view == "text" ? <>
+                  {questionsIds && questionsIds.find(e => e.id == filter.question_id)?.answers_view == "text" ? <>
                     <div className="space-y-2">
                       <Label htmlFor="text">جواب السؤال</Label>
                       <Textarea id="text" placeholder="أدخل نص السؤال" />
@@ -792,7 +839,7 @@ export function GamesManagement() {
                       const newQuestion = {
                         game_id: selectedGameId,
                         level_id: selectedLevelId,
-                        question_id: selectedQuestionId,
+                        question_id: filter.question_id,
                         is_correct: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
 
                         // text:  || null,
@@ -802,7 +849,7 @@ export function GamesManagement() {
                         // type: selectedQuestionType,
                         // answers_view: selectedQuestionView
                       }
-                      if (questionsIds.find(e => e.id == selectedQuestionId)?.answers_view == "text") {
+                      if (questionsIds.find(e => e.id == filter.question_id)?.answers_view == "text") {
                         newQuestion.text = document.getElementById("text").value
                         handleAddEntity("games/answers", newQuestion)
                       } else {
@@ -838,7 +885,7 @@ export function GamesManagement() {
             {/* <Label htmlFor="game">اللعبة</Label> */}
             <Select name="game_id"
               value={filter.game_id}
-
+              disabled
               onValueChange={(value) => setFilter((prev) => ({
                 ...prev,
                 game_id: prev.game_id == value ? "" : value,
@@ -856,14 +903,15 @@ export function GamesManagement() {
               </SelectContent>
             </Select>
           </div>
-          <Button variant="outline" onClick={() => setFilter(initialFilter)}>
+          {/* <Button variant="outline" onClick={() => setFilter(initialFilter)}>
             مسح الكل
-          </Button>
+          </Button> */}
         </>}
         {activeTab === "questions" && <>
           <div className="space-y-2 " style={{ width: "10rem" }}>
             {/* <Label htmlFor="game">اللعبة</Label> */}
             <Select name="level_id"
+              disabled
               value={filter.level_id}
 
               onValueChange={(value) => setFilter((prev) => ({
@@ -883,14 +931,14 @@ export function GamesManagement() {
               </SelectContent>
             </Select>
           </div>
-          <Button variant="outline" onClick={() => setFilter(initialFilter)}>
+          {/* <Button variant="outline" onClick={() => setFilter(initialFilter)}>
             مسح الكل
-          </Button>
+          </Button> */}
         </>}
-        {activeTab === "answers" && <>
+        {/* {activeTab === "answers" && <>
           <div className="space-y-2 " style={{ width: "10rem" }}>
-            {/* <Label htmlFor="game">اللعبة</Label> */}
             <Select name="question_id"
+              disabled
               value={filter.question_id}
 
               onValueChange={(value) => setFilter((prev) => ({
@@ -913,16 +961,45 @@ export function GamesManagement() {
           <Button variant="outline" onClick={() => setFilter(initialFilter)}>
             مسح الكل
           </Button>
-        </>}
+        </>} */}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex w-full" style={{ justifyContent: "space-evenly" }}>
-          <TabsTrigger className="flex-1" value="games">الألعاب</TabsTrigger>
-          <TabsTrigger className="flex-1" value="levels">المستويات</TabsTrigger>
-          <TabsTrigger className="flex-1" value="questions">الأسئلة</TabsTrigger>
-          <TabsTrigger className="flex-1" value="answers">الأجوبة</TabsTrigger>
+        <TabsList className="flex w-full justify-evenly">
+          <TabsTrigger
+            className="flex-1"
+            value="games"
+            disabled={false}
+            onClick={() => handleBackTab("games")}
+          >
+            الألعاب
+          </TabsTrigger>
+          <TabsTrigger
+            className="flex-1"
+            value="levels"
+            disabled={!filter.game_id}
+            onClick={() => handleBackTab("levels")}
+          >
+            المستويات
+          </TabsTrigger>
+          <TabsTrigger
+            className="flex-1"
+            value="questions"
+            disabled={!filter.level_id}
+            onClick={() => handleBackTab("questions")}
+          >
+            الأسئلة
+          </TabsTrigger>
+          <TabsTrigger
+            className="flex-1"
+            value="answers"
+            disabled={!filter.question_id}
+            onClick={() => handleBackTab("answers")}
+          >
+            الأجوبة
+          </TabsTrigger>
         </TabsList>
+
 
         {/* جدول الألعاب */}
         <TabsContent value="games">
@@ -966,6 +1043,13 @@ export function GamesManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleTabChange("levels", { game_id: game.id.toString() })}
+                            >
+                              <LucideChevronLeftCircle className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -1025,6 +1109,14 @@ export function GamesManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleTabChange("questions", { level_id: level.id.toString() })}
+                              disabled={!filter.game_id}
+                            >
+                              <LucideChevronLeftCircle className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -1068,18 +1160,30 @@ export function GamesManagement() {
                       <TableHead>المستوى</TableHead>
                       <TableHead>السؤال</TableHead>
                       <TableHead>النوع</TableHead>
+                      <TableHead>نوع الجواب</TableHead>
+
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {questionsData.map((question) => (
                       <TableRow key={question.id}>
-                        <TableCell className="font-medium">{question.level?.game?.name}</TableCell>
-                        <TableCell>{question.level?.title}</TableCell>
-                        <TableCell>{question.text}</TableCell>
+                        <TableCell className="font-medium text-nowrap">{question.level?.game?.name}</TableCell>
+                        <TableCell className="text-nowrap">{question.level?.title}</TableCell>
+                        <TableCell className="text-nowrap">{question.text}</TableCell>
                         <TableCell>{question.type}</TableCell>
+                        <TableCell>{question.answers_view === "text" ? "نص" : "صورة"}</TableCell>
+
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleTabChange("answers", { question_id: question.id.toString() })}
+                              disabled={!filter.level_id}
+                            >
+                              <LucideChevronLeftCircle className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(question)}>
                               <Eye className="h-4 w-4" />
                             </Button>
