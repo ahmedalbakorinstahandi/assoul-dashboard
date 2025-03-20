@@ -13,6 +13,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import AsyncSelect from "react-select/async";
+
 import { Label } from "@/components/ui/label"
 import { Search, Edit, Eye, XCircle, Calendar, Plus, Trash2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -44,7 +46,102 @@ export function AppointmentsManagement() {
     const [gamesIds, setGamesId] = useState([]);
     const [levelsIds, setLevelsId] = useState([]);
     const [questionsIds, setQuestionsId] = useState([]);
+    const [defaultOptions, setDefaultOptions] = useState([]);
+    const [defaultOptionsTow, setDefaultOptionsTow] = useState([]);
+    const [defaultOptionsThree, setDefaultOptionsThree] = useState([]);
 
+    useEffect(() => {
+        const fetchInitialProviders = async () => {
+            try {
+                // Adjust your endpoint to limit the results (if supported by your API)
+                const response = await getData(`users/doctors?limit=5`);
+                const providers = response.data.map((item) => ({
+                    label: `${item.user.first_name + " " + item.user.last_name}`,
+                    value: item.id,
+                }));
+                setDefaultOptions(providers);
+            } catch (error) {
+                console.error("Error fetching initial providers:", error);
+            }
+        };
+        const fetchInitialProviders2 = async () => {
+            try {
+                // Adjust your endpoint to limit the results (if supported by your API)
+                const response = await getData(`users/guardians?limit=5`);
+                const providers = response.data.map((item) => ({
+                    label: `${item.user.first_name + " " + item.user.last_name}`,
+                    value: item.id,
+                }));
+                setDefaultOptionsTow(providers);
+            } catch (error) {
+                console.error("Error fetching initial providers:", error);
+            }
+        };
+        const fetchInitialProviders3 = async () => {
+            try {
+                // Adjust your endpoint to limit the results (if supported by your API)
+                const response = await getData(`users/children?limit=5`);
+                const providers = response.data.map((item) => ({
+                    label: `${item.user.first_name + " " + item.user.last_name}`,
+                    value: item.id,
+                }));
+                setDefaultOptionsThree(providers);
+            } catch (error) {
+                console.error("Error fetching initial providers:", error);
+            }
+        };
+        fetchInitialProviders3()
+        fetchInitialProviders2()
+        fetchInitialProviders();
+    }, []);
+    const loadOptions = async (inputValue, callback) => {
+        try {
+            // Call your API with the search query
+            // const response = await fetchData(`public/services`);
+
+            const response = await getData(`users/doctors?search=${inputValue}`);
+            const providers = response.data.map((item) => ({
+                label: `${item.user.first_name + " " + item.user.last_name}`,
+                value: item.id,
+            }));
+            callback(providers);
+        } catch (error) {
+            console.error("Error fetching providers on search:", error);
+            callback([]);
+        }
+    };
+    const loadOptionsTow = async (inputValue, callback) => {
+        try {
+            // Call your API with the search query
+            // const response = await fetchData(`public/services`);
+
+            const response = await getData(`users/guardians?search=${inputValue}`);
+            const providers = response.data.map((item) => ({
+                label: `${item.user.first_name + " " + item.user.last_name}`,
+                value: item.id,
+            }));
+            callback(providers);
+        } catch (error) {
+            console.error("Error fetching providers on search:", error);
+            callback([]);
+        }
+    };
+    const loadOptionsThree = async (inputValue, callback) => {
+        try {
+            // Call your API with the search query
+            // const response = await fetchData(`public/services`);
+
+            const response = await getData(`users/children?search=${inputValue}`);
+            const providers = response.data.map((item) => ({
+                label: `${item.user.first_name + " " + item.user.last_name}`,
+                value: item.id,
+            }));
+            callback(providers);
+        } catch (error) {
+            console.error("Error fetching providers on search:", error);
+            callback([]);
+        }
+    };
     useEffect(() => {
         const fetchGamesId = async () => {
             const response = await getData(`users/children`);
@@ -323,8 +420,7 @@ export function AppointmentsManagement() {
                     />
                 </div>
 
-                <div className="space-y-2 " style={{ width: "10rem" }}>
-                    {/* <Label htmlFor="game">اللعبة</Label> */}
+                {/* <div className="space-y-2 " style={{ width: "10rem" }}>
                     <Select name="doctor_id"
                         value={filter.doctor_id}
 
@@ -344,10 +440,73 @@ export function AppointmentsManagement() {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
+                </div> */}
+                <div>
+                    <AsyncSelect
+                        cacheOptions
+                        // className="mt-2"
+                        className="min-w-48"
 
-                <div className="space-y-2 " style={{ width: "10rem" }}>
-                    {/* <Label htmlFor="game">اللعبة</Label> */}
+                        defaultOptions={defaultOptions}
+                        value={defaultOptions.find(option => option.value === filter.doctor_id) || null} // Set the value to be the object
+                        loadOptions={loadOptions}
+                        onChange={(selectedOption) => {
+                            console.log(selectedOption);
+
+                            // Only store the value part and update the filter
+                            setFilter((prev) => ({
+                                ...prev,
+                                doctor_id: selectedOption ? selectedOption.value : "", // Save only the value
+                            }));
+                        }}
+                        placeholder="اختر الطبيب"
+                        isClearable
+                    />
+                </div>
+                <div>
+                    <AsyncSelect
+                        cacheOptions
+                        // className="mt-2"
+                        className="min-w-48"
+
+                        defaultOptions={defaultOptionsTow}
+                        value={defaultOptionsTow.find(option => option.value === filter.guardian_id) || null} // Set the value to be the object
+                        loadOptions={loadOptionsTow}
+                        onChange={(selectedOption) => {
+                            console.log(selectedOption);
+
+                            // Only store the value part and update the filter
+                            setFilter((prev) => ({
+                                ...prev,
+                                guardian_id: selectedOption ? selectedOption.value : "", // Save only the value
+                            }));
+                        }}
+                        placeholder="اختر ولي الامر"
+                        isClearable
+                    />
+                </div>
+                <div>
+                    <AsyncSelect
+                        cacheOptions
+                        // className="mt-2"
+                        defaultOptions={defaultOptionsThree}
+                        className="min-w-48"
+                        value={defaultOptionsThree.find(option => option.value === filter.patient_id) || null} // Set the value to be the object
+                        loadOptions={loadOptionsThree}
+                        onChange={(selectedOption) => {
+                            console.log(selectedOption);
+
+                            // Only store the value part and update the filter
+                            setFilter((prev) => ({
+                                ...prev,
+                                patient_id: selectedOption ? selectedOption.value : "", // Save only the value
+                            }));
+                        }}
+                        placeholder="اختر الطفل"
+                        isClearable
+                    />
+                </div>
+                {/* <div className="space-y-2 " style={{ width: "10rem" }}>
                     <Select name="guardian_id"
                         value={filter.guardian_id}
 
@@ -367,10 +526,9 @@ export function AppointmentsManagement() {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
+                </div> */}
 
-                <div className="space-y-2 " style={{ width: "10rem" }}>
-                    {/* <Label htmlFor="game">اللعبة</Label> */}
+                {/* <div className="space-y-2 " style={{ width: "10rem" }}>
                     <Select name="patient_id"
                         value={filter.patient_id}
 
@@ -390,15 +548,14 @@ export function AppointmentsManagement() {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
+                </div> */}
 
-                <Select
+                {/* <Select
                     defaultValue={filter.status === "" ? undefined : filter.status}
                     value={filter.status === "" ? undefined : filter.status}
                     onValueChange={(value) =>
                         setFilter((prev) => ({
                             ...prev,
-                            // إذا كان القيمة الجديدة هي نفسها الحالة الحالية يتم تفريغها
                             status: prev.status === value ? "" : value,
                         }))
                     }
@@ -413,15 +570,19 @@ export function AppointmentsManagement() {
                         <SelectItem value="confirmed">المواعيد المقبولة</SelectItem>
                         <SelectItem value="cancelled">المواعيد الملغاة</SelectItem>
                     </SelectContent>
-                </Select>
+                </Select> */}
 
 
-                <Button variant="outline" onClick={() => {
-                    localStorage.clear()
-                    setFilter(initialFilter)
-                }}>
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        localStorage.clear();
+                        setFilter(initialFilter); // Reset filter state
+                    }}
+                >
                     مسح الكل
                 </Button>
+
             </div>
 
             <Card>
