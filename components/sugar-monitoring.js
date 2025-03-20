@@ -14,6 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import Lottie from 'lottie-react';
+import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
+
 import { Label } from "@/components/ui/label"
 
 import { Textarea } from "@/components/ui/textarea"
@@ -164,19 +167,30 @@ export function SugarMonitoring() {
     }
   };
 
-  // دالة لمزامنة جلب البيانات بناءً على التبويب النشط
   useEffect(() => {
-    if (activeTab === "blood-sugar-readings") {
-      fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
-    } else if (activeTab === "insulin-doses") {
-      fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
-    } else if (activeTab === "physical-activities") {
-      fetchEntityData("health/physical-activities", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
-    }
-    else if (activeTab === "meals") {
-      fetchEntityData("health/meals", setMealsData, setMealsMeta, mealsPage, searchTerm, filter);
+    if (filter.patient_id) {
+      if (activeTab === "blood-sugar-readings") {
+        fetchEntityData("health/blood-sugar-readings", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+      } else if (activeTab === "insulin-doses") {
+        fetchEntityData("health/insulin-doses", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
+      } else if (activeTab === "physical-activities") {
+        fetchEntityData("health/physical-activities", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
+      } else if (activeTab === "meals") {
+        fetchEntityData("health/meals", setMealsData, setMealsMeta, mealsPage, searchTerm, filter);
+      }
+    } else {
+      // إعادة تعيين البيانات إلى مصفوفات فارغة عند عدم وجود patient_id
+      setGamesData([]);
+      setGamesMeta({});
+      setLevelsData([]);
+      setLevelsMeta({});
+      setAnswersData([]);
+      setAnswersMeta({});
+      setMealsData([]);
+      setMealsMeta({});
     }
   }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter]);
+
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
     let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
@@ -484,12 +498,12 @@ export function SugarMonitoring() {
                   <Button
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
-                      const measuredAtInput =typeof document !== 'undefined' &&  document.getElementById("measured_at").value;
+                      const measuredAtInput = typeof document !== 'undefined' && document.getElementById("measured_at").value;
                       const formattedMeasuredAt = measuredAtInput.replace("T", " ") + ":00";
 
                       const newGame = {
-                        value:typeof document !== 'undefined' &&  document.getElementById("value").value,
-                        notes:typeof document !== 'undefined' &&  document.getElementById("notes").value,
+                        value: typeof document !== 'undefined' && document.getElementById("value").value,
+                        notes: typeof document !== 'undefined' && document.getElementById("notes").value,
                         measured_at: formattedMeasuredAt,
                         measurement_type: selectedQuestionType,
                         unit: selectedUnit, // تحويل الحالة إلى 1 أو 0
@@ -608,9 +622,9 @@ export function SugarMonitoring() {
                     onClick={() => {
 
                       const newGame = {
-                        dose_units:typeof document !== 'undefined' &&  document.getElementById("dose_units").value,
-                        insulin_type:typeof document !== 'undefined' &&  document.getElementById("insulin_type").value,
-                        taken_date:typeof document !== 'undefined' &&  document.getElementById("taken_date").value,
+                        dose_units: typeof document !== 'undefined' && document.getElementById("dose_units").value,
+                        insulin_type: typeof document !== 'undefined' && document.getElementById("insulin_type").value,
+                        taken_date: typeof document !== 'undefined' && document.getElementById("taken_date").value,
                         injection_site: selectedUnit,
                         patient_id: selectedGameId,
                         taken_time: selectedQuestionType
@@ -731,10 +745,10 @@ export function SugarMonitoring() {
                     onClick={() => {
 
                       const newGame = {
-                        activity_date:typeof document !== 'undefined' &&  document.getElementById("activity_date").value,
-                        description:typeof document !== 'undefined' &&  document.getElementById("description").value,
-                        duration:typeof document !== 'undefined' &&  document.getElementById("duration").value,
-                        notes:typeof document !== 'undefined' &&  document.getElementById("notes").value,
+                        activity_date: typeof document !== 'undefined' && document.getElementById("activity_date").value,
+                        description: typeof document !== 'undefined' && document.getElementById("description").value,
+                        duration: typeof document !== 'undefined' && document.getElementById("duration").value,
+                        notes: typeof document !== 'undefined' && document.getElementById("notes").value,
                         patient_id: selectedGameId,
 
                         intensity: selectedUnit,
@@ -837,10 +851,10 @@ export function SugarMonitoring() {
                     onClick={() => {
 
                       const newGame = {
-                        consumed_date:typeof document !== 'undefined' &&  document.getElementById("consumed_date").value,
-                        carbohydrates_calories:typeof document !== 'undefined' &&  document.getElementById("carbohydrates_calories").value,
-                        description:typeof document !== 'undefined' &&  document.getElementById("description").value,
-                        notes:typeof document !== 'undefined' &&  document.getElementById("notes").value,
+                        consumed_date: typeof document !== 'undefined' && document.getElementById("consumed_date").value,
+                        carbohydrates_calories: typeof document !== 'undefined' && document.getElementById("carbohydrates_calories").value,
+                        description: typeof document !== 'undefined' && document.getElementById("description").value,
+                        notes: typeof document !== 'undefined' && document.getElementById("notes").value,
 
                         patient_id: selectedGameId,
 
@@ -972,6 +986,29 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {
+                      !filter.patient_id ? <>
+
+                        <TableRow>
+                          <TableCell className="text-center" colSpan={6}>
+                            <span>
+                              قم بإختيار طفل لعرض النتائج
+                            </span>
+                          </TableCell>
+
+                        </TableRow>
+                      </> :
+
+                        gamesData.length == 0 && <>
+                          <TableRow>
+                            <TableCell className="text-center " colSpan={6}>
+                              <div className="flex w-full align-middle justify-center">
+                                <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                        </>}
                     {gamesData.map((game) => (
                       <TableRow key={game.id}>
                         <TableCell className="font-medium">{game.patient.user.first_name + " " + game.patient.user.last_name}</TableCell>
@@ -1042,6 +1079,29 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {
+                      !filter.patient_id ? <>
+
+                        <TableRow>
+                          <TableCell className="text-center" colSpan={6}>
+                            <span>
+                              قم بإختيار طفل لعرض النتائج
+                            </span>
+                          </TableCell>
+
+                        </TableRow>
+                      </> :
+
+                        levelsData.length == 0 && <>
+                          <TableRow>
+                            <TableCell className="text-center " colSpan={6}>
+                              <div className="flex w-full align-middle justify-center">
+                                <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                        </>}
                     {levelsData.map((level) => (
                       <TableRow key={level.id}>
                         <TableCell className="font-medium">{level.patient.user.first_name + " " + level.patient.user.last_name}</TableCell>
@@ -1104,6 +1164,29 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {
+                      !filter.patient_id ? <>
+
+                        <TableRow>
+                          <TableCell className="text-center" colSpan={6}>
+                            <span>
+                              قم بإختيار طفل لعرض النتائج
+                            </span>
+                          </TableCell>
+
+                        </TableRow>
+                      </> :
+
+                        answersData.length == 0 && <>
+                          <TableRow>
+                            <TableCell className="text-center " colSpan={6}>
+                              <div className="flex w-full align-middle justify-center">
+                                <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                        </>}
                     {answersData.map((answer) => (
                       <TableRow key={answer.id}>
                         <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
@@ -1165,10 +1248,10 @@ export function SugarMonitoring() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>اسم الطفل</TableHead>
-                      <TableHead>تاريخ الاستهلاك</TableHead>
-                      <TableHead>نوع الوجبة</TableHead>
-                      <TableHead>
+                      <TableHead className="text-nowrap">اسم الطفل</TableHead>
+                      <TableHead className="text-nowrap">تاريخ الاستهلاك</TableHead>
+                      <TableHead className="text-nowrap">نوع الوجبة</TableHead>
+                      <TableHead className="text-nowrap">
                         السعرات الحرارية
                       </TableHead>
                       <TableHead>الوصف</TableHead>
@@ -1178,14 +1261,37 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {
+                      !filter.patient_id ? <>
+
+                        <TableRow>
+                          <TableCell className="text-center" colSpan={6}>
+                            <span>
+                              قم بإختيار طفل لعرض النتائج
+                            </span>
+                          </TableCell>
+
+                        </TableRow>
+                      </> :
+
+                        mealsData.length == 0 && <>
+                          <TableRow>
+                            <TableCell className="text-center " colSpan={6}>
+                              <div className="flex w-full align-middle justify-center">
+                                <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                        </>}
                     {mealsData.map((answer) => (
                       <TableRow key={answer.id}>
-                        <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
-                        <TableCell>{answer.consumed_date}</TableCell>
-                        <TableCell>{answer.type}</TableCell>
+                        <TableCell className="font-medium text-nowrap">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
+                        <TableCell className="text-nowrap">{answer.consumed_date}</TableCell>
+                        <TableCell className="text-nowrap">{answer.type}</TableCell>
 
-                        <TableCell>{answer.carbohydrates_calories}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-nowrap">{answer.carbohydrates_calories}</TableCell>
+                        <TableCell className="text-nowrap">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -1197,7 +1303,7 @@ export function SugarMonitoring() {
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-nowrap">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>

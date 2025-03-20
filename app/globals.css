@@ -16,7 +16,7 @@ body {
   }
 }
 .text-left {
-  text-align: right !important;
+  text-align: right !important; 
 }
 @layer utilities {
   .text-balance {

@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Plus, Search, Edit, Trash2, Eye, Code } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays } from "lucide-react"
 import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
 import { GuardianDialog } from "@/components/dialogs/users/guardians/guardian-dialog"
@@ -457,27 +457,27 @@ export function UserManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>الاسم</TableHead>
-                      <TableHead>الصورة الشخصية</TableHead>
+                      <TableHead className="text-nowrap">الصورة الشخصية</TableHead>
 
-                      <TableHead>البريد الإلكتروني</TableHead>
-                      <TableHead>رقم الهاتف</TableHead>
+                      <TableHead className="text-nowrap">البريد الإلكتروني</TableHead>
+                      <TableHead className="text-nowrap">رقم الهاتف</TableHead>
                       <TableHead>عدد الأطفال</TableHead>
-                      <TableHead>الحالة</TableHead>
+                      <TableHead className="text-nowrap">الحالة</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {levelsData.map((parent) => (
                       <TableRow key={parent.id}>
-                        <TableCell className="font-medium">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
+                        <TableCell className="font-medium text-nowrap">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
                         <TableCell>
                           <img src={parent.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
                         </TableCell>
-                        <TableCell>{parent.user.email}</TableCell>
+                        <TableCell className="text-nowrap">{parent.user.email}</TableCell>
                         <TableCell className="switch-custom ">
                           {parent.user.phone}</TableCell>
                         <TableCell>2</TableCell>
-                        <TableCell>
+                        <TableCell className="text-nowrap">
                           <span className={`px - 2 py - 1  text - nowrap rounded - full ${parent.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
                             {parent.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
@@ -523,10 +523,10 @@ export function UserManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>الاسم</TableHead>
-                      <TableHead>الصورة الشخصية</TableHead>
+                      <TableHead className="text-nowrap">الصورة الشخصية</TableHead>
 
-                      <TableHead>البريد الإلكتروني</TableHead>
-                      <TableHead>رقم الهاتف</TableHead>
+                      <TableHead className="text-nowrap">البريد الإلكتروني</TableHead>
+                      <TableHead className="text-nowrap">رقم الهاتف</TableHead>
                       <TableHead>التخصص</TableHead>
                       <TableHead>الحالة</TableHead>
                       <TableHead>الإجراءات</TableHead>
@@ -535,14 +535,14 @@ export function UserManagement() {
                   <TableBody>
                     {questionsData.map((doctor) => (
                       <TableRow key={doctor.id}>
-                        <TableCell className="font-medium">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
+                        <TableCell className="font-medium text-nowrap">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
                         <TableCell>
                           <img src={doctor.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
                         </TableCell>
                         <TableCell>{doctor.user.email}</TableCell>
                         <TableCell className="switch-custom ">{doctor.user.phone}</TableCell>
                         <TableCell>{doctor.specialization}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-nowrap">
                           <span className={`px - 2 py - 1 text - nowrap rounded - full ${doctor.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
                             {doctor.user.status == "Active" ? "نشط" : "غير نشط"}
                           </span>
@@ -550,7 +550,7 @@ export function UserManagement() {
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
-                              <Eye className="h-4 w-4" />
+                              <CalendarDays className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditDoctor(doctor)}>
                               <Edit className="h-4 w-4" />
@@ -565,6 +565,13 @@ export function UserManagement() {
                   </TableBody>
                 </Table>
               </div>
+              <PaginationControls
+                currentPage={questionsPage}
+                setPage={setQuestionsPage}
+                totalItems={questionsMeta.total}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -601,11 +608,11 @@ export function UserManagement() {
                         <TableCell>
                           <img src={child.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
                         </TableCell>
-                        <TableCell>{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
-                        <TableCell>{calculateAge(child.birth_date)}</TableCell>
-                        <TableCell>{(child.height)} سم</TableCell>
-                        <TableCell>{(child.weight)} سم</TableCell>
-                        <TableCell>{(child.diabetes_diagnosis_age)} سنة</TableCell>
+                        <TableCell className="text-nowrap">{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
+                        <TableCell className="text-nowrap">{calculateAge(child.birth_date)}</TableCell>
+                        <TableCell className="text-nowrap">{(child.height)} سم</TableCell>
+                        <TableCell className="text-nowrap">{(child.weight)} سم</TableCell>
+                        <TableCell className="text-nowrap">{(child.diabetes_diagnosis_age)} سنة</TableCell>
                         <TableCell>
                           <OTPComponent otp={child.user.otp} otp_expire_at={child.user.otp_expide_at} />
 

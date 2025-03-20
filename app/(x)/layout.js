@@ -3,18 +3,19 @@
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Menu } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation"; // استيراد usePathname
 import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "react-hot-toast";
 import { Sidebar } from "@/components/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner";
 import { deleteCookie, getCookie } from "cookies-next";
 import axios from "axios";
 import { Spinner } from "@/components/ui/spinner";
-
+import { getData } from "@/lib/apiHelper";
+import { getTimeAgo } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
@@ -22,8 +23,17 @@ export default function RootLayout({ children }) {
   const [activeSection, setActiveSection] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter()
-
-
+  const [notifications, setNotifications] = useState([])
+  useEffect(() => {
+    const getNotifications = async () => {
+      const response = await getData(
+        `notifications/notifications?limit=5`,);
+      if (response.success) {
+        setNotifications(response.data)
+      }
+    }
+    getNotifications()
+  }, []);
   // تحديث activeSection بناءً على المسار
   useEffect(() => {
     const section = pathname.split("/")[1] || "/dashboard"; // استخراج القسم الأول من المسار
@@ -94,7 +104,95 @@ export default function RootLayout({ children }) {
               {/* <span className="text-sm font-medium hidden sm:inline">
                 مرحباً، المدير
               </span> */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative rounded-full"
+                  >
+                    <Bell className="h-5 w-5" />
+                    {/* <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"></span> */}
+                    <span className="sr-only">الإشعارات</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 mt-1">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>الإشعارات</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-1 text-xs text-primary"
+                    >
+                      تعيين الكل كمقروء
+                    </Button>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {notifications.map((notification, idx) => (
+                    <DropdownMenuItem key={idx} onClick={() => { router.push("/notifications") }} className="flex flex-col items-start py-2 px-4 cursor-pointer focus:bg-accent">
+                      <div className="flex w-full items-start gap-2">
+                        {notification.read_at ? <>
+                          <div className="h-2 w-2 mt-1.5 rounded-full bg-gray-300 flex-shrink-0"></div>
 
+                        </> : <>
+                          <div className="h-2 w-2 mt-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+
+                        </>}
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{notification.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {notification.message && notification.message.length > 30
+                              ? notification.message.substring(0, 30) + "..."
+                              : notification.message}                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {getTimeAgo(notification.created_at)}
+                            {/* {new Date(notification.created_at).toLocaleString("EN-ca")} */}
+                          </p>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                  {/* إشعار جديد */}
+
+
+                  {/* إشعار مقروء */}
+                  {/* <DropdownMenuItem className="flex flex-col items-start py-2 px-4 cursor-pointer focus:bg-accent">
+                    <div className="flex w-full items-start gap-2">
+                      <div className="h-2 w-2 mt-1.5 rounded-full bg-gray-300 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">تقييم جديد</p>
+                        <p className="text-xs text-muted-foreground">
+                          قام مستخدم بتقييم صالون الجمال
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          منذ ساعتين
+                        </p>
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem className="flex flex-col items-start py-2 px-4 cursor-pointer focus:bg-accent">
+                    <div className="flex w-full items-start gap-2">
+                      <div className="h-2 w-2 mt-1.5 rounded-full bg-gray-300 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">دفع جديد</p>
+                        <p className="text-xs text-muted-foreground">
+                          تم استلام دفعة جديدة بقيمة 150 ريال
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          أمس، 14:30
+                        </p>
+                      </div>
+                    </div>
+                  </DropdownMenuItem> */}
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="justify-center text-primary cursor-pointer" onClick={() => { router.push("/notifications") }}>
+
+                    عرض جميع الإشعارات
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   {/* <Button variant="outline" size="icon"> */}

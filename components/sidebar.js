@@ -97,10 +97,10 @@ export function Sidebar({
       >
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-[#ffffff] rounded-full ">
+            {/* <div className=" rounded-full "> */}
               {/* <Home className="h-5 w-5 text-white" /> */}
-              <img src="/logo.png" alt="logo" className="h-10 w-20   object-contain " />
-            </div>
+              <img src="/logo.png" alt="logo" className="h-10 w-12   object-cover " />
+            {/* </div> */}
             <span className="text-xl font-bold">عسول</span>
           </div>
           <Button
