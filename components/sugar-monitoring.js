@@ -14,6 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import AsyncSelect from "react-select/async";
+
 import Lottie from 'lottie-react';
 import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
 
@@ -49,7 +51,41 @@ export function SugarMonitoring() {
   const [isAddAnswerOpen, setIsAddAnswerOpen] = useState(false)
   const initialFilter = { patient_id: "" };
   const [filter, setFilter] = useState(initialFilter)
+  const [defaultOptions, setDefaultOptions] = useState([]);
 
+  useEffect(() => {
+    const fetchInitialProviders = async () => {
+      try {
+        // Adjust your endpoint to limit the results (if supported by your API)
+        const response = await getData(`users/children?limit=5`);
+        const providers = response.data.map((item) => ({
+          label: `${item.user.first_name + " " + item.user.last_name}`,
+          value: item.id,
+        }));
+        setDefaultOptions(providers);
+      } catch (error) {
+        console.error("Error fetching initial providers:", error);
+      }
+    };
+
+    fetchInitialProviders();
+  }, []);
+  const loadOptions = async (inputValue, callback) => {
+    try {
+      // Call your API with the search query
+      // const response = await fetchData(`public/services`);
+
+      const response = await getData(`users/children?search=${inputValue}`);
+      const providers = response.data.map((item) => ({
+        label: `${item.user.first_name + " " + item.user.last_name}`,
+        value: item.id,
+      }));
+      callback(providers);
+    } catch (error) {
+      console.error("Error fetching providers on search:", error);
+      callback([]);
+    }
+  };
   const [isEnabled, setIsEnabled] = useState(true);
   const [gameColor, setGameColor] = useState("#ffffff"); // اللون الافتراضي
   const [imagePreview, setImagePreview] = useState(null); // Store image preview
@@ -189,7 +225,7 @@ export function SugarMonitoring() {
       setMealsData([]);
       setMealsMeta({});
     }
-  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter]);
+  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter,defaultOptions]);
 
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
@@ -919,8 +955,29 @@ export function SugarMonitoring() {
           />
 
         </div>
-        <div className="space-y-2 " style={{ width: "10rem" }}>
-          {/* <Label htmlFor="game">اللعبة</Label> */}
+
+        <div>
+          <AsyncSelect
+            cacheOptions
+            // className="mt-2"
+            defaultOptions={defaultOptions}
+            value={defaultOptions.find(option => option.value === filter.patient_id)} // Set the value to be the object
+            loadOptions={loadOptions}
+            onChange={(selectedOption) => {
+              console.log(selectedOption);
+
+              // Only store the value part and update the filter
+              setFilter((prev) => ({
+                ...prev,
+                patient_id: selectedOption ? selectedOption.value : null, // Save only the value
+              }));
+            }}
+            placeholder="اختر الطفل"
+            isClearable
+          />
+        </div>
+
+        {/* <div className="space-y-2 " style={{ width: "10rem" }}>
           <Select name="game_id"
             value={filter.patient_id}
 
@@ -939,15 +996,10 @@ export function SugarMonitoring() {
                 </SelectItem>
 
               ))}
-              {/* <SelectItem value={"1"}>
-                الطفل الاول
-              </SelectItem>
-              <SelectItem value={"2"}>
-                الطفل الثاني
-              </SelectItem> */}
+             
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
         <Button variant="outline" onClick={() => setFilter(initialFilter)}>
           مسح الكل
         </Button>
