@@ -49,7 +49,7 @@ export function NotificationsManagement() {
   const [gamesData, setGamesData] = useState([])
   const [levelsData, setLevelsData] = useState([])
 
-  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [pageSize, setPageSize] = useState(50); // number of items per page
 
   const [gamesPage, setGamesPage] = useState(1);
   const [levelsPage, setLevelsPage] = useState(1);

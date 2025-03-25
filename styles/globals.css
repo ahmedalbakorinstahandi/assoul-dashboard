@@ -17,9 +17,14 @@ body {
     text-align: center !important;
   }
 }
-.text-left {
+/* .text-left {
   text-align: right !important;
+} */
+table td,
+table th {
+  text-align: center !important;
 }
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

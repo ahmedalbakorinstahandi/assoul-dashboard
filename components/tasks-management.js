@@ -45,7 +45,7 @@ export function TasksManagement() {
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [pageSize, setPageSize] = useState(50); // number of items per page
   const [imagePreview, setImagePreview] = useState(null); // Store image preview
 
   const handleImageChange = (e) => {
@@ -426,12 +426,12 @@ export function TasksManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="system-tasks">مهام عسول</TabsTrigger>
+        {/* <TabsList className="grid w-full grid-cols-1">
+          <TabsTrigger value="system-tasks">مهام عسول</TabsTrigger> */}
           {/* 
           <TabsTrigger value="parent-tasks" disabled>مهام الأهل</TabsTrigger>
           <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger> */}
-        </TabsList>
+        {/* </TabsList> */}
         <TabsContent value="system-tasks">
           <Card>
             <CardHeader>
@@ -455,7 +455,7 @@ export function TasksManagement() {
                       <TableRow key={task.id}>
                         <TableCell className="font-medium">{task.title}</TableCell>
                         <TableCell>
-                          <img src={task.image} className="rounded-lg h-10 w-10 object-cover" />
+                          <img src={task.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell> <div
                           style={{
@@ -468,7 +468,7 @@ export function TasksManagement() {
                         /></TableCell>
                         <TableCell>{task.points} نقطة</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center ">
                             {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
@@ -530,7 +530,7 @@ export function TasksManagement() {
                         <TableCell>{task.dueDate}</TableCell>
                         <TableCell>{getStatusBadge(task.status)}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -588,7 +588,7 @@ export function TasksManagement() {
                         <TableCell>{task.dueDate}</TableCell>
                         <TableCell>{getStatusBadge(task.status)}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                               <Eye className="h-4 w-4" />
                             </Button>

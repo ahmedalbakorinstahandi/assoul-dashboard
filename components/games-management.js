@@ -96,7 +96,7 @@ export function GamesManagement() {
   const [levelsData, setLevelsData] = useState([])
   const [questionsData, setQuestionsData] = useState([])
   const [answersData, setAnswersData] = useState([])
-  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [pageSize, setPageSize] = useState(50); // number of items per page
 
   const [gamesPage, setGamesPage] = useState(1);
   const [levelsPage, setLevelsPage] = useState(1);
@@ -1042,7 +1042,7 @@ export function GamesManagement() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -1108,7 +1108,7 @@ export function GamesManagement() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -1175,7 +1175,7 @@ export function GamesManagement() {
                         <TableCell>{question.answers_view === "text" ? "نص" : "صورة"}</TableCell>
 
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -1240,10 +1240,10 @@ export function GamesManagement() {
 
                           answer.question.answers_view === "text" ?
                             answer.text : <>
-                              <img src={answer.image} className="rounded-lg h-10 w-10 object-cover" />
+                              <img src={answer.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                             </>}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             {/*    <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}

@@ -75,7 +75,7 @@ export function UserManagement() {
   const [levelsData, setLevelsData] = useState([])
   const [questionsData, setQuestionsData] = useState([])
   const [answersData, setAnswersData] = useState([])
-  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [pageSize, setPageSize] = useState(50); // number of items per page
 
   const [gamesPage, setGamesPage] = useState(1);
   const [levelsPage, setLevelsPage] = useState(1);
@@ -474,7 +474,7 @@ export function UserManagement() {
                         <TableCell>{parent.id}</TableCell>
 
                         <TableCell>
-                          <img src={parent.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
+                          <img src={parent.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell className="font-medium text-nowrap">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
                         <TableCell className="text-nowrap">{parent.user.email}</TableCell>
@@ -487,7 +487,7 @@ export function UserManagement() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -544,7 +544,7 @@ export function UserManagement() {
                         <TableCell>{doctor.id}</TableCell>
 
                         <TableCell>
-                          <img src={doctor.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
+                          <img src={doctor.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell className="font-medium text-nowrap">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
                         <TableCell>{doctor.user.email}</TableCell>
@@ -556,7 +556,7 @@ export function UserManagement() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
                               <CalendarDays className="h-4 w-4" />
                             </Button>
@@ -617,7 +617,7 @@ export function UserManagement() {
                         <TableCell>{child.id}</TableCell>
 
                         <TableCell>
-                          <img src={child.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
+                          <img src={child.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell className="font-medium text-nowrap">{child.user.first_name + " " + child.user.last_name}</TableCell>
                         <TableCell className="text-nowrap">{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
@@ -636,7 +636,7 @@ export function UserManagement() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
                               <Code className="h-4 w-4" />
                             </Button>

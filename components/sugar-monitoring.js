@@ -57,7 +57,7 @@ export function SugarMonitoring() {
     const fetchInitialProviders = async () => {
       try {
         // Adjust your endpoint to limit the results (if supported by your API)
-        const response = await getData(`users/children?limit=5`);
+        const response = await getData(`users/children?limit=20`);
         const providers = response.data.map((item) => ({
           label: `${item.user.first_name + " " + item.user.last_name}`,
           value: item.id,
@@ -125,7 +125,7 @@ export function SugarMonitoring() {
   const [answersData, setAnswersData] = useState([])
   const [mealsData, setMealsData] = useState([])
 
-  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [pageSize, setPageSize] = useState(50); // number of items per page
 
   const [gamesPage, setGamesPage] = useState(1);
   const [levelsPage, setLevelsPage] = useState(1);
@@ -225,7 +225,7 @@ export function SugarMonitoring() {
       setMealsData([]);
       setMealsMeta({});
     }
-  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter,defaultOptions]);
+  }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter, defaultOptions]);
 
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
@@ -960,6 +960,8 @@ export function SugarMonitoring() {
           <AsyncSelect
             cacheOptions
             // className="mt-2"
+            className="min-w-64"
+
             defaultOptions={defaultOptions}
             value={defaultOptions.find(option => option.value === filter.patient_id)} // Set the value to be the object
             loadOptions={loadOptions}
@@ -1026,7 +1028,12 @@ export function SugarMonitoring() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>المعرف </TableHead>
+
+                      <TableHead>صورة الطفل</TableHead>
+
                       <TableHead>اسم الطفل</TableHead>
+
                       <TableHead>نوع القياس</TableHead>
                       <TableHead> القيمة</TableHead>
                       <TableHead>الوحدة</TableHead>
@@ -1063,16 +1070,23 @@ export function SugarMonitoring() {
                         </>}
                     {gamesData.map((game) => (
                       <TableRow key={game.id}>
+                        <TableCell>
+                          {game.id}
+                        </TableCell>
+                        <TableCell>
+                          <img src={game.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                        </TableCell>
                         <TableCell className="font-medium">{game.patient.user.first_name + " " + game.patient.user.last_name}</TableCell>
                         <TableCell>
-                          {game.measurement_type}
+                          {measurementTypes.find((item) => item.name === game.measurement_type)?.name_ar || game.measurement_type}
                         </TableCell>
                         <TableCell>
                           {game.value}
                         </TableCell>
                         <TableCell>
-                          {game.unit}
+                          {units.find((item) => item.name === game.unit)?.name_ar || game.unit}
                         </TableCell>
+
                         {/* <TableCell>
                           {game.notes}
                         </TableCell> */}
@@ -1080,7 +1094,7 @@ export function SugarMonitoring() {
                           {new Date(game.measured_at).toLocaleString("EN-ca")}
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             {/* <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
@@ -1120,6 +1134,9 @@ export function SugarMonitoring() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCell>المعرف</TableCell>
+                      <TableHead>صورة الطفل</TableHead>
+
                       <TableHead>اسم الطفل</TableHead>
                       <TableHead>تاريخ الأخذ</TableHead>
                       <TableHead> وقت الأخذ</TableHead>
@@ -1156,15 +1173,28 @@ export function SugarMonitoring() {
                         </>}
                     {levelsData.map((level) => (
                       <TableRow key={level.id}>
+                        <TableCell className="text-center">{level.id}</TableCell>
+                        <TableCell>
+                          <img src={level.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                        </TableCell>
                         <TableCell className="font-medium">{level.patient.user.first_name + " " + level.patient.user.last_name}</TableCell>
                         <TableCell>{level.taken_date}</TableCell>
-                        <TableCell>{level.taken_time}</TableCell>
-                        <TableCell>{level.insulin_type}</TableCell>
-                        <TableCell>{level.dose_units}</TableCell>
-                        <TableCell>{level.injection_site}</TableCell>
+                        <TableCell>
+                          {takenTime.find((item) => item.name === level.taken_time)?.name_ar || level.taken_time}
+                        </TableCell>
+                        <TableCell>
+                          {level.insulin_type} {/* لا توجد قائمة مترجمة، اتركه كما هو أو أضف مصفوفة ترجمة إذا لزم الأمر */}
+                        </TableCell>
+                        <TableCell>
+                          {units.find((item) => item.name === level.dose_units)?.name_ar || level.dose_units}
+                        </TableCell>
+                        <TableCell>
+                          {injectionSites.find((item) => item.name === level.injection_site)?.name_ar || level.injection_site}
+                        </TableCell>
+
 
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             {/* <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
                             <Eye className="h-4 w-4" />
                           </Button> */}
@@ -1205,6 +1235,9 @@ export function SugarMonitoring() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCell>المعرف</TableCell>
+                      <TableHead>صورة الطفل</TableHead>
+
                       <TableHead>اسم الطفل</TableHead>
                       <TableHead>تاريخ النشاط</TableHead>
                       <TableHead>وقت النشاط</TableHead>
@@ -1241,6 +1274,10 @@ export function SugarMonitoring() {
                         </>}
                     {answersData.map((answer) => (
                       <TableRow key={answer.id}>
+                        <TableCell>{answer.id}</TableCell>
+                        <TableCell>
+                          <img src={answer.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                        </TableCell>
                         <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
                         <TableCell>{answer.activity_date}</TableCell>
                         <TableCell>{answer.activity_time}</TableCell>
@@ -1258,11 +1295,13 @@ export function SugarMonitoring() {
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
-                        <TableCell>{answer.intensity}</TableCell>
+                        <TableCell>
+                          {intensity.find((item) => item.name === answer.intensity)?.name_ar || answer.intensity}
+                        </TableCell>
                         <TableCell>{answer.duration}</TableCell>
 
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             {/*  <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
@@ -1300,6 +1339,9 @@ export function SugarMonitoring() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCell>المعرف</TableCell>
+                      <TableHead>صورة الطفل</TableHead>
+
                       <TableHead className="text-nowrap">اسم الطفل</TableHead>
                       <TableHead className="text-nowrap">تاريخ الاستهلاك</TableHead>
                       <TableHead className="text-nowrap">نوع الوجبة</TableHead>
@@ -1338,9 +1380,15 @@ export function SugarMonitoring() {
                         </>}
                     {mealsData.map((answer) => (
                       <TableRow key={answer.id}>
+                        <TableCell>{answer.id}</TableCell>
+                        <TableCell>
+                          <img src={answer.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                        </TableCell>
                         <TableCell className="font-medium text-nowrap">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
                         <TableCell className="text-nowrap">{answer.consumed_date}</TableCell>
-                        <TableCell className="text-nowrap">{answer.type}</TableCell>
+                        <TableCell className="text-nowrap">
+                          {typeMeals.find((item) => item.name === answer.type)?.name_ar || answer.type}
+                        </TableCell>
 
                         <TableCell className="text-nowrap">{answer.carbohydrates_calories}</TableCell>
                         <TableCell className="text-nowrap">
@@ -1371,7 +1419,7 @@ export function SugarMonitoring() {
 
 
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex   space-x-2 space-x-reverse">
                             {/*       <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}

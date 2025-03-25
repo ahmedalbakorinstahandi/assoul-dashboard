@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
   useEffect(() => {
     const getNotifications = async () => {
       const response = await getData(
-        `notifications/notifications?limit=5`,);
+        `notifications/notifications?limit=20`,);
       if (response.success) {
         setNotifications(response.data)
       }

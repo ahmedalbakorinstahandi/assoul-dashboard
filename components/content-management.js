@@ -67,7 +67,7 @@ export function ContentManagement() {
   const [contentData, setContentData] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const [pageSize, setPageSize] = useState(10); // number of items per page
+  const [pageSize, setPageSize] = useState(50); // number of items per page
 
   const [contentPage, setContentPage] = useState(1);
 
@@ -371,7 +371,7 @@ export function ContentManagement() {
                         <TableCell>{article.publishDate}</TableCell>
                         <TableCell>{getStatusBadge(article.status)}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleViewContent(article)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -425,7 +425,7 @@ export function ContentManagement() {
                         <TableCell className="text-nowrap">{new Date(video.created_at).toLocaleDateString("EN-ca")}</TableCell>
                         <TableCell>{getStatusBadge(video.is_visible)}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleViewContent(video)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -482,7 +482,7 @@ export function ContentManagement() {
                         <TableCell>{image.publishDate}</TableCell>
                         <TableCell>{getStatusBadge(image.status)}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
+                          <div className="flex space-x-2 space-x-reverse justify-center">
                             <Button variant="ghost" size="icon" onClick={() => handleViewContent(image)}>
                               <Eye className="h-4 w-4" />
                             </Button>

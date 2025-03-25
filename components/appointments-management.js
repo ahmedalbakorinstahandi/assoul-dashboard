@@ -39,7 +39,7 @@ export function AppointmentsManagement() {
     const [gamesData, setGamesData] = useState([])
     const [gamesPage, setGamesPage] = useState(1);
     const [gamesMeta, setGamesMeta] = useState({});
-    const [pageSize, setPageSize] = useState(10); // number of items per page
+    const [pageSize, setPageSize] = useState(50); // number of items per page
     const initialFilter = { patient_id: "", guardian_id: "", doctor_id: "", status: "all" };
     const [filter, setFilter] = useState(initialFilter)
     const [loading, setLoading] = useState(false)
@@ -54,7 +54,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/doctors?limit=5`);
+                const response = await getData(`users/doctors?limit=20`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -67,7 +67,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders2 = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/guardians?limit=5`);
+                const response = await getData(`users/guardians?limit=20`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -80,7 +80,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders3 = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/children?limit=5`);
+                const response = await getData(`users/children?limit=20`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -619,7 +619,7 @@ export function AppointmentsManagement() {
 
                                         <TableCell className="text-nowrap">{getStatusBadge(appointment.status)}</TableCell>
                                         <TableCell>
-                                            <div className="flex space-x-2 space-x-reverse">
+                                            <div className="flex space-x-2 space-x-reverse justify-center">
                                                 <Button variant="ghost" size="icon" onClick={() => handleViewAppointment(appointment)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
