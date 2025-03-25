@@ -169,6 +169,24 @@ export function GuardianDialog({ isOpen, onClose, onSave, initialData }) {
                         </div>
                     </> : <>
 
+                        <div className="space-y-2 relative">
+                            <Label>كلمة المرور</Label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={(e) => handleChange("password", e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 end-3 flex items-center text-gray-500"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="status">الحالة</Label>
                             <Select
