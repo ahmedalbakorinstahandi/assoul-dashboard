@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays, Baby } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays, Baby, LoaderIcon } from "lucide-react"
 import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
 import { GuardianDialog } from "@/components/dialogs/users/guardians/guardian-dialog"
@@ -484,36 +484,45 @@ export function UserManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {levelsData.map((parent) => (
-                      <TableRow key={parent.id}>
-                        <TableCell>{parent.id}</TableCell>
-
-                        <TableCell>
-                          <img src={parent.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={8}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
+                          </div>
                         </TableCell>
-                        <TableCell className="font-medium text-nowrap">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
-                        <TableCell className="text-nowrap">{parent.user.email}</TableCell>
-                        <TableCell className="switch-custom ">
-                          {parent.user.phone}</TableCell>
-                        <TableCell>2</TableCell>
-                        <TableCell className="text-nowrap">
-                          <span className={`px - 2 py - 1  text - nowrap rounded - full ${parent.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
-                            {parent.user.status == "Active" ? "نشط" : "غير نشط"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
+                      </TableRow>
+                      :
+                      levelsData.map((parent) => (
+                        <TableRow key={parent.id}>
+                          <TableCell>{parent.id}</TableCell>
 
-                            <Button variant="ghost" size="icon" onClick={() => handleShowGuardian(parent)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(parent)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(parent)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            {/* <Button className="bg-[#ffac33] hover:bg-[#f59f00] p-1" onClick={() => handleViewChildren(parent.id)}
+                          <TableCell>
+                            <img src={parent.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                          </TableCell>
+                          <TableCell className="font-medium text-nowrap">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
+                          <TableCell className="text-nowrap">{parent.user.email}</TableCell>
+                          <TableCell className="switch-custom ">
+                            {parent.user.phone}</TableCell>
+                          <TableCell>2</TableCell>
+                          <TableCell className="text-nowrap">
+                            <span className={`px - 2 py - 1  text - nowrap rounded - full ${parent.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
+                              {parent.user.status == "Active" ? "نشط" : "غير نشط"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+
+                              <Button variant="ghost" size="icon" onClick={() => handleShowGuardian(parent)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditUser(parent)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(parent)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              {/* <Button className="bg-[#ffac33] hover:bg-[#f59f00] p-1" onClick={() => handleViewChildren(parent.id)}
                             >
                               <span>
                                 عرض الاطفال
@@ -521,24 +530,24 @@ export function UserManagement() {
                               </span>
                             </Button> */}
 
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger >
-                                  <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
-                                    <Baby className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-[400px] text-wrap" side="top">
-                                  عرض الاطفال
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger >
+                                    <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
+                                      <Baby className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                    عرض الاطفال
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
 
 
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
@@ -577,50 +586,58 @@ export function UserManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {questionsData.map((doctor) => (
-                      <TableRow key={doctor.id}>
-                        <TableCell>{doctor.id}</TableCell>
-
-                        <TableCell>
-                          <img src={doctor.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
-                        </TableCell>
-                        <TableCell className="font-medium text-nowrap">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
-                        <TableCell>{doctor.user.email}</TableCell>
-                        <TableCell className="switch-custom ">{doctor.user.phone}</TableCell>
-                        <TableCell>{doctor.specialization}</TableCell>
-                        <TableCell className="text-nowrap">
-                          <span className={`px - 2 py - 1 text - nowrap rounded - full ${doctor.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
-                            {doctor.user.status == "Active" ? "نشط" : "غير نشط"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-
-                            <Button variant="ghost" size="icon" onClick={() => handleShowDoctor(doctor)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditDoctor(doctor)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(doctor)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger >
-                                  <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
-                                    <CalendarDays className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-[400px] text-wrap" side="top">
-                                  عرض الحجوزات
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={8}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      : questionsData.map((doctor) => (
+                        <TableRow key={doctor.id}>
+                          <TableCell>{doctor.id}</TableCell>
+
+                          <TableCell>
+                            <img src={doctor.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                          </TableCell>
+                          <TableCell className="font-medium text-nowrap">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
+                          <TableCell>{doctor.user.email}</TableCell>
+                          <TableCell className="switch-custom ">{doctor.user.phone}</TableCell>
+                          <TableCell>{doctor.specialization}</TableCell>
+                          <TableCell className="text-nowrap">
+                            <span className={`px - 2 py - 1 text - nowrap rounded - full ${doctor.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
+                              {doctor.user.status == "Active" ? "نشط" : "غير نشط"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+
+                              <Button variant="ghost" size="icon" onClick={() => handleShowDoctor(doctor)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditDoctor(doctor)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(doctor)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger >
+                                    <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
+                                      <CalendarDays className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                    عرض الحجوزات
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
@@ -663,47 +680,55 @@ export function UserManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {gamesData.map((child) => (
-                      <TableRow key={child.id}>
-                        <TableCell>{child.id}</TableCell>
-
-                        <TableCell>
-                          <img src={child.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
-                        </TableCell>
-                        <TableCell className="font-medium text-nowrap">{child.user.first_name + " " + child.user.last_name}</TableCell>
-                        <TableCell className="text-nowrap">{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
-                        <TableCell className="text-nowrap">{calculateAge(child.birth_date)}</TableCell>
-                        <TableCell className="text-nowrap">{(child.height)} سم</TableCell>
-                        <TableCell className="text-nowrap">{(child.weight)} سم</TableCell>
-                        <TableCell className="text-nowrap">{(child.diabetes_diagnosis_age)} سنة</TableCell>
-                        <TableCell>
-                          <OTPComponent otp={child.user.otp} otp_expire_at={child.user.otp_expide_at} />
-
-                        </TableCell>
-
-                        <TableCell>
-                          <span className={`px - 2 py - 1 text - nowrap rounded - full ${child.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
-                            {child.user.status == "Active" ? "نشط" : "غير نشط"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
-                              <Code className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => { router.push(`users/patient/${child.id}`) }} >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditChild(child)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(child)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={11}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      : gamesData.map((child) => (
+                        <TableRow key={child.id}>
+                          <TableCell>{child.id}</TableCell>
+
+                          <TableCell>
+                            <img src={child.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                          </TableCell>
+                          <TableCell className="font-medium text-nowrap">{child.user.first_name + " " + child.user.last_name}</TableCell>
+                          <TableCell className="text-nowrap">{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
+                          <TableCell className="text-nowrap">{calculateAge(child.birth_date)}</TableCell>
+                          <TableCell className="text-nowrap">{(child.height)} سم</TableCell>
+                          <TableCell className="text-nowrap">{(child.weight)} سم</TableCell>
+                          <TableCell className="text-nowrap">{(child.diabetes_diagnosis_age)} سنة</TableCell>
+                          <TableCell>
+                            <OTPComponent otp={child.user.otp} otp_expire_at={child.user.otp_expide_at} />
+
+                          </TableCell>
+
+                          <TableCell>
+                            <span className={`px - 2 py - 1 text - nowrap rounded - full ${child.user.status == "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text - xs`}>
+                              {child.user.status == "Active" ? "نشط" : "غير نشط"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+                              <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
+                                <Code className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => { router.push(`users/patient/${child.id}`) }} >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditChild(child)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(child)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>

@@ -15,6 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
+
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Search, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -28,6 +30,7 @@ import toast from "react-hot-toast"
 import { PaginationControls } from "./ui/pagination-controls"
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { Switch } from "./ui/switch"
+import Lottie from "lottie-react"
 
 export function TasksManagement() {
   const [activeTab, setActiveTab] = useState("system-tasks")
@@ -390,14 +393,14 @@ export function TasksManagement() {
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
                       const newGame = {
-                        title:typeof document !== 'undefined' &&  document.getElementById("title").value,
+                        title: typeof document !== 'undefined' && document.getElementById("title").value,
                         // description: document.getElementById("description").value,
-                        points:typeof document !== 'undefined' &&  document.getElementById("points").value,
+                        points: typeof document !== 'undefined' && document.getElementById("points").value,
                         color: gameColor, // إرسال اللون المختار
 
                       };
 
-                      const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
+                      const imageFile = typeof document !== 'undefined' && document.getElementById("image").files[0]; // جلب الصورة
 
                       handleAddEntity("tasks/system-tasks", newGame, imageFile);
                     }}
@@ -428,7 +431,7 @@ export function TasksManagement() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="system-tasks">مهام عسول</TabsTrigger> */}
-          {/* 
+        {/* 
           <TabsTrigger value="parent-tasks" disabled>مهام الأهل</TabsTrigger>
           <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger> */}
         {/* </TabsList> */}
@@ -443,6 +446,8 @@ export function TasksManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>المعرف</TableHead>
+
                       <TableHead>عنوان المهمة</TableHead>
                       <TableHead>الصورة</TableHead>
                       <TableHead>اللون</TableHead>
@@ -451,34 +456,54 @@ export function TasksManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {gamesData.map((task) => (
-                      <TableRow key={task.id}>
-                        <TableCell className="font-medium">{task.title}</TableCell>
-                        <TableCell>
-                          <img src={task.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={6}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
+                          </div>
                         </TableCell>
-                        <TableCell> <div
-                          style={{
-                            backgroundColor: task.color,
-                            width: "24px",
-                            height: "24px",
-                            borderRadius: "4px",
-                            display: "inline-block",
-                          }}
-                        /></TableCell>
-                        <TableCell>{task.points} نقطة</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center ">
-                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                      </TableRow>
+                      :
+
+                      gamesData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={6}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : gamesData.map((task) => (
+                        <TableRow key={task.id}>
+                          <TableCell className="font-medium">{task.id}</TableCell>
+
+                          <TableCell className="font-medium">{task.title}</TableCell>
+                          <TableCell>
+                            <img src={task.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                          </TableCell>
+                          <TableCell> <div
+                            style={{
+                              backgroundColor: task.color,
+                              width: "24px",
+                              height: "24px",
+                              borderRadius: "4px",
+                              display: "inline-block",
+                            }}
+                          /></TableCell>
+                          <TableCell>{task.points} نقطة</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center ">
+                              {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                               <Eye className="h-4 w-4" />
                             </Button> */}
-                            <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            {/* {task.status !== "مكتمل" ? (
+                              <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              {/* {task.status !== "مكتمل" ? (
                               <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
                                 <CheckCircle className="h-4 w-4 text-green-500" />
                               </Button>
@@ -487,10 +512,10 @@ export function TasksManagement() {
                                 <XCircle className="h-4 w-4 text-red-500" />
                               </Button>
                             )} */}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>

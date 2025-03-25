@@ -15,9 +15,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
 
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, FileQuestion, LucideChevronLeftCircle } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, FileQuestion, LucideChevronLeftCircle, LoaderIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
@@ -35,6 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { LevelViewDialog } from "./dialogs/level-view-dialog"
 import { QuestionViewDialog } from "./dialogs/question-view-dialog"
 import toast from "react-hot-toast"
+import Lottie from "lottie-react"
 
 export function GamesManagement() {
   const [activeTab, setActiveTab] = useState("games")
@@ -459,16 +461,16 @@ export function GamesManagement() {
                     className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
                     onClick={() => {
                       const newGame = {
-                        name:typeof document !== 'undefined' &&  document.getElementById("name").value,
+                        name: typeof document !== 'undefined' && document.getElementById("name").value,
                         // description: document.getElementById("description").value,
-                        order:typeof document !== 'undefined' &&  document.getElementById("order").value,
+                        order: typeof document !== 'undefined' && document.getElementById("order").value,
 
                         is_enable: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
                         color: gameColor, // إرسال اللون المختار
 
                       };
 
-                      const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
+                      const imageFile = typeof document !== 'undefined' && document.getElementById("image").files[0]; // جلب الصورة
 
                       handleAddEntity("games/games", newGame, imageFile);
                     }}
@@ -543,8 +545,8 @@ export function GamesManagement() {
                     className="bg-[#ffac33] hover:bg-[#f59f00]"
                     onClick={() => {
                       const newLevel = {
-                        number:typeof document !== 'undefined' &&  document.getElementById("number").value,
-                        title:typeof document !== 'undefined' &&  document.getElementById("title").value,
+                        number: typeof document !== 'undefined' && document.getElementById("number").value,
+                        title: typeof document !== 'undefined' && document.getElementById("title").value,
                         game_id: filter.game_id, // use the selected game ID from state
                         status: isEnabled ? "published" : "pending", // تحويل الحالة إلى 1 أو 0
 
@@ -666,7 +668,7 @@ export function GamesManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="points">نقاط السؤال</Label>
-                    <Input id="points"  type="number"  placeholder="ادخل نقاط السؤال" min={0} />
+                    <Input id="points" type="number" placeholder="ادخل نقاط السؤال" min={0} />
                   </div>
                   {/* {selectedQuestionView == "text" ? <> */}
                   {/* </> : <> */}
@@ -700,8 +702,8 @@ export function GamesManagement() {
                       const newQuestion = {
                         game_id: selectedGameId,
                         level_id: filter.level_id,
-                        text:typeof document !== 'undefined' &&  document.getElementById("text").value,
-                        points:typeof document !== 'undefined' &&  document.getElementById("points").value,
+                        text: typeof document !== 'undefined' && document.getElementById("text").value,
+                        points: typeof document !== 'undefined' && document.getElementById("points").value,
 
                         type: selectedQuestionType,
                         type: selectedQuestionType,
@@ -711,7 +713,7 @@ export function GamesManagement() {
 
                       //   handleAddEntity("games/questions", newQuestion)
                       // } else {
-                      const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
+                      const imageFile = typeof document !== 'undefined' && document.getElementById("image").files[0]; // جلب الصورة
                       handleAddEntity("games/questions", newQuestion, imageFile)
 
                       // }
@@ -850,10 +852,10 @@ export function GamesManagement() {
                         // answers_view: selectedQuestionView
                       }
                       if (questionsIds.find(e => e.id == filter.question_id)?.answers_view == "text") {
-                        newQuestion.text =typeof document !== 'undefined' &&  document.getElementById("text").value
+                        newQuestion.text = typeof document !== 'undefined' && document.getElementById("text").value
                         handleAddEntity("games/answers", newQuestion)
                       } else {
-                        const imageFile =typeof document !== 'undefined' &&  document.getElementById("image").files[0]; // جلب الصورة
+                        const imageFile = typeof document !== 'undefined' && document.getElementById("image").files[0]; // جلب الصورة
                         handleAddEntity("games/answers", newQuestion, imageFile)
 
                       }
@@ -1021,48 +1023,67 @@ export function GamesManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {gamesData.map((game) => (
-                      <TableRow key={game.id}>
-                        <TableCell className="font-medium">{game.name}</TableCell>
-                        <TableCell>
-                          <div
-                            style={{
-                              backgroundColor: game.color,
-                              width: "24px",
-                              height: "24px",
-                              borderRadius: "4px",
-                              display: "inline-block",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>{game.order}</TableCell>
-                        <TableCell>
-                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
-                            {game.is_enable === 1 ? "نشط" : "غير نشط"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleTabChange("levels", { game_id: game.id.toString() })}
-                            >
-                              <LucideChevronLeftCircle className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={5}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      gamesData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={5}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> :
+                        gamesData.map((game) => (
+                          <TableRow key={game.id}>
+                            <TableCell className="font-medium">{game.name}</TableCell>
+                            <TableCell>
+                              <div
+                                style={{
+                                  backgroundColor: game.color,
+                                  width: "24px",
+                                  height: "24px",
+                                  borderRadius: "4px",
+                                  display: "inline-block",
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{game.order}</TableCell>
+                            <TableCell>
+                              <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
+                                {game.is_enable === 1 ? "نشط" : "غير نشط"}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2 space-x-reverse justify-center">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleTabChange("levels", { game_id: game.id.toString() })}
+                                >
+                                  <LucideChevronLeftCircle className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleEditItem(game)}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(game)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                   </TableBody>
                 </Table>
               </div>
@@ -1097,39 +1118,57 @@ export function GamesManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {levelsData.map((level) => (
-                      <TableRow key={level.id}>
-                        <TableCell className="font-medium">{level.game.name}</TableCell>
-                        <TableCell>{level.title}</TableCell>
-                        <TableCell>{level.question_count}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full ${level.status === "published" ? "bg-green-100 text-green-800 " : "bg-red-100 text-red-800 "}  text-xs`}>
-                            {level.status === "published" ? "نشط" : "غير نشط"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleTabChange("questions", { level_id: level.id.toString() })}
-                              disabled={!filter.game_id}
-                            >
-                              <LucideChevronLeftCircle className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItemLevel(level)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={5}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      levelsData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={5}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : levelsData.map((level) => (
+                        <TableRow key={level.id}>
+                          <TableCell className="font-medium">{level.game.name}</TableCell>
+                          <TableCell>{level.title}</TableCell>
+                          <TableCell>{level.question_count}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full ${level.status === "published" ? "bg-green-100 text-green-800 " : "bg-red-100 text-red-800 "}  text-xs`}>
+                              {level.status === "published" ? "نشط" : "غير نشط"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleTabChange("questions", { level_id: level.id.toString() })}
+                                disabled={!filter.game_id}
+                              >
+                                <LucideChevronLeftCircle className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditItemLevel(level)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(level)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
@@ -1166,37 +1205,55 @@ export function GamesManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {questionsData.map((question) => (
-                      <TableRow key={question.id}>
-                        <TableCell className="font-medium text-nowrap">{question.level?.game?.name}</TableCell>
-                        <TableCell className="text-nowrap">{question.level?.title}</TableCell>
-                        <TableCell className="text-nowrap">{question.text}</TableCell>
-                        <TableCell>{question.type}</TableCell>
-                        <TableCell>{question.answers_view === "text" ? "نص" : "صورة"}</TableCell>
-
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleTabChange("answers", { question_id: question.id.toString() })}
-                              disabled={!filter.level_id}
-                            >
-                              <LucideChevronLeftCircle className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(question)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItemQuestion(question)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={6}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      questionsData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={6}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : questionsData.map((question) => (
+                        <TableRow key={question.id}>
+                          <TableCell className="font-medium text-nowrap">{question.level?.game?.name}</TableCell>
+                          <TableCell className="text-nowrap">{question.level?.title}</TableCell>
+                          <TableCell className="text-nowrap">{question.text}</TableCell>
+                          <TableCell>{question.type}</TableCell>
+                          <TableCell>{question.answers_view === "text" ? "نص" : "صورة"}</TableCell>
+
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleTabChange("answers", { question_id: question.id.toString() })}
+                                disabled={!filter.level_id}
+                              >
+                                <LucideChevronLeftCircle className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(question)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditItemQuestion(question)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(question)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
@@ -1231,32 +1288,50 @@ export function GamesManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {answersData.map((answer) => (
-                      <TableRow key={answer.id}>
-                        <TableCell className="font-medium">{answer.question?.level?.game?.name}</TableCell>
-                        <TableCell>{answer.question?.level?.title}</TableCell>
-                        <TableCell>{answer.question?.text}</TableCell>
-                        <TableCell>{
-
-                          answer.question.answers_view === "text" ?
-                            answer.text : <>
-                              <img src={answer.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
-                            </>}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            {/*    <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
-                              <Eye className="h-4 w-4" />
-                            </Button> */}
-                            <Button variant="ghost" size="icon" onClick={() => handleEditItemAnswer(answer)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={5}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      answersData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={9}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : answersData.map((answer) => (
+                        <TableRow key={answer.id}>
+                          <TableCell className="font-medium">{answer.question?.level?.game?.name}</TableCell>
+                          <TableCell>{answer.question?.level?.title}</TableCell>
+                          <TableCell>{answer.question?.text}</TableCell>
+                          <TableCell>{
+
+                            answer.question.answers_view === "text" ?
+                              answer.text : <>
+                                <img src={answer.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                              </>}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+                              {/*    <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
+                              <Eye className="h-4 w-4" />
+                            </Button> */}
+                              <Button variant="ghost" size="icon" onClick={() => handleEditItemAnswer(answer)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(answer)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
