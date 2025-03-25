@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays, Baby } from "lucide-react"
 import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
 import { GuardianDialog } from "@/components/dialogs/users/guardians/guardian-dialog"
@@ -33,6 +33,7 @@ import toast from "react-hot-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { calculateAge } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 
 export function UserManagement() {
   const router = useRouter()
@@ -502,9 +503,7 @@ export function UserManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
+
                             <Button variant="ghost" size="icon" onClick={() => handleShowGuardian(parent)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -514,6 +513,28 @@ export function UserManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(parent)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
+                            {/* <Button className="bg-[#ffac33] hover:bg-[#f59f00] p-1" onClick={() => handleViewChildren(parent.id)}
+                            >
+                              <span>
+                                عرض الاطفال
+
+                              </span>
+                            </Button> */}
+
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger >
+                                  <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
+                                    <Baby className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                  عرض الاطفال
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+
                           </div>
                         </TableCell>
                       </TableRow>
@@ -574,9 +595,7 @@ export function UserManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
-                              <CalendarDays className="h-4 w-4" />
-                            </Button>
+
                             <Button variant="ghost" size="icon" onClick={() => handleShowDoctor(doctor)}>
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -586,6 +605,18 @@ export function UserManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(doctor)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger >
+                                  <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
+                                    <CalendarDays className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                  عرض الحجوزات
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         </TableCell>
                       </TableRow>

@@ -39,7 +39,7 @@ export function AppointmentsManagement() {
     const [gamesData, setGamesData] = useState([])
     const [gamesPage, setGamesPage] = useState(1);
     const [gamesMeta, setGamesMeta] = useState({});
-    const [pageSize, setPageSize] = useState(50); // number of items per page
+    const [pageSize, setPageSize] = useState(10); // number of items per page
     const initialFilter = { patient_id: "", guardian_id: "", doctor_id: "", status: "all" };
     const [filter, setFilter] = useState(initialFilter)
     const [loading, setLoading] = useState(false)
@@ -54,7 +54,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/doctors?limit=20`);
+                const response = await getData(`users/doctors?limit=5`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -67,7 +67,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders2 = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/guardians?limit=20`);
+                const response = await getData(`users/guardians?limit=5`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -80,7 +80,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders3 = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/children?limit=20`);
+                const response = await getData(`users/children?limit=5`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -189,22 +189,25 @@ export function AppointmentsManagement() {
     };
     useEffect(() => {
         const doctor = localStorage.getItem("doctor_id");
-
+      
         if (doctor) {
-            setFilter((prev) => {
-                const updatedFilter = { ...prev, doctor_id: doctor.toString() };
-                fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, updatedFilter);
-                return updatedFilter;
-            });
+          setFilter((prev) => {
+            const updatedFilter = { ...prev, doctor_id: doctor.toString() };
+            return updatedFilter;
+          });
         }
-    }, []);
-
-
-    useEffect(() => {
+      }, []);
+      
+      useEffect(() => {
         // جلب البيانات بناءً على المعايير المحددة
-        fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+        const doctor = localStorage.getItem("doctor_id");
+        if (doctor) {
+          fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, { ...filter, doctor_id: doctor });
+        } else {
+          fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+        }
         console.log("gamesData", gamesData);
-    }, [gamesPage, searchTerm, pageSize, filter]);
+      }, [gamesPage, searchTerm, pageSize, filter]);
 
     // Mock data for demonstration
 
@@ -448,7 +451,7 @@ export function AppointmentsManagement() {
                         className="min-w-48"
 
                         defaultOptions={defaultOptions}
-                        value={defaultOptions.find(option => option.value === filter.doctor_id) || null} // Set the value to be the object
+                        value={defaultOptions.find(option => option.value == filter.doctor_id) || null} // Set the value to be the object
                         loadOptions={loadOptions}
                         onChange={(selectedOption) => {
                             console.log(selectedOption);
@@ -460,7 +463,7 @@ export function AppointmentsManagement() {
                             }));
                         }}
                         placeholder="اختر الطبيب"
-                        isClearable
+                        // isClearable
                     />
                 </div>
                 <div>
@@ -619,7 +622,7 @@ export function AppointmentsManagement() {
 
                                         <TableCell className="text-nowrap">{getStatusBadge(appointment.status)}</TableCell>
                                         <TableCell>
-                                            <div className="flex space-x-2 space-x-reverse justify-center">
+                                            <div className="flex space-x-2 space-x-reverse">
                                                 <Button variant="ghost" size="icon" onClick={() => handleViewAppointment(appointment)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>

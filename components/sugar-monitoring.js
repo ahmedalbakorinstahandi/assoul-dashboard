@@ -22,7 +22,7 @@ import animationData from '@/public/no_data.json'; // Adjust the path to your Lo
 import { Label } from "@/components/ui/label"
 
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, FileQuestion } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, FileQuestion, LoaderIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { MealsDialog } from "@/components/dialogs/health/meals/physical-activities-edit-dialog"
@@ -1045,11 +1045,19 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={9}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      :
                       !filter.patient_id ? <>
 
                         <TableRow>
-                          <TableCell className="text-center" colSpan={6}>
+                          <TableCell className="text-center" colSpan={9}>
                             <span>
                               قم بإختيار طفل لعرض النتائج
                             </span>
@@ -1060,7 +1068,7 @@ export function SugarMonitoring() {
 
                         gamesData.length == 0 && <>
                           <TableRow>
-                            <TableCell className="text-center " colSpan={6}>
+                            <TableCell className="text-center " colSpan={9}>
                               <div className="flex w-full align-middle justify-center">
                                 <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
                               </div>
@@ -1148,11 +1156,19 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={9}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      :
                       !filter.patient_id ? <>
 
                         <TableRow>
-                          <TableCell className="text-center" colSpan={6}>
+                          <TableCell className="text-center" colSpan={9}>
                             <span>
                               قم بإختيار طفل لعرض النتائج
                             </span>
@@ -1163,7 +1179,7 @@ export function SugarMonitoring() {
 
                         levelsData.length == 0 && <>
                           <TableRow>
-                            <TableCell className="text-center " colSpan={6}>
+                            <TableCell className="text-center " colSpan={9}>
                               <div className="flex w-full align-middle justify-center">
                                 <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
                               </div>
@@ -1249,11 +1265,18 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {
-                      !filter.patient_id ? <>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={9}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      : !filter.patient_id ? <>
 
                         <TableRow>
-                          <TableCell className="text-center" colSpan={6}>
+                          <TableCell className="text-center" colSpan={9}>
                             <span>
                               قم بإختيار طفل لعرض النتائج
                             </span>
@@ -1264,7 +1287,7 @@ export function SugarMonitoring() {
 
                         answersData.length == 0 && <>
                           <TableRow>
-                            <TableCell className="text-center " colSpan={6}>
+                            <TableCell className="text-center " colSpan={9}>
                               <div className="flex w-full align-middle justify-center">
                                 <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
                               </div>
@@ -1355,11 +1378,19 @@ export function SugarMonitoring() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={9}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      :
                       !filter.patient_id ? <>
 
                         <TableRow>
-                          <TableCell className="text-center" colSpan={6}>
+                          <TableCell className="text-center" colSpan={9}>
                             <span>
                               قم بإختيار طفل لعرض النتائج
                             </span>
@@ -1370,7 +1401,7 @@ export function SugarMonitoring() {
 
                         mealsData.length == 0 && <>
                           <TableRow>
-                            <TableCell className="text-center " colSpan={6}>
+                            <TableCell className="text-center " colSpan={9}>
                               <div className="flex w-full align-middle justify-center">
                                 <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
                               </div>
