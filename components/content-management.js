@@ -15,8 +15,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
+
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, FileText, Video, Image, ExternalLink } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, FileText, Video, Image, ExternalLink, LoaderIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -28,6 +30,7 @@ import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import toast from "react-hot-toast"
 import { Switch } from "./ui/switch"
 import { PaginationControls } from "./ui/pagination-controls"
+import Lottie from "lottie-react"
 
 export function ContentManagement() {
   const [activeTab, setActiveTab] = useState("videos")
@@ -299,8 +302,8 @@ export function ContentManagement() {
                     onClick={() => {
                       const newGame = {
                         title: typeof document !== 'undefined' && document.getElementById("title").value,
-                        link:typeof document !== 'undefined' &&  document.getElementById("link").value,
-                        duration:typeof document !== 'undefined' &&  document.getElementById("duration").value,
+                        link: typeof document !== 'undefined' && document.getElementById("link").value,
+                        duration: typeof document !== 'undefined' && document.getElementById("duration").value,
                         key: selectedQuestionId,
 
                         // question_id: selectedQuestionId,
@@ -337,11 +340,11 @@ export function ContentManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex w-full grid-cols-3">
-          {/* <TabsTrigger value="articles">المقالات</TabsTrigger> */}
-          <TabsTrigger value="videos" className="flex-1">الفيديوهات</TabsTrigger>
-          {/* <TabsTrigger value="images">الصور</TabsTrigger> */}
-        </TabsList>
+        {/* <TabsList className="flex w-full grid-cols-3"> */}
+        {/* <TabsTrigger value="articles">المقالات</TabsTrigger> */}
+        {/* <TabsTrigger value="videos" className="flex-1">الفيديوهات</TabsTrigger> */}
+        {/* <TabsTrigger value="images">الصور</TabsTrigger> */}
+        {/* </TabsList> */}
 
         {/* <TabsContent value="articles">
           <Card>
@@ -403,7 +406,10 @@ export function ContentManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>المعرف</TableHead>
+
                       <TableHead>العنوان</TableHead>
+
                       <TableHead>الرابط</TableHead>
                       <TableHead>المدة</TableHead>
                       <TableHead>تاريخ النشر</TableHead>
@@ -412,33 +418,53 @@ export function ContentManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {contentData.map((video) => (
-                      <TableRow key={video.id}>
-                        <TableCell className="font-medium text-nowrap">{video.title}</TableCell>
-                        <TableCell>
-                          <a href={video.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-500 hover:underline">
-                            {video.link.slice(0, 30)}...
-                            <ExternalLink size={18} />
-                          </a>
-                        </TableCell>
-                        <TableCell className="text-nowrap">{video.duration} دقيقة</TableCell>
-                        <TableCell className="text-nowrap">{new Date(video.created_at).toLocaleDateString("EN-ca")}</TableCell>
-                        <TableCell>{getStatusBadge(video.is_visible)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewContent(video)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditContent(video)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(video)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={7}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      contentData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={7}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : contentData.map((video) => (
+                        <TableRow key={video.id}>
+                          <TableCell className="font-medium text-nowrap">{video.id}</TableCell>
+
+                          <TableCell className="font-medium text-nowrap">{video.title}</TableCell>
+                          <TableCell>
+                            <a href={video.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-500 hover:underline">
+                              {video.link.slice(0, 30)}...
+                              <ExternalLink size={18} />
+                            </a>
+                          </TableCell>
+                          <TableCell className="text-nowrap">{video.duration} دقيقة</TableCell>
+                          <TableCell className="text-nowrap">{new Date(video.created_at).toLocaleDateString("EN-ca")}</TableCell>
+                          <TableCell>{getStatusBadge(video.is_visible)}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse justify-center">
+                              <Button variant="ghost" size="icon" onClick={() => handleViewContent(video)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditContent(video)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(video)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
 
