@@ -24,6 +24,9 @@ import { DoctorDialog } from "@/components/dialogs/users/doctors/doctor-dialog"
 import { ChildrenDialog } from "@/components/dialogs/users/childrens/children-dialog"
 import { OTPComponent } from "@/components/OTPComponent"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
+import { DoctorDetailsDialog } from "@/components/dialogs/users/doctors/DoctorDetailsDialog"
+import { GuardianDetailsDialog } from "@/components/dialogs/users/guardians/GuardianDetailsDialog"
+
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { PaginationControls } from "./ui/pagination-controls"
 import toast from "react-hot-toast"
@@ -61,8 +64,11 @@ export function UserManagement() {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editDoctorDialogOpen, setEditDoctorDialogOpen] = useState(false)
+  //show doctor 
+  const [showDoctor, setShowDoctor] = useState(false)
   const [editChildDialogOpen, setEditChildDialogOpen] = useState(false)
-
+  // show guardian
+  const [showGuardian, setShowGuardian] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [selectedItemLevel, setSelectedItemLevel] = useState(null)
@@ -273,6 +279,14 @@ export function UserManagement() {
   const handleEditDoctor = (user) => {
     setSelectedItem(user)
     setEditDoctorDialogOpen(true)
+  }
+  const handleShowDoctor = (user) => {
+    setSelectedItem(user)
+    setShowDoctor(true)
+  }
+  const handleShowGuardian = (user) => {
+    setSelectedItem(user)
+    setShowGuardian(true)
   }
   const handleEditChild = (user) => {
     setSelectedItem(user)
@@ -491,6 +505,9 @@ export function UserManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleViewChildren(parent.id)}>
                               <Eye className="h-4 w-4" />
                             </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleShowGuardian(parent)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditUser(parent)}>
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -560,6 +577,9 @@ export function UserManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
                               <CalendarDays className="h-4 w-4" />
                             </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleShowDoctor(doctor)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleEditDoctor(doctor)}>
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -595,7 +615,7 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                    <TableHead>المعرف</TableHead>
+                      <TableHead>المعرف</TableHead>
 
                       <TableHead className="text-nowrap">الصورة الشخصية</TableHead>
                       <TableHead>الاسم</TableHead>
@@ -694,6 +714,20 @@ export function UserManagement() {
         initialData={selectedItem}
       />
 
+      <DoctorDetailsDialog
+        isOpen={showDoctor}
+        onClose={() => setShowDoctor(false)}
+        // onSave={handleSaveItem}
+        // initialData={selectedItem}
+        details={selectedItem}
+      />
+      <GuardianDetailsDialog
+        isOpen={showGuardian}
+        onClose={() => setShowGuardian(false)}
+        // onSave={handleSaveItem}
+        // initialData={selectedItem}
+        userData={selectedItem}
+      />
 
       {/* childern */}
       <ChildrenDialog
