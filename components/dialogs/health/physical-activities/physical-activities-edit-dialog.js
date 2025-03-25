@@ -131,7 +131,7 @@ export function PhysicalActivitiesDialog({ activity, open, onOpenChange, onSave 
               <SelectContent>
                 {activityTime.map((timeOption, idx) => (
                   <SelectItem key={idx} value={timeOption.name.toString()}>
-                    {timeOption.name}
+                    {timeOption.name_ar}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -161,7 +161,7 @@ export function PhysicalActivitiesDialog({ activity, open, onOpenChange, onSave 
               <SelectContent>
                 {intensity.map((item, idx) => (
                   <SelectItem key={idx} value={item.name.toString()}>
-                    {item.name}
+                    {item.name_ar}
                   </SelectItem>
                 ))}
               </SelectContent>

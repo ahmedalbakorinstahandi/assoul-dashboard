@@ -127,7 +127,7 @@ export function InsulinDosesDialog({ insulinDose, open, onOpenChange, onSave }) 
               <SelectContent>
                 {takenTime.map((timeOption, idx) => (
                   <SelectItem key={idx} value={timeOption.name.toString()}>
-                    {timeOption.name}
+                    {timeOption.name_ar}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -166,7 +166,7 @@ export function InsulinDosesDialog({ insulinDose, open, onOpenChange, onSave }) 
               <SelectContent>
                 {injectionSites.map((site, idx) => (
                   <SelectItem key={idx} value={site.name.toString()}>
-                    {site.name}
+                    {site.name_ar}
                   </SelectItem>
                 ))}
               </SelectContent>

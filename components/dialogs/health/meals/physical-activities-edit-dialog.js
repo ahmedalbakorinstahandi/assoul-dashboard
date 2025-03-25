@@ -133,7 +133,7 @@ export function MealsDialog({ meal, open, onOpenChange, onSave }) {
               <SelectContent>
                 {typeMeals.map((item, idx) => (
                   <SelectItem key={idx} value={item.name.toString()}>
-                    {item.name}
+                    {item.name_ar}
                   </SelectItem>
                 ))}
               </SelectContent>

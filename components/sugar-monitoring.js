@@ -477,7 +477,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {measurementTypes.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -499,7 +499,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {units.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -613,7 +613,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {takenTime.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -639,7 +639,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {injectionSites.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -733,7 +733,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {activityTime.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -756,7 +756,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {intensity.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -857,7 +857,7 @@ export function SugarMonitoring() {
                       <SelectContent>
                         {typeMeals.map((game, idx) => (
                           <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name}
+                            {game.name_ar}
                           </SelectItem>
                         ))}
                       </SelectContent>

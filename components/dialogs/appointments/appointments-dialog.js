@@ -196,7 +196,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                                 <SelectContent>
                                     {patientStatus.map((item, idx) => (
                                         <SelectItem key={idx} value={item.name.toString()}>
-                                            {item.name}
+                                            {item.name_ar}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -218,7 +218,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                                 <SelectContent>
                                     {statusAppointment.map((item, idx) => (
                                         <SelectItem key={idx} value={item.name.toString()}>
-                                            {item.name}
+                                            {item.name_ar}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

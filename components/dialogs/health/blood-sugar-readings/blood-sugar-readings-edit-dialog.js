@@ -129,7 +129,7 @@ export function BloodSugarReadingsEditDialog({ game, open, onOpenChange, onSave 
                 <SelectContent>
                   {measurementTypes.map((type, idx) => (
                     <SelectItem key={idx} value={type.name}>
-                      {type.name}
+                      {type.name_ar}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -158,7 +158,7 @@ export function BloodSugarReadingsEditDialog({ game, open, onOpenChange, onSave 
                 <SelectContent>
                   {units.map((unit, idx) => (
                     <SelectItem key={idx} value={unit.name}>
-                      {unit.name}
+                      {unit.name_ar}
                     </SelectItem>
                   ))}
                 </SelectContent>

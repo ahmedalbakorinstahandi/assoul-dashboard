@@ -73,12 +73,12 @@ export function GuardianDialog({ isOpen, onClose, onSave, initialData }) {
         e.preventDefault();
 
         // Basic validation
-        if (!formData.first_name) return toast.error("الاسم الأول مطلوب");
+        if (!formData.first_name) return toast.error("الاسم الأول مطلوب") && setIsLoading(false);
         if (!formData.last_name) return toast.error("اسم العائلة مطلوب");
-        if (!formData.email.includes("@")) return toast.error("البريد الإلكتروني غير صالح");
-        if (!formData.phone) return toast.error("رقم الهاتف مطلوب");
-        if (!initialData && formData.password.length < 6) return toast.error("يجب أن تكون كلمة المرور 6 أحرف على الأقل");
-        if (formData.password !== formData.password_confirmation) return toast.error("كلمات المرور غير متطابقة");
+        if (!formData.email.includes("@")) return toast.error("البريد الإلكتروني غير صالح") && setIsLoading(false);
+        if (!formData.phone) return toast.error("رقم الهاتف مطلوب") && setIsLoading(false);
+        if (!initialData && formData.password.length < 6) return toast.error("يجب أن تكون كلمة المرور 6 أحرف على الأقل") && setIsLoading(false);
+        if (formData.password !== formData.password_confirmation) return toast.error("كلمات المرور غير متطابقة") && setIsLoading(false);
 
         // Build payload with keys as user[first_name], etc.
         const payload = {
@@ -110,105 +110,105 @@ export function GuardianDialog({ isOpen, onClose, onSave, initialData }) {
                         {initialData ? "قم بتحديث بيانات المستخدم هنا." : "أدخل بيانات المستخدم الجديد هنا."}
                     </DialogDescription>
                 </DialogHeader>
-                <form className="grid gap-4 py-4">
+                <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
                     <div className="space-y-2">
                         <Label>الاسم الأول</Label>
-                        <Input name="first_name" value={formData.first_name} onChange={(e) => handleChange("first_name", e.target.value)} />
+                        <Input name="first_name" required value={formData.first_name} onChange={(e) => handleChange("first_name", e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label>اسم العائلة</Label>
-                        <Input name="last_name" value={formData.last_name} onChange={(e) => handleChange("last_name", e.target.value)} />
+                        <Input name="last_name" required value={formData.last_name} onChange={(e) => handleChange("last_name", e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label>البريد الإلكتروني</Label>
-                        <Input type="email" name="email" value={formData.email} onChange={(e) => handleChange("email", e.target.value)} />
+                        <Input type="email" name="email" required value={formData.email} onChange={(e) => handleChange("email", e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label>رقم الهاتف</Label>
-                        <Input name="phone" value={formData.phone} onChange={(e) => handleChange("phone", e.target.value)} />
+                        <Input name="phone" required value={formData.phone} onChange={(e) => handleChange("phone", e.target.value)} />
                     </div>
-                    {!initialData ? <>
+                    {/* {!initialData ? <> */}
 
 
-                        <div className="space-y-2 relative">
-                            <Label>كلمة المرور</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={(e) => handleChange("password", e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 end-3 flex items-center text-gray-500"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2 relative">
-                            <Label>تأكيد كلمة المرور</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    name="password_confirmation"
-                                    value={formData.password_confirmation}
-                                    onChange={(e) => handleChange("password_confirmation", e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 end-3 flex items-center text-gray-500"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                >
-                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
-                        </div>
-                    </> : <>
-
-                        <div className="space-y-2 relative">
-                            <Label>كلمة المرور</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={(e) => handleChange("password", e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 end-3 flex items-center text-gray-500"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="status">الحالة</Label>
-                            <Select
-                                name="status"
-                                value={formData.status}
-                                onValueChange={(value) => handleChange("status", value)}
-                            // onValueChange={(e) => handleChange(e)}
+                    <div className="space-y-2 relative">
+                        <Label>كلمة المرور</Label>
+                        <div className="relative">
+                            <Input 
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={formData.password}
+                                onChange={(e) => handleChange("password", e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 end-3 flex items-center text-gray-500"
+                                onClick={() => setShowPassword(!showPassword)}
                             >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="اختر الحالة " />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {statusUser.map((item, idx) => (
-                                        <SelectItem key={idx} value={item.name.toString()}>
-                                            {item.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
+                    </div>
 
-                    </>}
+                    <div className="space-y-2 relative">
+                        <Label>تأكيد كلمة المرور</Label>
+                        <div className="relative">
+                            <Input 
+                                type={showConfirmPassword ? "text" : "password"}
+                                name="password_confirmation"
+                                value={formData.password_confirmation}
+                                onChange={(e) => handleChange("password_confirmation", e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 end-3 flex items-center text-gray-500"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
+                    </div>
+                    {/* </> : <> */}
+
+                    {/* <div className="space-y-2 relative">
+                            <Label>كلمة المرور</Label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={(e) => handleChange("password", e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 end-3 flex items-center text-gray-500"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                        </div> */}
+                    <div className="space-y-2">
+                        <Label htmlFor="status">الحالة</Label>
+                        <Select
+                            name="status"
+                            value={formData.status}
+                            onValueChange={(value) => handleChange("status", value)}
+                        // onValueChange={(e) => handleChange(e)}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="اختر الحالة " />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {statusUser.map((item, idx) => (
+                                    <SelectItem key={idx} value={item.name.toString()}>
+                                        {item.name_ar}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* </>} */}
                     <div className="space-y-2">
                         <Label>الصورة الشخصية</Label>
                         <Input type="file" onChange={handleImageChange} />
@@ -221,8 +221,7 @@ export function GuardianDialog({ isOpen, onClose, onSave, initialData }) {
                             إلغاء
                         </Button>
                         <Button
-                            onClick={handleSubmit}
-
+                            type="submit"
                             disabled={isLoading}
 
                             className="bg-[#ffac33] hover:bg-[#f59f00]">

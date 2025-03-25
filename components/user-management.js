@@ -39,7 +39,7 @@ export function UserManagement() {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
   const [isAddAnswerOpen, setIsAddAnswerOpen] = useState(false)
-  const initialFilter = { guardian_id: "", level_id: "", question_id: "" };
+  const initialFilter = { guardian_id: "", level_id: "", question_id: "", sort_id: "asc" };
   const [filter, setFilter] = useState(initialFilter)
 
   const [isEnabled, setIsEnabled] = useState(true);
@@ -456,12 +456,14 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
+                      <TableHead>المعرف</TableHead>
+
                       <TableHead className="text-nowrap">الصورة الشخصية</TableHead>
+                      <TableHead>الاسم</TableHead>
 
                       <TableHead className="text-nowrap">البريد الإلكتروني</TableHead>
                       <TableHead className="text-nowrap">رقم الهاتف</TableHead>
-                      <TableHead>عدد الأطفال</TableHead>
+                      <TableHead className="text-nowrap">عدد الأطفال</TableHead>
                       <TableHead className="text-nowrap">الحالة</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
@@ -469,10 +471,12 @@ export function UserManagement() {
                   <TableBody>
                     {levelsData.map((parent) => (
                       <TableRow key={parent.id}>
-                        <TableCell className="font-medium text-nowrap">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
+                        <TableCell>{parent.id}</TableCell>
+
                         <TableCell>
                           <img src={parent.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
                         </TableCell>
+                        <TableCell className="font-medium text-nowrap">{parent.user.first_name + " " + parent.user.last_name}</TableCell>
                         <TableCell className="text-nowrap">{parent.user.email}</TableCell>
                         <TableCell className="switch-custom ">
                           {parent.user.phone}</TableCell>
@@ -522,8 +526,10 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
+                      <TableHead>المعرف</TableHead>
+
                       <TableHead className="text-nowrap">الصورة الشخصية</TableHead>
+                      <TableHead>الاسم</TableHead>
 
                       <TableHead className="text-nowrap">البريد الإلكتروني</TableHead>
                       <TableHead className="text-nowrap">رقم الهاتف</TableHead>
@@ -535,10 +541,12 @@ export function UserManagement() {
                   <TableBody>
                     {questionsData.map((doctor) => (
                       <TableRow key={doctor.id}>
-                        <TableCell className="font-medium text-nowrap">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
+                        <TableCell>{doctor.id}</TableCell>
+
                         <TableCell>
                           <img src={doctor.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
                         </TableCell>
+                        <TableCell className="font-medium text-nowrap">{doctor.user.first_name + " " + doctor.user.last_name}</TableCell>
                         <TableCell>{doctor.user.email}</TableCell>
                         <TableCell className="switch-custom ">{doctor.user.phone}</TableCell>
                         <TableCell>{doctor.specialization}</TableCell>
@@ -587,8 +595,10 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
+                    <TableHead>المعرف</TableHead>
+
                       <TableHead className="text-nowrap">الصورة الشخصية</TableHead>
+                      <TableHead>الاسم</TableHead>
 
                       <TableHead>الجنس</TableHead>
                       <TableHead>العمر</TableHead>
@@ -604,10 +614,12 @@ export function UserManagement() {
                   <TableBody>
                     {gamesData.map((child) => (
                       <TableRow key={child.id}>
-                        <TableCell className="font-medium text-nowrap">{child.user.first_name + " " + child.user.last_name}</TableCell>
+                        <TableCell>{child.id}</TableCell>
+
                         <TableCell>
                           <img src={child.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover" />
                         </TableCell>
+                        <TableCell className="font-medium text-nowrap">{child.user.first_name + " " + child.user.last_name}</TableCell>
                         <TableCell className="text-nowrap">{child.gender == "male" ? "ذكر" : "انثى"}</TableCell>
                         <TableCell className="text-nowrap">{calculateAge(child.birth_date)}</TableCell>
                         <TableCell className="text-nowrap">{(child.height)} سم</TableCell>
