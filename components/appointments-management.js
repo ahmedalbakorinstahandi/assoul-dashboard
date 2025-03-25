@@ -14,9 +14,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import AsyncSelect from "react-select/async";
+import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
 
 import { Label } from "@/components/ui/label"
-import { Search, Edit, Eye, XCircle, Calendar, Plus, Trash2 } from "lucide-react"
+import { Search, Edit, Eye, XCircle, Calendar, Plus, Trash2, LoaderIcon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { AppointmentDialog } from "@/components/dialogs/appointments/appointments-dialog"
@@ -25,6 +26,7 @@ import { AppointmentCancelDialog } from "@/components/dialogs/appointments/appoi
 import toast from "react-hot-toast"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
+import Lottie from "lottie-react"
 
 export function AppointmentsManagement() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -189,25 +191,25 @@ export function AppointmentsManagement() {
     };
     useEffect(() => {
         const doctor = localStorage.getItem("doctor_id");
-      
+
         if (doctor) {
-          setFilter((prev) => {
-            const updatedFilter = { ...prev, doctor_id: doctor.toString() };
-            return updatedFilter;
-          });
+            setFilter((prev) => {
+                const updatedFilter = { ...prev, doctor_id: doctor.toString() };
+                return updatedFilter;
+            });
         }
-      }, []);
-      
-      useEffect(() => {
+    }, []);
+
+    useEffect(() => {
         // جلب البيانات بناءً على المعايير المحددة
         const doctor = localStorage.getItem("doctor_id");
         if (doctor) {
-          fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, { ...filter, doctor_id: doctor });
+            fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, { ...filter, doctor_id: doctor });
         } else {
-          fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+            fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
         }
         console.log("gamesData", gamesData);
-      }, [gamesPage, searchTerm, pageSize, filter]);
+    }, [gamesPage, searchTerm, pageSize, filter]);
 
     // Mock data for demonstration
 
@@ -463,7 +465,7 @@ export function AppointmentsManagement() {
                             }));
                         }}
                         placeholder="اختر الطبيب"
-                        // isClearable
+                    // isClearable
                     />
                 </div>
                 <div>
@@ -599,6 +601,8 @@ export function AppointmentsManagement() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead className="text-nowrap"> المعرف</TableHead>
+
                                     <TableHead className="text-nowrap">اسم الطفل</TableHead>
                                     <TableHead className="text-nowrap">ولي الأمر</TableHead>
                                     <TableHead>الطبيب</TableHead>
@@ -611,38 +615,57 @@ export function AppointmentsManagement() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {gamesData.map((appointment) => (
-                                    <TableRow key={appointment.id}>
-                                        <TableCell className="font-medium text-nowrap">{appointment.patient?.user?.first_name + " " + appointment.patient?.user?.last_name}</TableCell>
-                                        <TableCell className="text-nowrap">{appointment.guardian?.user?.first_name + " " + appointment.guardian?.user?.last_name}</TableCell>
-                                        <TableCell className="text-nowrap">{appointment.doctor?.user?.first_name + " " + appointment.doctor?.user?.last_name}</TableCell>
-                                        <TableCell className="text-nowrap">{handleConvertDate(appointment.appointment_date)}</TableCell>
-                                        <TableCell className="text-nowrap">{appointment.title}</TableCell>
-                                        <TableCell className="text-nowrap">{appointment.notes}</TableCell>
-
-                                        <TableCell className="text-nowrap">{getStatusBadge(appointment.status)}</TableCell>
-                                        <TableCell>
-                                            <div className="flex space-x-2 space-x-reverse">
-                                                <Button variant="ghost" size="icon" onClick={() => handleViewAppointment(appointment)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(appointment)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                                {appointment.status === "pending" && (
-                                                    <>
-                                                        <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(appointment)}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" onClick={() => handleCancelItem(appointment)} >
-                                                            <XCircle className="h-4 w-4 text-red-500" />
-                                                        </Button>
-                                                    </>
-                                                )}
+                                {loading ?
+                                    <TableRow>
+                                        <TableCell className="text-center " colSpan={9}>
+                                            <div className="flex w-full align-middle justify-center">
+                                                <LoaderIcon />
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                    :
+
+                                    gamesData.length == 0 ? <>
+                                        <TableRow>
+                                            <TableCell className="text-center " colSpan={9}>
+                                                <div className="flex w-full align-middle justify-center">
+                                                    <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </> : gamesData.map((appointment) => (
+                                        <TableRow key={appointment.id}>
+                                            <TableCell className="text-center">{appointment.id}</TableCell>
+                                            <TableCell className="font-medium text-nowrap">{appointment.patient?.user?.first_name + " " + appointment.patient?.user?.last_name}</TableCell>
+                                            <TableCell className="text-nowrap">{appointment.guardian?.user?.first_name + " " + appointment.guardian?.user?.last_name}</TableCell>
+                                            <TableCell className="text-nowrap">{appointment.doctor?.user?.first_name + " " + appointment.doctor?.user?.last_name}</TableCell>
+                                            <TableCell className="text-nowrap">{handleConvertDate(appointment.appointment_date)}</TableCell>
+                                            <TableCell className="text-nowrap">{appointment.title}</TableCell>
+                                            <TableCell className="text-nowrap">{appointment.notes}</TableCell>
+
+                                            <TableCell className="text-nowrap">{getStatusBadge(appointment.status)}</TableCell>
+                                            <TableCell>
+                                                <div className="flex space-x-2 space-x-reverse">
+                                                    <Button variant="ghost" size="icon" onClick={() => handleViewAppointment(appointment)}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(appointment)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                    {appointment.status === "pending" && (
+                                                        <>
+                                                            <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(appointment)}>
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" onClick={() => handleCancelItem(appointment)} >
+                                                                <XCircle className="h-4 w-4 text-red-500" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                             </TableBody>
                         </Table>
                     </div>

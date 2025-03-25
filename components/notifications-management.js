@@ -15,10 +15,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ReminderViewDialog } from "@/components/dialogs/notifications/scheduled-notifications/reminder-view-dialog"
+import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
 
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, PencilIcon, TrashIcon } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, PencilIcon, TrashIcon, LoaderIcon } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -30,6 +31,7 @@ import { DeleteConfirmationDialog } from "./dialogs/delete-confirmation-dialog"
 import { PaginationControls } from "./ui/pagination-controls"
 // استيراد النوافذ المنبثقة من المجلدات الجديدة
 import { NotificationViewDialog } from "@/components/dialogs/notifications/notifications/notifications-view-dialog"
+import Lottie from "lottie-react"
 // import { NotificationEditDialog } from "@/components/dialogs/notifications/notification-edit-dialog"
 // import { DeleteConfirmationDialog } from "@/components/dialogs/common/delete-confirmation-dialog"
 
@@ -383,6 +385,7 @@ export function NotificationsManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>المعرف</TableHead>
                       <TableHead>عنوان الإشعار</TableHead>
                       <TableHead>الرسالة</TableHead>
                       <TableHead>النوع</TableHead>
@@ -392,46 +395,65 @@ export function NotificationsManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {gamesData.map((notification) => (
-                      <TableRow key={notification.id} className="hover:bg-muted/50">
-                        <TableCell className="p-2 text-right text-nowrap">{notification.title}</TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          {notification.message && notification.message.length > 30
-                            ? notification.message.substring(0, 30) + "..."
-                            : notification.message}
-                        </TableCell>
-                        <TableCell className="p-2 text-right">
-                          <Badge variant={
-                            notification.type === "info" ? "default" :
-                              notification.type === "success" ? "success" :
-                                notification.type === "warning" ? "warning" :
-                                  notification.type === "error" ? "destructive" : notification.type === "alert" ? "destructive" : "default"
-
-                          }>
-                            {notification.type === "info" ? "معلومات" :
-                              notification.type === "success" ? "نجاح" :
-                                notification.type === "warning" ? "تحذير" :
-                                  notification.type === "error" ? "خطأ" : notification.type === "alert" ? "انذار" : notification.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          {notification.read_at ? new Date(notification.read_at).toLocaleString("EN-ca") : "لم تتم القراءة"}
-                        </TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          {new Date(notification.created_at).toLocaleString("EN-ca")}
-                        </TableCell>
-                        <TableCell className="p-2">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewNotification(notification)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteNotification(notification)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={7}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      gamesData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={7}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : gamesData.map((notification) => (
+                        <TableRow key={notification.id} className="hover:bg-muted/50">
+                          <TableCell>{notification.id}</TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">{notification.title}</TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            {notification.message && notification.message.length > 30
+                              ? notification.message.substring(0, 30) + "..."
+                              : notification.message}
+                          </TableCell>
+                          <TableCell className="p-2 text-right">
+                            <Badge variant={
+                              notification.type === "info" ? "default" :
+                                notification.type === "success" ? "success" :
+                                  notification.type === "warning" ? "warning" :
+                                    notification.type === "error" ? "destructive" : notification.type === "alert" ? "destructive" : "default"
+
+                            }>
+                              {notification.type === "info" ? "معلومات" :
+                                notification.type === "success" ? "نجاح" :
+                                  notification.type === "warning" ? "تحذير" :
+                                    notification.type === "error" ? "خطأ" : notification.type === "alert" ? "انذار" : notification.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            {notification.read_at ? new Date(notification.read_at).toLocaleString("EN-ca") : "لم تتم القراءة"}
+                          </TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            {new Date(notification.created_at).toLocaleString("EN-ca")}
+                          </TableCell>
+                          <TableCell className="p-2">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleViewNotification(notification)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteNotification(notification)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
@@ -450,6 +472,7 @@ export function NotificationsManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCell className="p-2">المعرف</TableCell>
                       <TableHead className="text-nowrap">عنوان المنبه</TableHead>
                       <TableHead>المحتوى</TableHead>
                       <TableHead>النوع</TableHead>
@@ -460,46 +483,65 @@ export function NotificationsManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {levelsData.map((reminder) => (
-                      <TableRow key={reminder.id} className="hover:bg-muted/50">
-                        <TableCell className="p-2 text-right text-nowrap">{reminder.title}</TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          {reminder.content && reminder.content.length > 30
-                            ? reminder.content.substring(0, 30) + "..."
-                            : reminder.content}
-                        </TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          {reminder.type === 'yearly' ? 'سنوي' :
-                            reminder.type === 'monthly' ? 'شهري' :
-                              reminder.type === 'weekly' ? 'أسبوعي' :
-                                reminder.type === 'daily' ? 'يومي' : reminder.type}
-                        </TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          {reminder.type === 'yearly' || reminder.type === 'monthly' ? `الشهر ${reminder.month}` : ''}
-                          {reminder.type === 'weekly' ? `الأسبوع ${reminder.week}` : ''}
-                          {reminder.day ? `  اليوم ${reminder.day}` : ''}
-                        </TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">{handleConvertDate(reminder.time)}</TableCell>
-                        <TableCell className="p-2 text-right text-nowrap">
-                          <Badge variant={reminder.status === 'active' ? 'success' : 'destructive'}>
-                            {reminder.status === 'active' ? 'نشط' : 'غير نشط'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="p-2">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewReminder(reminder)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditReminders(reminder)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteReminders(reminder)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {loading ?
+                      <TableRow>
+                        <TableCell className="text-center " colSpan={8}>
+                          <div className="flex w-full align-middle justify-center">
+                            <LoaderIcon />
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      :
+
+                      levelsData.length == 0 ? <>
+                        <TableRow>
+                          <TableCell className="text-center " colSpan={8}>
+                            <div className="flex w-full align-middle justify-center">
+                              <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </> : levelsData.map((reminder) => (
+                        <TableRow key={reminder.id} className="hover:bg-muted/50">
+                          <TableCell className="p-2">{reminder.id}</TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">{reminder.title}</TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            {reminder.content && reminder.content.length > 30
+                              ? reminder.content.substring(0, 30) + "..."
+                              : reminder.content}
+                          </TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            {reminder.type === 'yearly' ? 'سنوي' :
+                              reminder.type === 'monthly' ? 'شهري' :
+                                reminder.type === 'weekly' ? 'أسبوعي' :
+                                  reminder.type === 'daily' ? 'يومي' : reminder.type}
+                          </TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            {reminder.type === 'yearly' || reminder.type === 'monthly' ? `الشهر ${reminder.month}` : ''}
+                            {reminder.type === 'weekly' ? `الأسبوع ${reminder.week}` : ''}
+                            {reminder.day ? `  اليوم ${reminder.day}` : ''}
+                          </TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">{handleConvertDate(reminder.time)}</TableCell>
+                          <TableCell className="p-2 text-right text-nowrap">
+                            <Badge variant={reminder.status === 'active' ? 'success' : 'destructive'}>
+                              {reminder.status === 'active' ? 'نشط' : 'غير نشط'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="p-2">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleViewReminder(reminder)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditReminders(reminder)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteReminders(reminder)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
 
                 </Table>
