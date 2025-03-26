@@ -178,6 +178,9 @@ export function AppointmentsManagement() {
 
 
         }
+        if (filter.patient_id) {
+            filter.patient_id = filter.patient_id.toInteger()
+        }
         const response = await getData(
             `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
         );
@@ -200,16 +203,35 @@ export function AppointmentsManagement() {
         }
     }, []);
 
+
     useEffect(() => {
-        // جلب البيانات بناءً على المعايير المحددة
         const doctor = localStorage.getItem("doctor_id");
-        if (doctor) {
-            fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, { ...filter, doctor_id: doctor });
-        } else {
-            fetchEntityData("schedules/appointments", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+
+        // Check if the doctor_id exists and if it differs from the current filter's doctor_id
+        if (doctor && doctor !== filter.doctor_id) {
+            // If doctor_id has changed, update the filter with the new doctor_id
+            setFilter((prevFilter) => ({
+                ...prevFilter,
+                doctor_id: doctor,
+            }));
         }
+
+        // Fetch data based on the current filter (including the updated doctor_id if set)
+        fetchEntityData(
+            "schedules/appointments",
+            setGamesData,
+            setGamesMeta,
+            gamesPage,
+            searchTerm,
+            filter
+        );
+
         console.log("gamesData", gamesData);
-    }, [gamesPage, searchTerm, pageSize, filter]);
+        console.log(filter);
+        localStorage.clear()
+
+    }, [gamesPage, searchTerm, pageSize, filter]); // Include filter as a dependency
+
 
     // Mock data for demonstration
 
@@ -453,7 +475,7 @@ export function AppointmentsManagement() {
                         className="min-w-48"
 
                         defaultOptions={defaultOptions}
-                        value={defaultOptions.find(option => option.value == filter.doctor_id) || null} // Set the value to be the object
+                        value={defaultOptions.find(option => option.value.toString() == filter.doctor_id.toString()) || ""} // Set the value to be the object
                         loadOptions={loadOptions}
                         onChange={(selectedOption) => {
                             console.log(selectedOption);
