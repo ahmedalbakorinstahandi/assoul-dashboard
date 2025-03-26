@@ -97,26 +97,26 @@ export function ContentEditDialog({ game, open, onOpenChange, onSave, handleAddE
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="title">عنوان الفديو </Label>
-            <Input id="title" value={form.title} placeholder="أدخل عنوان الفديو" onChange={(e) => handleChange("title", e.target.value)} />
+            <Input id="title" required value={form.title} placeholder="أدخل عنوان الفديو" onChange={(e) => handleChange("title", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="link">رابط الفديو </Label>
-            <Input id="link" value={form.link} onClick={(e) => onChange("link", e.target.value)}
+            <Input id="link" required value={form.link} onClick={(e) => onChange("link", e.target.value)}
               placeholder="أدخل رابط الفديو" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="duration">مدة الفديو </Label>
-            <Input typeof="number" value={form.duration} min={0} id="duration" placeholder="أدخل مدة الفديو" type="number" onChange={(e) => handleChange("duration", e.target.value)} />
+            <Input typeof="number" required value={form.duration} min={0} id="duration" placeholder="أدخل مدة الفديو" type="number" onChange={(e) => handleChange("duration", e.target.value)} />
 
           </div>
           <div className="flex items-center justify-between">
             <Label htmlFor="is_visible" >قابلية الظهور</Label>
             <div className="flex align-middle justify-center">
               <span className="mx-2">{isEnabled ? "منشور" : "مسودة"}</span>
-              <Switch id="is_visible" value={form.is_visible} color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+              <Switch id="is_visible" required value={form.is_visible} color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
             </div>
           </div>
           {/* معاينة الفيديو داخل iframe إذا كان الرابط صحيحًا */}
@@ -134,24 +134,24 @@ export function ContentEditDialog({ game, open, onOpenChange, onSave, handleAddE
               ></iframe>
             </div>)}
 
-        </div>
 
-        <DialogFooter>
-          <Button
-            style={{ marginInline: "1rem" }}
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            إلغاء
-          </Button>
-          <Button
-            className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-            onClick={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? "جاري الحفظ..." : "حفظ"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              style={{ marginInline: "1rem" }}
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              إلغاء
+            </Button>
+            <Button
+              className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "جاري الحفظ..." : "حفظ"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

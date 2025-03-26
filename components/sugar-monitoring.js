@@ -457,7 +457,7 @@ export function SugarMonitoring() {
       <div className="flex justify-between items-center">
         <h2 className="text-xl md:text-3xl mb-2 font-bold"> سجل الحالة الصحية</h2>
         <div className="">
-          {activeTab === "blood-sugar-readings" && (
+          {activeTab === "blood-sugar-readings" && filter.patient_id && (
             <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
@@ -466,125 +466,138 @@ export function SugarMonitoring() {
                   <span className="sm:hidden">إضافة</span>
                 </Button>
               </DialogTrigger>
+
               <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
                   <DialogTitle>إضافة بيانات قراءة سكر الدم جديدة</DialogTitle>
-                  <DialogDescription>أدخل بيانات قراءة سكر الدم الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                  <DialogDescription>
+                    أدخل بيانات قراءة سكر الدم الجديدة هنا. اضغط على حفظ عند الانتهاء.
+                  </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="patient_id">الطفل</Label>
-                    <Select name="patient_id"
-                      value={selectedGameId}
-                      onValueChange={(value) => setSelectedGameId(value)}
+                {/* نموذج البيانات */}
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault(); // منع إعادة تحميل الصفحة
+
+                    const measuredAtInput = document.getElementById("measured_at").value;
+                    const formattedMeasuredAt = measuredAtInput.replace("T", " ") + ":00";
+
+                    const newGame = {
+                      value: document.getElementById("value").value,
+                      notes: document.getElementById("notes").value,
+                      measured_at: formattedMeasuredAt,
+                      measurement_type: selectedQuestionType,
+                      unit: selectedUnit,
+                      patient_id: filter.patient_id.toString()
+                    };
+
+                    handleAddEntity("health/blood-sugar-readings", newGame);
+                  }}
+                >
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="patient_id">الطفل</Label>
+                      <Select
+                        name="patient_id"
+                        disabled
+
+                        value={filter.patient_id.toString()}
+                        onValueChange={setSelectedGameId}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر الطفل" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gamesIds.map((game, idx) => (
+                            <SelectItem key={idx} value={game.id.toString()}>
+                              {game.user.first_name + " " + game.user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="measurement_type">نوع القياس</Label>
+                      <Select
+                        required={!selectedQuestionType}
+
+                        name="measurement_type"
+                        value={selectedQuestionType}
+                        onValueChange={setSelectedQuestionType}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر نوع القياس" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {measurementTypes.map((game, idx) => (
+                            <SelectItem key={idx} value={game.name.toString()}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="value">القيمة</Label>
+                      <Input id="value" type="number" placeholder="أدخل القيمة" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="unit">وحدة القياس</Label>
+                      <Select
+                        name="unit"
+                        required
+                        value={selectedUnit}
+                        onValueChange={setSelectedUnit}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر وحدة القياس" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {units.map((game, idx) => (
+                            <SelectItem key={idx} value={game.name.toString()}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="measured_at">تقاس في</Label>
+                      <Input id="measured_at" type="datetime-local" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">ملاحظات</Label>
+                      <Input id="notes" type="text" />
+                    </div>
+                  </div>
+
+                  {/* الأزرار */}
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      style={{ marginInline: "1rem" }}
+                      variant="outline"
+                      onClick={() => setIsAddGameOpen(false)}
                     >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر الطفل" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gamesIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.user.first_name + " " + game.user.last_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="measurement_type"> نوع القياس</Label>
-                    <Select name="measurement_type"
-                      value={selectedQuestionType}
-                      onValueChange={(value) => setSelectedQuestionType(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر نوع  القياس" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {measurementTypes.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="value"> القيمة</Label>
-                    <Input id="value" type="number" placeholder="أدخل  القيمة" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="unit"> وحدة القياس</Label>
-                    <Select name="unit"
-                      value={selectedUnit}
-                      onValueChange={(value) => setSelectedUnit(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر وحدة  القياس" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {units.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="measured_at">تقاس في </Label>
-                    <Input
-                      id="measured_at"
-                      type="datetime-local"
-                    // value={editedTask.dueDate || ""}
-                    // onChange={(e) => handleChange("dueDate", e.target.value)}
-                    />
-                  </div>
-                  {/* إدخال اللون */}
+                      إلغاء
+                    </Button>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="notes"> ملاحظات </Label>
-                    <Input
-                      id="notes"
-                      type="text"
-                    // value={editedTask.dueDate || ""}
-                    // onChange={(e) => handleChange("dueDate", e.target.value)}
-                    />
-                  </div>
-
-                </div>
-                <DialogFooter>
-                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddGameOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button
-                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-                    onClick={() => {
-                      const measuredAtInput = typeof document !== 'undefined' && document.getElementById("measured_at").value;
-                      const formattedMeasuredAt = measuredAtInput.replace("T", " ") + ":00";
-
-                      const newGame = {
-                        value: typeof document !== 'undefined' && document.getElementById("value").value,
-                        notes: typeof document !== 'undefined' && document.getElementById("notes").value,
-                        measured_at: formattedMeasuredAt,
-                        measurement_type: selectedQuestionType,
-                        unit: selectedUnit, // تحويل الحالة إلى 1 أو 0
-                        patient_id: selectedGameId
-                      };
-
-
-                      handleAddEntity("health/blood-sugar-readings", newGame,);
-                    }}
-                  >
-                    حفظ
-                  </Button>
-
-                </DialogFooter>
+                    <Button type="submit" className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]">
+                      حفظ
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           )}
 
-          {activeTab === "insulin-doses" && (
+          {activeTab === "insulin-doses" && filter.patient_id && (
             <Dialog open={isAddLevelOpen} onOpenChange={setIsAddLevelOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
@@ -599,112 +612,102 @@ export function SugarMonitoring() {
                   <DialogDescription>أدخل جرعات الأنسولين الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="patient_id">الطفل</Label>
-                    <Select name="patient_id"
-                      value={selectedGameId}
-                      onValueChange={(value) => setSelectedGameId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر الطفل" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gamesIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.user.first_name + " " + game.user.last_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newGame = {
+                      patient_id: filter.patient_id.toString(),
+                      taken_date: formData.get("taken_date"),
+                      taken_time: formData.get("taken_time"),
+                      insulin_type: formData.get("insulin_type"),
+                      dose_units: formData.get("dose_units"),
+                      injection_site: formData.get("injection_site"),
+                    };
+                    handleAddEntity("health/insulin-doses", newGame);
+                  }}
+                >
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="patient_id">الطفل</Label>
+                      <Select name="patient_id" disabled value={filter.patient_id.toString()}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر الطفل" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gamesIds.map((game) => (
+                            <SelectItem key={game.id} value={game.id.toString()}>
+                              {game.user.first_name} {game.user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="taken_date">تاريخ الأخذ</Label>
+                      <Input id="taken_date" name="taken_date" type="date" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="taken_time">وقت الأخذ</Label>
+                      <Select name="taken_time" required>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر وقت الأخذ" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {takenTime.map((game) => (
+                            <SelectItem key={game.name} value={game.name}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="insulin_type">نوع الأنسولين</Label>
+                      <Input id="insulin_type" name="insulin_type" type="text" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dose_units">وحدات الجرعة</Label>
+                      <Input id="dose_units" name="dose_units" type="number" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="injection_site">موقع الحقن</Label>
+                      <Select name="injection_site" required>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر موقع الحقن" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {injectionSites.map((game) => (
+                            <SelectItem key={game.name} value={game.name}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="taken_date">تاريخ الاخذ  </Label>
-                    <Input
-                      id="taken_date"
-                      type="date"
-                    // value={editedTask.dueDate || ""}
-                    // onChange={(e) => handleChange("dueDate", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="taken_time">وقت الأخذ</Label>
-                    <Select name="taken_time"
-                      value={selectedQuestionType}
-                      onValueChange={(value) => setSelectedQuestionType(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر وقت الأخذ  " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {takenTime.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="insulin_type"> نوع الأنسولين</Label>
-                    <Input id="insulin_type" type="text" placeholder="أدخل  نوع الأنسولين" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dose_units"> وحدات الجرعة</Label>
-                    <Input id="dose_units" type="number" placeholder="أدخل  وحدات الجرعة" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="injection_site"> موقع الحقن </Label>
-                    <Select name="injection_site"
-                      value={selectedUnit}
-                      onValueChange={(value) => setSelectedUnit(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر موقع الحقن  " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {injectionSites.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
-
-
-                </div>
-                <DialogFooter>
-                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddLevelOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button
-                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-                    onClick={() => {
-
-                      const newGame = {
-                        dose_units: typeof document !== 'undefined' && document.getElementById("dose_units").value,
-                        insulin_type: typeof document !== 'undefined' && document.getElementById("insulin_type").value,
-                        taken_date: typeof document !== 'undefined' && document.getElementById("taken_date").value,
-                        injection_site: selectedUnit,
-                        patient_id: selectedGameId,
-                        taken_time: selectedQuestionType
-                      };
-
-
-                      handleAddEntity("health/insulin-doses", newGame,);
-                    }}
-                  >
-                    حفظ
-                  </Button>
-
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsAddLevelOpen(false)}>
+                      إلغاء
+                    </Button>
+                    <Button type="submit" className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]">
+                      حفظ
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           )}
 
-          {activeTab === "physical-activities" && (
+
+
+          {activeTab === "physical-activities" && filter.patient_id && (
             <Dialog open={isAddQuestionOpen} onOpenChange={setIsAddQuestionOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
@@ -719,86 +722,120 @@ export function SugarMonitoring() {
                   <DialogDescription>أدخل الأنشطة البدنية الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="patient_id">الطفل</Label>
-                    <Select name="patient_id"
-                      value={selectedGameId}
-                      onValueChange={(value) => setSelectedGameId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر الطفل" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gamesIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.user.first_name + " " + game.user.last_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="activity_date">تاريخ النشاط  </Label>
-                    <Input
-                      id="activity_date"
-                      type="date"
-                    // value={editedTask.dueDate || ""}
-                    // onChange={(e) => handleChange("dueDate", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="activity_time">وقت النشاط</Label>
-                    <Select name="activity_time"
-                      value={selectedQuestionType}
-                      onValueChange={(value) => setSelectedQuestionType(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر وقت النشاط  " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {activityTime.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description"> وصف </Label>
-                    <Input id="description" placeholder="أدخل وصف" />
-                  </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
 
-                  <div className="space-y-2">
-                    <Label htmlFor="intensity">  الشدة </Label>
-                    <Select name="intensity"
-                      value={selectedUnit}
-                      onValueChange={(value) => setSelectedUnit(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر الشدة   " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {intensity.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="duration"> مدة </Label>
-                    <Input id="duration" type="number" placeholder="أدخل مدة" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="notes"> ملاحظات </Label>
-                    <Textarea id="notes" placeholder="أدخل ملاحظات" />
-                  </div>
+                    const formData = new FormData(e.target);
+                    const newGame = {
+                      patient_id: filter.patient_id,
+                      activity_date: formData.get("activity_date"),
+                      activity_time: selectedQuestionType,
+                      description: formData.get("description"),
+                      intensity: selectedUnit,
+                      duration: formData.get("duration"),
+                      notes: formData.get("notes"),
+                    };
 
-                </div>
-                <DialogFooter>
+                    handleAddEntity("health/physical-activities", newGame);
+                  }}
+                >
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="patient_id">الطفل</Label>
+                      <Select name="patient_id"
+                        value={filter.patient_id.toString()}
+                        disabled
+                        onValueChange={(value) => setSelectedGameId(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر الطفل" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gamesIds.map((game, idx) => (
+                            <SelectItem key={idx} value={game.id.toString()}>
+                              {game.user.first_name + " " + game.user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="activity_date">تاريخ النشاط  </Label>
+                      <Input
+                        id="activity_date"
+                        type="date"
+                        name="activity_date"
+                        required
+                      // value={editedTask.dueDate || ""}
+                      // onChange={(e) => handleChange("dueDate", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="activity_time">وقت النشاط</Label>
+                      <Select name="activity_time" required
+                        value={selectedQuestionType}
+                        onValueChange={(value) => setSelectedQuestionType(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر وقت النشاط  " />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {activityTime.map((game, idx) => (
+                            <SelectItem key={idx} value={game.name.toString()}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description"> وصف </Label>
+                      <Input id="description"
+                        name="description"
+                        placeholder="أدخل وصف" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="intensity">   الشدة </Label>
+                      <Select name="intensity"
+                        value={selectedUnit}
+                        required
+
+                        onValueChange={(value) => setSelectedUnit(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر الشدة   " />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {intensity.map((game, idx) => (
+                            <SelectItem key={idx} value={game.name.toString()}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="duration"> مدة </Label>
+                      <Input id="duration" name="duration" required type="number" placeholder="أدخل مدة" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="notes"> ملاحظات </Label>
+                      <Textarea id="notes" name="notes" placeholder="أدخل ملاحظات" />
+                    </div>
+
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsAddQuestionOpen(false)}>
+                      إلغاء
+                    </Button>
+                    <Button type="submit" className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]">
+                      حفظ
+                    </Button>
+                  </DialogFooter>
+                </form>
+                {/* <DialogFooter>
                   <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddQuestionOpen(false)}>
                     إلغاء
                   </Button>
@@ -824,11 +861,11 @@ export function SugarMonitoring() {
                     حفظ
                   </Button>
 
-                </DialogFooter>
+                </DialogFooter> */}
               </DialogContent>
             </Dialog>
           )}
-          {activeTab === "meals" && (
+          {activeTab === "meals" && filter.patient_id && (
             <Dialog open={isAddAnswerOpen} onOpenChange={setIsAddAnswerOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
@@ -843,97 +880,94 @@ export function SugarMonitoring() {
                   <DialogDescription>أدخل وجبات الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="patient_id">الطفل</Label>
-                    <Select name="patient_id"
-                      value={selectedGameId}
-                      onValueChange={(value) => setSelectedGameId(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر الطفل" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gamesIds.map((game, idx) => (
-                          <SelectItem key={idx} value={game.id.toString()}>
-                            {game.user.first_name + " " + game.user.last_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* ✅ استخدام form مع onSubmit */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newMeal = {
+                      consumed_date: formData.get("consumed_date"),
+                      carbohydrates_calories: formData.get("carbohydrates_calories"),
+                      description: formData.get("description"),
+                      notes: formData.get("notes"),
+                      patient_id: filter.patient_id.toString(), // ثابت من الفلتر
+                      type: formData.get("type"),
+                    };
+
+                    handleAddEntity("health/meals", newMeal);
+                  }}
+                >
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="patient_id">الطفل</Label>
+                      <Select name="patient_id" value={filter.patient_id.toString()} disabled>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر الطفل" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gamesIds.map((game, idx) => (
+                            <SelectItem key={idx} value={game.id.toString()}>
+                              {game.user.first_name + " " + game.user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="consumed_date">تاريخ الاستهلاك</Label>
+                      <Input id="consumed_date" name="consumed_date" type="date" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="type">نوع الوجبة</Label>
+                      <Select name="type"
+
+
+
+                        required>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="اختر نوع الوجبة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {typeMeals.map((game, idx) => (
+                            <SelectItem key={idx} value={game.name.toString()}>
+                              {game.name_ar}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="carbohydrates_calories">السعرات الحرارية الكربوهيدرات</Label>
+                      <Input id="carbohydrates_calories" name="carbohydrates_calories" placeholder="أدخل السعرات الحرارية الكربوهيدرات" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">الوصف</Label>
+                      <Textarea id="description" name="description" placeholder="أدخل الوصف" required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">ملاحظات</Label>
+                      <Textarea id="notes" name="notes" placeholder="أدخل ملاحظات" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="activity_date">تاريخ الاستهلاك  </Label>
-                    <Input
-                      id="consumed_date"
-                      type="date"
-                    // value={editedTask.dueDate || ""}
-                    // onChange={(e) => handleChange("dueDate", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="type">نوع الوجبة</Label>
-                    <Select name="type"
-                      value={selectedQuestionType}
-                      onValueChange={(value) => setSelectedQuestionType(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="اختر نوع الوجبة  " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {typeMeals.map((game, idx) => (
-                          <SelectItem key={idx} value={game.name.toString()}>
-                            {game.name_ar}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="carbohydrates_calories"> السعرات الحرارية الكربوهيدرات </Label>
-                    <Input id="carbohydrates_calories" placeholder="أدخل السعرات الحرارية الكربوهيدرات" />
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description"> الوصف </Label>
-                    <Textarea id="description" placeholder="أدخل الوصف" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="notes"> ملاحظات </Label>
-                    <Textarea id="notes" placeholder="أدخل ملاحظات" />
-                  </div>
-
-                </div>
-                <DialogFooter>
-                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddAnswerOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button
-                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-                    onClick={() => {
-
-                      const newGame = {
-                        consumed_date: typeof document !== 'undefined' && document.getElementById("consumed_date").value,
-                        carbohydrates_calories: typeof document !== 'undefined' && document.getElementById("carbohydrates_calories").value,
-                        description: typeof document !== 'undefined' && document.getElementById("description").value,
-                        notes: typeof document !== 'undefined' && document.getElementById("notes").value,
-
-                        patient_id: selectedGameId,
-
-                        type: selectedQuestionType
-                      };
-
-
-                      handleAddEntity("health/meals", newGame,);
-                    }}
-                  >
-                    حفظ
-                  </Button>
-
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsAddAnswerOpen(false)}>
+                      إلغاء
+                    </Button>
+                    <Button type="submit" className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]">
+                      حفظ
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           )}
+
 
         </div>
       </div>
