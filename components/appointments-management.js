@@ -56,7 +56,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/doctors?limit=5`);
+                const response = await getData(`users/doctors?limit=20`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -69,7 +69,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders2 = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/guardians?limit=5`);
+                const response = await getData(`users/guardians?limit=20`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -82,7 +82,7 @@ export function AppointmentsManagement() {
         const fetchInitialProviders3 = async () => {
             try {
                 // Adjust your endpoint to limit the results (if supported by your API)
-                const response = await getData(`users/children?limit=5`);
+                const response = await getData(`users/children?limit=20`);
                 const providers = response.data.map((item) => ({
                     label: `${item.user.first_name + " " + item.user.last_name}`,
                     value: item.id,
@@ -179,7 +179,7 @@ export function AppointmentsManagement() {
 
         }
         if (filter.patient_id) {
-            filter.patient_id = filter.patient_id.toInteger()
+            filter.patient_id = filter.patient_id
         }
         const response = await getData(
             `${endpoint}?page=${page}&limit=${pageSize}&search=${searchTerm}`, filter
@@ -208,24 +208,32 @@ export function AppointmentsManagement() {
         const doctor = localStorage.getItem("doctor_id");
 
         // Check if the doctor_id exists and if it differs from the current filter's doctor_id
-        if (doctor && doctor !== filter.doctor_id) {
-            // If doctor_id has changed, update the filter with the new doctor_id
-            setFilter((prevFilter) => ({
-                ...prevFilter,
-                doctor_id: doctor,
+        if (doctor) {
+            setFilter((prev) => ({
+                ...prev,
+                doctor_id: doctor ? doctor.toString() : "", // Save only the value
             }));
+            fetchEntityData(
+                "schedules/appointments",
+                setGamesData,
+                setGamesMeta,
+                gamesPage,
+                searchTerm,
+                { ...filter, doctor_id: doctor.toString() }
+            );
         }
+        else if (!doctor) {
+            // Fetch data based on the current filter (including the updated doctor_id if set)
+            fetchEntityData(
+                "schedules/appointments",
+                setGamesData,
+                setGamesMeta,
+                gamesPage,
+                searchTerm,
+                filter
+            );
 
-        // Fetch data based on the current filter (including the updated doctor_id if set)
-        fetchEntityData(
-            "schedules/appointments",
-            setGamesData,
-            setGamesMeta,
-            gamesPage,
-            searchTerm,
-            filter
-        );
-
+        }
         console.log("gamesData", gamesData);
         console.log(filter);
         localStorage.clear()
@@ -753,14 +761,14 @@ export function AppointmentsManagement() {
                             </>}
                         </div>
                         <DialogFooter>
-                            {selectedAppointment.status === "pending" && (
+                            {/* {selectedAppointment.status === "pending" && (
                                 <>
                                     <Button variant="outline" className="text-red-500 border-red-500 hover:bg-red-50">
                                         إلغاء الموعد
                                     </Button>
                                     <Button className="bg-[#ffac33] hover:bg-[#f59f00]">تعديل الموعد</Button>
                                 </>
-                            )}
+                            )} */}
                             {/* {selectedAppointment.status === "completed" && (
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00]">عرض التقرير</Button>
               )} */}

@@ -106,13 +106,15 @@ export function SystemTasksEditDialog({ game, open, onOpenChange, onSave, handle
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
           {/* Name Input */}
           <div className="space-y-2">
             <Label htmlFor="title">عنوان مهمة عسول</Label>
             <Input
               id="title"
+              required
               placeholder="أدخل عنوان مهمة عسول"
+
               value={form.title}
               onChange={(e) => handleChange("title", e.target.value)}
             />
@@ -176,24 +178,24 @@ export function SystemTasksEditDialog({ game, open, onOpenChange, onSave, handle
               />
             )}
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button
-            style={{ marginInline: "1rem" }}
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            إلغاء
-          </Button>
-          <Button
-            className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-            onClick={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? "جاري الحفظ..." : "حفظ"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              style={{ marginInline: "1rem" }}
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type="submit"
+              className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+              disabled={isLoading}
+            >
+              {isLoading ? "جاري الحفظ..." : "حفظ"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

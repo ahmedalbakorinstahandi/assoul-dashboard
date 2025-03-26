@@ -342,74 +342,79 @@ export function TasksManagement() {
                   <DialogDescription>أدخل بيانات المهمة الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">عنوان المهمة</Label>
-                    <Input id="title" placeholder="أدخل عنوان المهمة" />
+                {/* نموذج الإدخال */}
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault(); // منع إعادة تحميل الصفحة
+
+                    const newGame = {
+                      title: document.getElementById("title").value,
+                      points: document.getElementById("points").value,
+                      color: gameColor, // اللون المختار
+                    };
+
+                    const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+
+                    handleAddEntity("tasks/system-tasks", newGame, imageFile);
+                  }}
+                >
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">عنوان المهمة</Label>
+                      <Input id="title" required placeholder="أدخل عنوان المهمة" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="color">لون المهمة</Label>
+                      <input
+                        id="color"
+                        type="color"
+                        required
+                        value={gameColor}
+                        onChange={(e) => setGameColor(e.target.value)}
+                        className="w-full h-10 p-1 border border-gray-300 rounded"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="points">نقاط المهمة</Label>
+                      <Input id="points" required placeholder="أدخل نقاط المهمة" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="image">صورة المهمة</Label>
+                      <Input id="image" type="file" required onChange={handleImageChange} />
+                      {imagePreview && (
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
+                        />
+                      )}
+                    </div>
                   </div>
-                  {/* <div className="space-y-2">
-                    <Label htmlFor="description">وصف اللعبة</Label>
-                    <Textarea id="description" placeholder="أدخل وصف اللعبة" />
-                  </div> */}
-                  {/* <div className="flex items-center justify-between">
-                    <Label htmlFor="is_enable">تفعيل اللعبة</Label>
-                    <Switch id="is_enable" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
 
-                  </div> */}
-                  {/* إدخال اللون */}
-                  <div className="space-y-2">
-                    <Label htmlFor="color">لون المهمة</Label>
-                    <input
-                      id="color"
-                      type="color"
-                      value={gameColor}
-                      onChange={(e) => setGameColor(e.target.value)}
-                      className="w-full h-10 p-1 border border-gray-300 rounded"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="points">نقاط المهمة</Label>
-                    <Input id="points" placeholder="أدخل نقاط المهمة" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="image">صورة المهمة</Label>
-                    <Input id="image" type="file" onChange={handleImageChange} />
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Preview" className="h-[100px] w-[100px] object-cover rounded border border-gray-300" />
-                    )}
-                    {/*            <Image src={
+                  {/* الأزرار */}
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      style={{ marginInline: "1rem" }}
+                      variant="outline"
+                      onClick={() => setIsAddTaskOpen(false)}
+                    >
+                      إلغاء
+                    </Button>
 
-                      document.getElementById("image").files[0] || null// جلب الصورة
-
-                    } alt="صورة اللعبة" className="h-20 w-20 object-cover rounded" /> */}
-                  </div>
-
-                </div>
-                <DialogFooter>
-                  <Button style={{ marginInline: "1rem" }} variant="outline" onClick={() => setIsAddTaskOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button
-                    className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-                    onClick={() => {
-                      const newGame = {
-                        title: typeof document !== 'undefined' && document.getElementById("title").value,
-                        // description: document.getElementById("description").value,
-                        points: typeof document !== 'undefined' && document.getElementById("points").value,
-                        color: gameColor, // إرسال اللون المختار
-
-                      };
-
-                      const imageFile = typeof document !== 'undefined' && document.getElementById("image").files[0]; // جلب الصورة
-
-                      handleAddEntity("tasks/system-tasks", newGame, imageFile);
-                    }}
-                  >
-                    حفظ
-                  </Button>
-
-                </DialogFooter>
+                    <Button
+                      type="submit"
+                      className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+                    >
+                      حفظ
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
+
             </Dialog>
           )}
         </div>
