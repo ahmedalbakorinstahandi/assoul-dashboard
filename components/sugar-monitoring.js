@@ -42,6 +42,7 @@ import { QuestionViewDialog } from "./dialogs/question-view-dialog"
 import { activityTime, injectionSites, intensity, measurementTypes, takenTime, typeMeals, units } from "@/data/data"
 import toast from "react-hot-toast"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import Link from "next/link"
 export function SugarMonitoring() {
   const [activeTab, setActiveTab] = useState("blood-sugar-readings")
   const [searchTerm, setSearchTerm] = useState("")
@@ -1093,7 +1094,12 @@ export function SugarMonitoring() {
                         <TableCell>
                           <img src={game.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
-                        <TableCell className="font-medium">{game.patient.user.first_name + " " + game.patient.user.last_name}</TableCell>
+                        <TableCell>
+
+                          <Link href={`/users/patient/${game.patient.id}`} className="hover:underline text-blue-500" >
+                            {game.patient.user.first_name + " " + game.patient.user.last_name}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           {measurementTypes.find((item) => item.name === game.measurement_type)?.name_ar || game.measurement_type}
                         </TableCell>
@@ -1202,7 +1208,12 @@ export function SugarMonitoring() {
                         <TableCell>
                           <img src={level.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
-                        <TableCell className="font-medium">{level.patient.user.first_name + " " + level.patient.user.last_name}</TableCell>
+                        <TableCell>
+
+                          <Link href={`/users/patient/${level.patient.id}`} className="hover:underline text-blue-500" >
+                            {level.patient.user.first_name + " " + level.patient.user.last_name}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           {level.insulin_type} {/* لا توجد قائمة مترجمة، اتركه كما هو أو أضف مصفوفة ترجمة إذا لزم الأمر */}
                         </TableCell>
@@ -1310,7 +1321,12 @@ export function SugarMonitoring() {
                         <TableCell>
                           <img src={answer.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
-                        <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
+                        <TableCell>
+
+                          <Link href={`/users/patient/${answer.patient.id}`} className="hover:underline text-blue-500" >
+                            {answer.patient.user.first_name + " " + answer.patient.user.last_name}
+                          </Link>
+                        </TableCell>
                         <TableCell>
 
                           {activityTime.find((item) => item.name === answer.activity_time)?.name_ar || answer.injection_site}
@@ -1429,7 +1445,11 @@ export function SugarMonitoring() {
                         <TableCell>
                           <img src={answer.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
-                        <TableCell className="font-medium text-nowrap">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
+                        <TableCell className="font-medium text-nowrap">
+                          <Link href={`/users/patient/${answer.patient.id}`} className="hover:underline text-blue-500" >
+                            {answer.patient.user.first_name + " " + answer.patient.user.last_name}
+                          </Link>
+                        </TableCell>
                         <TableCell className="text-nowrap">
                           {typeMeals.find((item) => item.name === answer.type)?.name_ar || answer.type}
                         </TableCell>
