@@ -273,7 +273,7 @@ export function NotificationsManagement() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-        <h2 className="text-xl md:text-3xl font-bold">المنبهات والإشعارات</h2>
+        <h2 className="text-xl md:text-3xl font-bold"> الإشعارات</h2>
         <div className="flex gap-2 w-full sm:w-auto">
           {activeTab === "notiwwfications" && (
             <Dialog open={isAddNotificationOpen} onOpenChange={setIsAddNotificationOpen}>
@@ -369,10 +369,10 @@ export function NotificationsManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        {/* <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="notifications">الإشعارات</TabsTrigger>
           <TabsTrigger value="reminders">المنبهات</TabsTrigger>
-        </TabsList>
+        </TabsList> */}
 
         <TabsContent value="notifications">
           <Card>
@@ -461,7 +461,7 @@ export function NotificationsManagement() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="reminders">
+        {/* <TabsContent value="reminders">
           <Card>
             <CardHeader>
               <CardTitle>المنبهات</CardTitle>
@@ -555,7 +555,7 @@ export function NotificationsManagement() {
               />
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
       <ScheduledNotificationsDialog
         initialData={selectedNotification}

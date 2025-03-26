@@ -16,6 +16,8 @@ import axios from "axios";
 import { Spinner } from "@/components/ui/spinner";
 import { getData } from "@/lib/apiHelper";
 import { getTimeAgo } from "@/lib/utils";
+import "react-datepicker/dist/react-datepicker.css";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {

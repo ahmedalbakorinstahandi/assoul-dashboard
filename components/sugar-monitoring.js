@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import AsyncSelect from "react-select/async";
-
+import { DateFilter } from '@/components/handleDateChange';
 import Lottie from 'lottie-react';
 import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
 
@@ -49,7 +49,17 @@ export function SugarMonitoring() {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
   const [isAddAnswerOpen, setIsAddAnswerOpen] = useState(false)
-  const initialFilter = { patient_id: "" };
+  const initialFilter = {
+    patient_id: "",
+    measured_at_from: null,
+    measured_at_to: null,
+    taken_date_from: null,
+    taken_date_to: null,
+    consumed_date_from: null,
+    consumed_date_to: null,
+    activity_date_from: null,
+    activity_date_to: null
+  };
   const [filter, setFilter] = useState(initialFilter)
   const [defaultOptions, setDefaultOptions] = useState([]);
 
@@ -226,6 +236,21 @@ export function SugarMonitoring() {
       setMealsMeta({});
     }
   }, [activeTab, gamesPage, levelsPage, questionsPage, answersPage, searchTerm, pageSize, filter, defaultOptions]);
+  useEffect(() => {
+    // if (filter.patient_id) {
+    if (activeTab === "blood-sugar-readings") {
+      setFilter({ ...initialFilter, patient_id: filter.patient_id })
+      console.log(filter);
+      
+    } else if (activeTab === "insulin-doses") {
+      setFilter({ ...initialFilter, patient_id: filter.patient_id })
+    } else if (activeTab === "physical-activities") {
+      setFilter({ ...initialFilter, patient_id: filter.patient_id })
+    } else if (activeTab === "meals") {
+      setFilter({ ...initialFilter, patient_id: filter.patient_id })
+    }
+    // }
+  }, [activeTab]);
 
   // العمليات CRUD
   const handleAddEntity = async (endpoint, newEntity, file = null) => {
@@ -945,16 +970,7 @@ export function SugarMonitoring() {
 
 
       <div className="flex flex-col mb-4 sm:flex-row items-start sm:items-center gap-2 sm:space-x-2 sm:space-x-reverse">
-        <div className="relative flex-1 w-full sm:max-w-sm">
-          <Search style={{ left: "10px" }} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <Input
-            placeholder="بحث..."
-            className="pr-10 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
 
-        </div>
 
         <div>
           <AsyncSelect
@@ -963,7 +979,7 @@ export function SugarMonitoring() {
             className="min-w-64"
 
             defaultOptions={defaultOptions}
-            value={defaultOptions.find(option => option.value === filter.patient_id)} // Set the value to be the object
+            value={defaultOptions.find(option => option.value === filter.patient_id) || ""} // Set the value to be the object
             loadOptions={loadOptions}
             onChange={(selectedOption) => {
               console.log(selectedOption);
@@ -979,29 +995,22 @@ export function SugarMonitoring() {
           />
         </div>
 
-        {/* <div className="space-y-2 " style={{ width: "10rem" }}>
-          <Select name="game_id"
-            value={filter.patient_id}
-
-            onValueChange={(value) => setFilter((prev) => ({
-              ...prev,
-              patient_id: prev.patient_id == value ? "" : value,
-            }))}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="اختر الطفل" />
-            </SelectTrigger>
-            <SelectContent>
-              {gamesIds.map((game, idx) => (
-                <SelectItem key={idx} value={game.id.toString()}>
-                  {game.user.first_name + " " + game.user.last_name}
-                </SelectItem>
-
-              ))}
-             
-            </SelectContent>
-          </Select>
+        {filter.patient_id && <>
+          <DateFilter activeTab={activeTab} filter={filter} setFilter={setFilter} /></>}
+        {/* <div className="mt-4 p-4 border border-gray-300 rounded">
+          <h2 className="font-semibold">القيم الحالية للفلتر:</h2>
+          <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(filter, null, 2)}</pre>
         </div> */}
+        <div className=" max-w-64 relative  w-full sm:max-w-sm">
+          <Search style={{ left: "10px" }} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Input
+            placeholder="بحث..."
+            className="pr-10 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+        </div>
         <Button variant="outline" onClick={() => setFilter(initialFilter)}>
           مسح الكل
         </Button>
@@ -1146,11 +1155,11 @@ export function SugarMonitoring() {
                       <TableHead>صورة الطفل</TableHead>
 
                       <TableHead>اسم الطفل</TableHead>
-                      <TableHead>تاريخ الأخذ</TableHead>
-                      <TableHead> وقت الأخذ</TableHead>
                       <TableHead>نوع الأنسولين</TableHead>
+                      <TableHead> وقت الأخذ</TableHead>
                       <TableHead>وحدات الجرعة </TableHead>
                       <TableHead>موقع الحقن</TableHead>
+                      <TableHead>تاريخ الأخذ</TableHead>
                       <TableHead>الإجراءات</TableHead>
 
                     </TableRow>
@@ -1194,12 +1203,11 @@ export function SugarMonitoring() {
                           <img src={level.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell className="font-medium">{level.patient.user.first_name + " " + level.patient.user.last_name}</TableCell>
-                        <TableCell>{level.taken_date}</TableCell>
-                        <TableCell>
-                          {takenTime.find((item) => item.name === level.taken_time)?.name_ar || level.taken_time}
-                        </TableCell>
                         <TableCell>
                           {level.insulin_type} {/* لا توجد قائمة مترجمة، اتركه كما هو أو أضف مصفوفة ترجمة إذا لزم الأمر */}
+                        </TableCell>
+                        <TableCell>
+                          {takenTime.find((item) => item.name === level.taken_time)?.name_ar || level.taken_time}
                         </TableCell>
                         <TableCell>
                           {units.find((item) => item.name === level.dose_units)?.name_ar || level.dose_units}
@@ -1207,6 +1215,7 @@ export function SugarMonitoring() {
                         <TableCell>
                           {injectionSites.find((item) => item.name === level.injection_site)?.name_ar || level.injection_site}
                         </TableCell>
+                        <TableCell>{level.taken_date}</TableCell>
 
 
                         <TableCell>
