@@ -90,6 +90,8 @@ export function InsulinDosesDialog({ insulinDose, open, onOpenChange, onSave }) 
             <Label htmlFor="patient_id">الطفل</Label>
             <Select
               name="patient_id"
+              disabled
+
               value={form.patient_id}
               onValueChange={(value) => handleChange("patient_id", value)}
             >
@@ -118,6 +120,7 @@ export function InsulinDosesDialog({ insulinDose, open, onOpenChange, onSave }) 
             <Label htmlFor="taken_time">وقت الأخذ</Label>
             <Select
               name="taken_time"
+              
               value={form.taken_time}
               onValueChange={(value) => handleChange("taken_time", value)}
             >

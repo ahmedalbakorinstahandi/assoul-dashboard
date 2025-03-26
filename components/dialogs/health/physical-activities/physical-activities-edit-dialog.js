@@ -92,6 +92,8 @@ export function PhysicalActivitiesDialog({ activity, open, onOpenChange, onSave 
             <Label htmlFor="patient_id">الطفل</Label>
             <Select
               name="patient_id"
+              disabled
+
               value={form.patient_id}
               onValueChange={(value) => handleChange("patient_id", value)}
             >

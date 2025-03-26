@@ -91,6 +91,8 @@ export function MealsDialog({ meal, open, onOpenChange, onSave }) {
           <div className="space-y-2">
             <Label htmlFor="patient_id">الطفل</Label>
             <Select
+              disabled
+
               name="patient_id"
               value={form.patient_id}
               onValueChange={(value) => handleChange("patient_id", value)}

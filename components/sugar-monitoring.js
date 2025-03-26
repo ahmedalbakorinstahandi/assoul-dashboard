@@ -241,7 +241,7 @@ export function SugarMonitoring() {
     if (activeTab === "blood-sugar-readings") {
       setFilter({ ...initialFilter, patient_id: filter.patient_id })
       console.log(filter);
-      
+
     } else if (activeTab === "insulin-doses") {
       setFilter({ ...initialFilter, patient_id: filter.patient_id })
     } else if (activeTab === "physical-activities") {
@@ -1264,11 +1264,11 @@ export function SugarMonitoring() {
                       <TableHead>صورة الطفل</TableHead>
 
                       <TableHead>اسم الطفل</TableHead>
-                      <TableHead>تاريخ النشاط</TableHead>
                       <TableHead>وقت النشاط</TableHead>
                       <TableHead>وصف</TableHead>
                       <TableHead>الشدة</TableHead>
                       <TableHead>المدة</TableHead>
+                      <TableHead>تاريخ النشاط</TableHead>
 
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
@@ -1311,8 +1311,12 @@ export function SugarMonitoring() {
                           <img src={answer.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell className="font-medium">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
-                        <TableCell>{answer.activity_date}</TableCell>
-                        <TableCell>{answer.activity_time}</TableCell>
+                        <TableCell>
+
+                          {activityTime.find((item) => item.name === answer.activity_time)?.name_ar || answer.injection_site}
+
+                          {/* {answer.activity_time} */}
+                        </TableCell>
 
                         <TableCell>
 
@@ -1330,8 +1334,9 @@ export function SugarMonitoring() {
                         <TableCell>
                           {intensity.find((item) => item.name === answer.intensity)?.name_ar || answer.intensity}
                         </TableCell>
-                        <TableCell>{answer.duration}</TableCell>
+                        <TableCell>{answer.duration} دقيقة</TableCell>
 
+                        <TableCell>{answer.activity_date}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse justify-center">
                             {/*  <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
@@ -1375,13 +1380,13 @@ export function SugarMonitoring() {
                       <TableHead>صورة الطفل</TableHead>
 
                       <TableHead className="text-nowrap">اسم الطفل</TableHead>
-                      <TableHead className="text-nowrap">تاريخ الاستهلاك</TableHead>
                       <TableHead className="text-nowrap">نوع الوجبة</TableHead>
                       <TableHead className="text-nowrap">
                         السعرات الحرارية
                       </TableHead>
                       <TableHead>الوصف</TableHead>
                       <TableHead>الملاحظات</TableHead>
+                      <TableHead className="text-nowrap">تاريخ الاستهلاك</TableHead>
 
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
@@ -1425,7 +1430,6 @@ export function SugarMonitoring() {
                           <img src={answer.patient.user.avatar || "/placeholder.svg"} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                         </TableCell>
                         <TableCell className="font-medium text-nowrap">{answer.patient.user.first_name + " " + answer.patient.user.last_name}</TableCell>
-                        <TableCell className="text-nowrap">{answer.consumed_date}</TableCell>
                         <TableCell className="text-nowrap">
                           {typeMeals.find((item) => item.name === answer.type)?.name_ar || answer.type}
                         </TableCell>
@@ -1457,6 +1461,7 @@ export function SugarMonitoring() {
 
                         </TableCell>
 
+                        <TableCell className="text-nowrap">{answer.consumed_date}</TableCell>
 
                         <TableCell>
                           <div className="flex   space-x-2 space-x-reverse">
