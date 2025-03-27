@@ -133,7 +133,7 @@ export function LevelDialog({ level, open, onOpenChange, onSave }) {
           </div>
 
           {/* Status Switch */}
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <Label htmlFor="status">حالة المستوى</Label>
             <div className="flex gap-3 align-middle justify-center">
               <span>
@@ -147,7 +147,7 @@ export function LevelDialog({ level, open, onOpenChange, onSave }) {
               />
 
             </div>
-          </div>
+          </div> */}
         </div>
 
         <DialogFooter>

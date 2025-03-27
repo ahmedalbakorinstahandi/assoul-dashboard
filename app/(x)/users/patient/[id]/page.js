@@ -21,6 +21,7 @@ import { InstructionDialog } from "@/components/dialogs/patient/instructions/ins
 import { GuardianDetailsDialog } from "@/components/dialogs/users/guardians/GuardianDetailsDialog";
 import { AppointmentsChildren } from "@/components/appointments-children";
 import { TasksChildren } from "@/components/tasks-children";
+import { SugarChildren } from "@/components/sugar-children";
 
 export default function PatientDetails() {
     const params = useParams()
@@ -182,12 +183,15 @@ export default function PatientDetails() {
 
                 <CardContent className="pt-4">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-5 md:w-fit">
+                        <TabsList className="grid grid-cols-7 md:w-fit">
                             <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
                             <TabsTrigger value="medical">السجلات الطبية</TabsTrigger>
                             <TabsTrigger value="appointments"> الحجوزات</TabsTrigger>
 
                             <TabsTrigger value="instructions">التعليمات</TabsTrigger>
+                            <TabsTrigger value="tasks">المهام </TabsTrigger>
+                            <TabsTrigger value="sugar">سجل الحالة الصحية</TabsTrigger>
+
                             <TabsTrigger value="notes">الملاحظات</TabsTrigger>
                         </TabsList>
 
@@ -463,6 +467,9 @@ export default function PatientDetails() {
                         </TabsContent>
                         <TabsContent value="tasks" className="space-y-4">
                             <TasksChildren childId={patient.id} />
+                        </TabsContent>
+                        <TabsContent value="sugar" className="space-y-4">
+                            <SugarChildren childId={patient.id} />
                         </TabsContent>
                         {/* الملاحظات */}
                         <TabsContent value="notes" className="space-y-4">

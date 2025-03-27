@@ -44,10 +44,12 @@ export default function LoginPage() {
         const token = response.data.user_token;
         const email = response.data.data.email;
         const name = response.data.data.first_name;
+        const id = response.data.data.id;
 
         setCookie("token", token);
         setCookie("email", email);
         setCookie("name", name);
+        setCookie("id", id);
 
         toast.success(response.data.message);
         router.push("/dashboard");

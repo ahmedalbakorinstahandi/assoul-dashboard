@@ -50,6 +50,12 @@ export function DateFilter({ activeTab, filter, setFilter }) {
                 case "physical-activities":
                     setFilter((prev) => ({ ...prev, activity_date_from: startOfDay, activity_date_to: endOfDay }));
                     break;
+                case "parent-tasks":
+                    setFilter((prev) => ({ ...prev, completed_at: endOfDay }));
+                    break;
+                case "system-tasks":
+                    setFilter((prev) => ({ ...prev, completed_at: endOfDay }));
+                    break;
                 default:
                     break;
             }
@@ -67,6 +73,12 @@ export function DateFilter({ activeTab, filter, setFilter }) {
                     break;
                 case "physical-activities":
                     setFilter((prev) => ({ ...prev, activity_date_from: null, activity_date_to: null }));
+                    break;
+                case "system-tasks":
+                    setFilter((prev) => ({ ...prev, completed_at: null }));
+                    break;
+                case "parent-tasks":
+                    setFilter((prev) => ({ ...prev, completed_at: null }));
                     break;
                 default:
                     break;
@@ -91,6 +103,11 @@ export function DateFilter({ activeTab, filter, setFilter }) {
             setSelectedDate(filter.consumed_date_from ? new Date(filter.consumed_date_from) : null);
         } else if (activeTab === "physical-activities") {
             setSelectedDate(filter.activity_date_from ? new Date(filter.activity_date_from) : null);
+        }
+        else if (activeTab === "system-tasks") {
+            setSelectedDate(filter.completed_at ? new Date(filter.completed_at) : null);
+        } else if (activeTab === "parent-tasks") {
+            setSelectedDate(filter.completed_at ? new Date(filter.completed_at) : null);
         }
     }, [filter, activeTab]);
     return (

@@ -25,18 +25,22 @@ import { TaskViewDialog } from "@/components/dialogs/task-view-dialog"
 import { SystemTasksEditDialog } from "@/components/dialogs/tasks/system-tasks/system-tasks-edit-dialog"
 import { TaskCompletionDialog } from "@/components/dialogs/task-completion-dialog"
 import { TaskRejectionDialog } from "@/components/dialogs/task-rejection-dialog"
+import { ToTasksEditDialog } from "@/components/dialogs/tasks/to-do-list/to-tasks-edit-dialog"
+
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import toast from "react-hot-toast"
 import { PaginationControls } from "./ui/pagination-controls"
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { Switch } from "./ui/switch"
 import Lottie from "lottie-react"
+import { DateFilter } from "./handleDateChange"
+import { getCookie } from "cookies-next"
 
 export function TasksChildren({ childId }) {
     const [activeTab, setActiveTab] = useState("system-tasks")
     const [searchTerm, setSearchTerm] = useState("")
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
-    const initialFilter = { game_id: "", level_id: "", question_id: "", patient_id: childId };
+    const initialFilter = { patient_id: childId, completed_at: "" };
     const [filter, setFilter] = useState(initialFilter)
     const [gameColor, setGameColor] = useState("#ffffff"); // اللون الافتراضي
 
@@ -60,6 +64,9 @@ export function TasksChildren({ childId }) {
     const [gamesData, setGamesData] = useState([])
     const [gamesPage, setGamesPage] = useState(1);
     const [gamesMeta, setGamesMeta] = useState({});
+    const [childrenData, setChildrenData] = useState([])
+    const [childrenPage, setChildrenPage] = useState(1);
+    const [childrenMeta, setChildrenMeta] = useState({});
     const fetchEntityData = async (endpoint, setData, setMeta, page, searchTerm, filter) => {
         setLoading(true)
         const response = await getData(
@@ -76,6 +83,13 @@ export function TasksChildren({ childId }) {
     useEffect(() => {
         if (activeTab === "system-tasks") {
             fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+            // console.log(gamesData);
+
+        }
+        if (activeTab === "parent-tasks") {
+            fetchEntityData("tasks/to-do-list", setChildrenData, setChildrenMeta, childrenPage, searchTerm, filter);
+            // console.log(childrenData);
+
         }
         // else if (activeTab === "levels") {
         //   fetchEntityData("games/levels", setLevelsData, setLevelsMeta, levelsPage, searchTerm, filter);
@@ -122,7 +136,7 @@ export function TasksChildren({ childId }) {
             console.log(response);
 
             // تحديث البيانات حسب نوع الكيان المضاف
-            if (endpoint.includes("system-tasks")) {
+            if (activeTab === "system-tasks") {
                 setIsAddTaskOpen(false);
                 setImagePreview(null);
 
@@ -134,30 +148,6 @@ export function TasksChildren({ childId }) {
         }
     };
 
-
-    const parentTasksData = [
-        {
-            id: 1,
-            title: "قياس السكر قبل الإفطار",
-            assignedTo: "أحمد محمد",
-            dueDate: "2023-06-16",
-            status: "مكتمل",
-        },
-        {
-            id: 2,
-            title: "إعطاء جرعة الانسولين",
-            assignedTo: "سارة علي",
-            dueDate: "2023-06-16",
-            status: "قيد التنفيذ",
-        },
-        {
-            id: 3,
-            title: "تسجيل قراءات السكر اليومية",
-            assignedTo: "محمد خالد",
-            dueDate: "2023-06-17",
-            status: "قيد التنفيذ",
-        },
-    ]
 
 
 
@@ -201,9 +191,22 @@ export function TasksChildren({ childId }) {
 
         if (response.success) {
             toast.success(response.message)
-            setEditDialogOpen(false)
 
-            fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+            if (activeTab === "system-tasks") {
+                fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+                // console.log(gamesData);
+                setEditDialogOpen(false)
+                setSelectedTask(null)
+
+            }
+            if (activeTab === "parent-tasks") {
+                fetchEntityData("tasks/to-do-list", setChildrenData, setChildrenMeta, childrenPage, searchTerm, filter);
+                // console.log(childrenData);
+                setViewDialogOpen(false)
+                setSelectedTask(null)
+                setActiveTab("parent-tasks")
+            }
+            // fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
 
         } else {
             toast.error(response.message)
@@ -212,7 +215,17 @@ export function TasksChildren({ childId }) {
     // معالجة حفظ تعديلات المهمة
     const handleSaveTask = (updatedTask) => {
         console.log("تم حفظ التعديلات:", updatedTask)
-        handleUpdateEntity("tasks/system-tasks", updatedTask)
+        if (activeTab === "system-tasks") {
+
+            handleUpdateEntity("tasks/system-tasks", updatedTask)
+        } else if (activeTab === "parent-tasks") {
+            console.log(
+                "parent-tasks",
+            );
+
+            handleUpdateEntity("tasks/to-do-list", updatedTask)
+
+        }
 
 
     }
@@ -222,7 +235,16 @@ export function TasksChildren({ childId }) {
         if (response.data.success) {
             toast.success(response.data.message)
             setDeleteDialogOpen(false)
-            fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+            if (activeTab === "system-tasks") {
+                fetchEntityData("tasks/system-tasks", setGamesData, setGamesMeta, gamesPage, searchTerm, filter);
+                // console.log(gamesData);
+
+            }
+            if (activeTab === "parent-tasks") {
+                fetchEntityData("tasks/to-do-list", setChildrenData, setChildrenMeta, childrenPage, searchTerm, filter);
+                // console.log(childrenData);
+
+            }
         } else {
             toast.error(response.data.message)
         }
@@ -248,7 +270,7 @@ export function TasksChildren({ childId }) {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-                <h2 className="text-xl md:text-3xl font-bold">إدارة المهام</h2>
+                <h3 className="text-lg font-medium">ادارة المهام للطفل</h3>
                 {/* <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
@@ -391,6 +413,98 @@ export function TasksChildren({ childId }) {
 
                         </Dialog>
                     )}
+
+                    {activeTab === "parent-tasks" && (
+                        <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+                            <DialogTrigger asChild>
+                                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+                                    <Plus className="h-4 w-4 ml-2" />
+                                    <span className="hidden sm:inline">إضافة مهمة جديدة</span>
+                                    <span className="sm:hidden">إضافة</span>
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[525px]">
+                                <DialogHeader>
+                                    <DialogTitle>إضافة مهمة جديدة</DialogTitle>
+                                    <DialogDescription>أدخل بيانات المهمة الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                                </DialogHeader>
+
+                                {/* نموذج الإدخال */}
+                                <form
+                                    onSubmit={(event) => {
+                                        event.preventDefault(); // منع إعادة تحميل الصفحة
+
+                                        const newGame = {
+                                            title: document.getElementById("title").value,
+                                            patient_id: childId,
+
+                                            assigned_by: getCookie("id" || 0), // اللون المختار
+                                        };
+
+                                        // const imageFile = document.getElementById("image").files[0]; // جلب الصورة
+
+                                        handleAddEntity("tasks/to-do-list", newGame);
+                                    }}
+                                >
+                                    <div className="grid gap-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="title">عنوان المهمة</Label>
+                                            <Input id="title" required placeholder="أدخل عنوان المهمة" />
+                                        </div>
+
+                                        {/* <div className="space-y-2">
+                                            <Label htmlFor="color">لون المهمة</Label>
+                                            <input
+                                                id="color"
+                                                type="color"
+                                                required
+                                                value={gameColor}
+                                                onChange={(e) => setGameColor(e.target.value)}
+                                                className="w-full h-10 p-1 border border-gray-300 rounded"
+                                            />
+                                        </div> */}
+
+                                        {/* <div className="space-y-2">
+                                            <Label htmlFor="points">نقاط المهمة</Label>
+                                            <Input id="points" required placeholder="أدخل نقاط المهمة" />
+                                        </div> */}
+
+                                        {/* <div className="space-y-2">
+                                            <Label htmlFor="image">صورة المهمة</Label>
+                                            <Input id="image" type="file" required onChange={handleImageChange} />
+                                            {imagePreview && (
+                                                <img
+                                                    src={imagePreview}
+                                                    alt="Preview"
+                                                    className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
+                                                />
+                                            )}
+                                        </div> */}
+                                    </div>
+
+                                    {/* الأزرار */}
+                                    <DialogFooter>
+                                        <Button
+                                            type="button"
+                                            style={{ marginInline: "1rem" }}
+                                            variant="outline"
+                                            onClick={() => setIsAddTaskOpen(false)}
+                                        >
+                                            إلغاء
+                                        </Button>
+
+                                        <Button
+                                            type="submit"
+                                            className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
+                                        >
+                                            حفظ
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+
+                        </Dialog>
+                    )}
                 </div>
             </div>
 
@@ -404,21 +518,22 @@ export function TasksChildren({ childId }) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <DateFilter activeTab={activeTab} filter={filter} setFilter={setFilter} />
 
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-1">
-                    <TabsTrigger value="system-tasks">مهام عسول</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="system-tasks">مهام عسول ({gamesData?.length})</TabsTrigger>
 
-                    <TabsTrigger value="parent-tasks" disabled>مهام الأطفال</TabsTrigger>
+                    <TabsTrigger value="parent-tasks" >مهام الأطفال ({childrenData?.length})</TabsTrigger>
                     {/* <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger> */}
                 </TabsList>
                 <TabsContent value="system-tasks">
                     <Card>
                         <CardHeader>
-                            <CardTitle>مهام عسول</CardTitle>
-                            <CardDescription>إدارة المهام المخصصة  لعسول</CardDescription>
+                            {/* <CardTitle>مهام عسول</CardTitle> */}
+                            {/* <CardDescription>إدارة المهام المخصصة  لعسول</CardDescription> */}
                         </CardHeader>
                         <CardContent>
                             <div className="overflow-x-auto">
@@ -431,7 +546,7 @@ export function TasksChildren({ childId }) {
                                             <TableHead>الصورة</TableHead>
                                             <TableHead>اللون</TableHead>
                                             <TableHead>النقاط</TableHead>
-                                            <TableHead>الإجراءات</TableHead>
+                                            <TableHead></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -473,24 +588,24 @@ export function TasksChildren({ childId }) {
                                                     <TableCell>{task.points} نقطة</TableCell>
                                                     <TableCell>
                                                         <div className="flex space-x-2 space-x-reverse justify-center ">
-                                                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
-                              <Eye className="h-4 w-4" />
-                            </Button> */}
+                                                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
                                                             <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
                                                                 <Edit className="h-4 w-4" />
                                                             </Button>
                                                             <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
-                                                            {/* {task.status !== "مكتمل" ? (
-                              <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              </Button>
-                            ) : (
-                              <Button variant="ghost" size="icon" onClick={() => handleRejectTask(task)}>
-                                <XCircle className="h-4 w-4 text-red-500" />
-                              </Button>
-                            )} */}
+                                                            <Button variant="ghost" size="icon">
+                                                                {task.system_task_completion ? <>
+                                                                    <CheckCircle className="h-4 w-4 text-green-500" />
+
+                                                                </> : <>
+                                                                    <XCircle className="h-4 w-4 text-red-500" />
+
+                                                                </>}
+                                                            </Button>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -511,39 +626,58 @@ export function TasksChildren({ childId }) {
                 <TabsContent value="parent-tasks">
                     <Card>
                         <CardHeader>
-                            <CardTitle>مهام الطفل</CardTitle>
-                            <CardDescription>إدارة المهام المخصصة لأولياء الأمور</CardDescription>
+                            {/* <CardTitle>مهام الطفل</CardTitle> */}
+                            {/* <CardDescription>إدارة المهام المخصصة لأولياء الأمور</CardDescription> */}
                         </CardHeader>
                         <CardContent>
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead>المعرف</TableHead>
+
                                             <TableHead>عنوان المهمة</TableHead>
-                                            <TableHead>معين إلى</TableHead>
-                                            <TableHead>تاريخ الاستحقاق</TableHead>
-                                            <TableHead>الحالة</TableHead>
-                                            <TableHead>الإجراءات</TableHead>
+
+                                            <TableHead></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {parentTasksData.map((task) => (
-                                            <TableRow key={task.id}>
-                                                <TableCell className="font-medium">{task.title}</TableCell>
-                                                <TableCell>{task.assignedTo}</TableCell>
-                                                <TableCell>{task.dueDate}</TableCell>
-                                                <TableCell>{getStatusBadge(task.status)}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex space-x-2 space-x-reverse justify-center">
-                                                        <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                                        {loading ?
+                                            <TableRow>
+                                                <TableCell className="text-center " colSpan={6}>
+                                                    <div className="flex w-full align-middle justify-center">
+                                                        <LoaderIcon />
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                            :
+
+                                            childrenData.length == 0 ? <>
+                                                <TableRow>
+                                                    <TableCell className="text-center " colSpan={6}>
+                                                        <div className="flex w-full align-middle justify-center">
+                                                            <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </> : childrenData.map((task) => (
+                                                <TableRow key={task.id}>
+                                                    <TableCell>{task.id}</TableCell>
+                                                    {/* <TableCell>
+                                                    <img src={task.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
+                                                </TableCell> */}
+
+                                                    <TableCell className="font-medium">{task.title}</TableCell>
+                                                    {/* <TableCell>{task.points}</TableCell> */}
+                                                    {/* <TableCell>{task.dueDate}</TableCell> */}
+                                                    {/* <TableCell>{(task.status)}</TableCell> */}
+                                                    <TableCell>
+                                                        <div className="flex space-x-2 space-x-reverse justify-center">
+                                                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
+                                                     
+                                                       
                                                         {task.status !== "مكتمل" ? (
                                                             <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
                                                                 <CheckCircle className="h-4 w-4 text-green-500" />
@@ -552,86 +686,50 @@ export function TasksChildren({ childId }) {
                                                             <Button variant="ghost" size="icon" onClick={() => handleRejectTask(task)}>
                                                                 <XCircle className="h-4 w-4 text-red-500" />
                                                             </Button>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                                        )} */}
+                                                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" >
+                                                                {task.completion ? <>
+                                                                    <CheckCircle className="h-4 w-4 text-green-500" />
+
+                                                                </> : <>
+                                                                    <XCircle className="h-4 w-4 text-red-500" />
+
+                                                                </>}
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
                                     </TableBody>
                                 </Table>
                             </div>
+                            <PaginationControls
+                                currentPage={childrenPage}
+                                setPage={setChildrenPage}
+                                totalItems={childrenMeta.total}
+                                pageSize={pageSize}
+                                setPageSize={setPageSize}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>
-                {/*
-        <TabsContent value="child-tasks">
-          <Card>
-            <CardHeader>
-              <CardTitle>مهام الأطفال</CardTitle>
-              <CardDescription>إدارة المهام المخصصة للأطفال</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>عنوان المهمة</TableHead>
-                      <TableHead>معين إلى</TableHead>
-                      <TableHead>ولي الأمر</TableHead>
-                      <TableHead>تاريخ الاستحقاق</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {childTasksData.map((task) => (
-                      <TableRow key={task.id}>
-                        <TableCell className="font-medium">{task.title}</TableCell>
-                        <TableCell>{task.assignedTo}</TableCell>
-                        <TableCell>{task.parent}</TableCell>
-                        <TableCell>{task.dueDate}</TableCell>
-                        <TableCell>{getStatusBadge(task.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse justify-center">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            {task.status !== "مكتمل" ? (
-                              <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              </Button>
-                            ) : (
-                              <Button variant="ghost" size="icon" onClick={() => handleRejectTask(task)}>
-                                <XCircle className="h-4 w-4 text-red-500" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent> */}
 
             </Tabs>
 
             {/* نوافذ العرض والتعديل والحذف والتأكيد */}
-            <TaskViewDialog
+            {/* <TaskViewDialog
                 task={selectedTask}
                 open={viewDialogOpen}
                 onOpenChange={setViewDialogOpen}
                 onComplete={handleCompleteTask}
                 onReject={handleRejectTask}
-            />
+            /> */}
 
             <SystemTasksEditDialog
                 game={selectedTask}
@@ -639,7 +737,12 @@ export function TasksChildren({ childId }) {
                 onOpenChange={setEditDialogOpen}
                 onSave={handleSaveTask}
             />
-
+            <ToTasksEditDialog
+                game={selectedTask}
+                open={viewDialogOpen}
+                onOpenChange={setViewDialogOpen}
+                onSave={handleSaveTask}
+            />
             <DeleteConfirmationDialog
                 title="حذف المهمة"
                 description={`هل أنت متأكد من حذف المهمة "${selectedTask?.title}"؟ هذا الإجراء لا يمكن التراجع عنه.`}

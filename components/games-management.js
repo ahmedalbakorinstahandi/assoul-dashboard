@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label"
 import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
 
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, FileQuestion, LucideChevronLeftCircle, LoaderIcon } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, FileQuestion, LucideChevronLeftCircle, LoaderIcon, CheckCircle } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GameViewDialog } from "@/components/dialogs/game-view-dialog"
@@ -37,6 +37,8 @@ import { LevelViewDialog } from "./dialogs/level-view-dialog"
 import { QuestionViewDialog } from "./dialogs/question-view-dialog"
 import toast from "react-hot-toast"
 import Lottie from "lottie-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import { PublishConfirmationDialog } from "./dialogs/publish-confirmation-dialog copy"
 
 export function GamesManagement() {
   const [activeTab, setActiveTab] = useState("games")
@@ -112,7 +114,8 @@ export function GamesManagement() {
   const [gamesIds, setGamesId] = useState([]);
   const [levelsIds, setLevelsId] = useState([]);
   const [questionsIds, setQuestionsId] = useState([]);
-
+  // publish level
+  const [publishLevel, setPublishLevel] = useState(false)
   const typQuestions = [
     { id: 1, name: "DragDrop" },
     { id: 2, name: "LetterArrangement" },
@@ -191,7 +194,32 @@ export function GamesManagement() {
       toast.error(response.message);
     }
   };
+  // console.log(gamesData);
+  const handleConvertDate = (dateaa) => {
+    const date = new Date(dateaa);
+    const formattedDate = new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: "UTC",
 
+    }).format(date);
+
+    const formattedTime = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+
+      hour12: true,
+    }).format(date);
+
+    return (
+      <span>
+        {formattedDate.replace(/\//g, " \\ ")} •{" "}
+        {formattedTime.toLowerCase()}
+      </span>
+    );
+  }
   // دالة لمزامنة جلب البيانات بناءً على التبويب النشط
   useEffect(() => {
     if (activeTab === "games") {
@@ -337,6 +365,19 @@ export function GamesManagement() {
     setSelectedItemLevel(item)
     setViewDialogLevelOpen(true)
   }
+  const handlePublishLevel = () => {
+    // console.log("uuu", item);
+    // setSelectedItem(item)
+    // const updatedItem = { ...item, status: "published" };
+    handleUpdateEntity("games/levels", selectedItem);
+  };
+  const handlePublishOpen = (item) => {
+    setPublishLevel(true)
+    const updatedItem = { ...item, status: "published" };
+
+    setSelectedItem(updatedItem)
+
+  }
   const handleViewQuestion = (item) => {
     setSelectedItemQuestion(item)
     setViewDialogQuestionOpen(true)
@@ -371,6 +412,7 @@ export function GamesManagement() {
     handleDeleteEntity(endpoint, selectedItem?.id)
     setDeleteDialogOpen(false)
   }
+  // console.log("levelsData", levelsData);
 
   // مثال لمعالجة حفظ التعديلات (تستخدم في Dialog الخاص بالتعديل)
   const handleSaveItem = (updatedItem) => {
@@ -507,7 +549,7 @@ export function GamesManagement() {
                       number: formData.get("number"),
                       title: formData.get("title"),
                       game_id: filter.game_id, // استخدام الـ game_id المحدد من الـ state
-                      status: isEnabled ? "published" : "pending", // تحويل الحالة
+                      status: "pending", // تحويل الحالة
                     };
 
                     // إرسال البيانات
@@ -541,13 +583,13 @@ export function GamesManagement() {
                       <Input id="number" name="number" type="number" placeholder="اختر مستوى الصعوبة" required />
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    {/* <div className="flex items-center justify-between">
                       <Label htmlFor="status"> حالة المستوى</Label>
                       <div className="flex gap-3 align-middle justify-center">
                         <span>{isEnabled ? "مفعل" : "مغلق"}</span>
                         <Switch id="status" name="status" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   <DialogFooter>
@@ -720,128 +762,133 @@ export function GamesManagement() {
           )}
 
           {activeTab === "answers" && (
-            <Dialog open={isAddAnswerOpen} onOpenChange={setIsAddAnswerOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                  <Plus className="h-4 w-4 ml-2" />
-                  <span className="hidden sm:inline">إضافة جواب سؤال جديد</span>
-                  <span className="sm:hidden">إضافة</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[525px]">
-                <DialogHeader>
-                  <DialogTitle>إضافة جواب سؤال جديد</DialogTitle>
-                  <DialogDescription>أدخل بيانات جواب السؤال الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={(e) => {
-                  e.preventDefault(); // منع إعادة تحميل الصفحة
+            (
+              (questionsIds && questionsIds.find((e) => e.id == filter.question_id)?.type === "DragDrop" && answersData.length < 2) ||
+              (questionsIds && questionsIds.find((e) => e.id == filter.question_id)?.type === "LetterArrangement" && answersData.length < 1) ||
+              (questionsIds && questionsIds.find((e) => e.id == filter.question_id)?.type === "MCQ" && answersData.length < 4)
+            ) && (
+              <Dialog open={isAddAnswerOpen} onOpenChange={setIsAddAnswerOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
+                    <Plus className="h-4 w-4 ml-2" />
+                    <span className="hidden sm:inline">إضافة جواب سؤال جديد</span>
+                    <span className="sm:hidden">إضافة</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[525px]">
+                  <DialogHeader>
+                    <DialogTitle>إضافة جواب سؤال جديد</DialogTitle>
+                    <DialogDescription>أدخل بيانات جواب السؤال الجديد هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={(e) => {
+                    e.preventDefault(); // منع إعادة تحميل الصفحة
 
-                  const formData = new FormData(e.target); // جمع البيانات من النموذج
+                    const formData = new FormData(e.target); // جمع البيانات من النموذج
 
-                  const newAnswer = {
-                    game_id: selectedGameId,
-                    level_id: selectedLevelId,
-                    question_id: formData.get("question_id"),
-                    is_correct: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
-                    text: formData.get("text") || null, // جلب نص الجواب إذا كان موجودًا
-                  };
+                    const newAnswer = {
+                      game_id: selectedGameId,
+                      level_id: selectedLevelId,
+                      question_id: formData.get("question_id"),
+                      is_correct: isEnabled ? 1 : 0, // تحويل الحالة إلى 1 أو 0
+                      text: formData.get("text") || null, // جلب نص الجواب إذا كان موجودًا
+                    };
 
-                  const imageFile = formData.get("image"); // جلب الصورة إذا كانت موجودة
-                  handleAddEntity("games/answers", newAnswer, imageFile);
-                }}>
-                  <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="game">اللعبة</Label>
-                      <Select name="game_id" value={filter.game_id} disabled>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="اختر اللعبة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {gamesIds.map((game, idx) => (
-                            <SelectItem key={idx} value={game.id.toString()}>
-                              {game.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    const imageFile = formData.get("image"); // جلب الصورة إذا كانت موجودة
+                    handleAddEntity("games/answers", newAnswer, imageFile);
+                  }}>
+                    <div className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="game">اللعبة</Label>
+                        <Select name="game_id" value={filter.game_id} disabled>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="اختر اللعبة" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {gamesIds.map((game, idx) => (
+                              <SelectItem key={idx} value={game.id.toString()}>
+                                {game.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="level">المستوى</Label>
+                        <Select name="level_id" value={filter.level_id} disabled>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="اختر اللعبة" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {levelsIds.map((game, idx) => (
+                              <SelectItem key={idx} value={game.id.toString()}>
+                                {game.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="question_id">السؤال</Label>
+                        <Select
+                          name="question_id"
+                          value={filter.question_id}
+                          onValueChange={(value) => setSelectedQuestionId(value)}
+                          required
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="اختر السؤال" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {questionsIds.map((game, idx) => (
+                              <SelectItem key={idx} value={game.id.toString()}>
+                                {game.text}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {questionsIds && questionsIds.find((e) => e.id == filter.question_id)?.answers_view === "text" ? (
+                        <div className="space-y-2">
+                          <Label htmlFor="text">جواب السؤال</Label>
+                          <Textarea id="text" name="text" placeholder="أدخل نص السؤال" required />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label htmlFor="image">صورة جواب السؤال</Label>
+                          <Input id="image" name="image" required type="file" onChange={handleImageChange} />
+                          {imagePreview && (
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
+                            />
+                          )}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="is_correct">الجواب الصحيح</Label>
+                        <Switch id="is_correct" name="is_correct" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="level">المستوى</Label>
-                      <Select name="level_id" value={filter.level_id} disabled>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="اختر اللعبة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {levelsIds.map((game, idx) => (
-                            <SelectItem key={idx} value={game.id.toString()}>
-                              {game.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="question_id">السؤال</Label>
-                      <Select
-                        name="question_id"
-                        value={filter.question_id}
-                        onValueChange={(value) => setSelectedQuestionId(value)}
-                        required
+                    <DialogFooter>
+                      <Button
+                        style={{
+                          marginInline: "1rem",
+                        }}
+                        variant="outline"
+                        onClick={() => setIsAddAnswerOpen(false)}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="اختر السؤال" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {questionsIds.map((game, idx) => (
-                            <SelectItem key={idx} value={game.id.toString()}>
-                              {game.text}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {questionsIds && questionsIds.find((e) => e.id == filter.question_id)?.answers_view === "text" ? (
-                      <div className="space-y-2">
-                        <Label htmlFor="text">جواب السؤال</Label>
-                        <Textarea id="text" name="text" placeholder="أدخل نص السؤال" required />
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Label htmlFor="image">صورة جواب السؤال</Label>
-                        <Input id="image" name="image" required type="file" onChange={handleImageChange} />
-                        {imagePreview && (
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
-                          />
-                        )}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="is_correct">الجواب الصحيح</Label>
-                      <Switch id="is_correct" name="is_correct" color="primary" checked={isEnabled} onCheckedChange={setIsEnabled} />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      style={{
-                        marginInline: "1rem",
-                      }}
-                      variant="outline"
-                      onClick={() => setIsAddAnswerOpen(false)}
-                    >
-                      إلغاء
-                    </Button>
-                    <Button className="bg-[#ffac33] hover:bg-[#f59f00]" type="submit">
-                      حفظ
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          )}
+                        إلغاء
+                      </Button>
+                      <Button className="bg-[#ffac33] hover:bg-[#f59f00]" type="submit">
+                        حفظ
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            ))}
 
 
         </div>
@@ -964,20 +1011,22 @@ export function GamesManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>المعرف</TableHead>
-                      <TableHead>صورة اللعبة</TableHead>
+                      <TableHead className="text-nowrap">صورة اللعبة</TableHead>
 
-                      <TableHead>اسم اللعبة</TableHead>
+                      <TableHead className="text-nowrap">اسم اللعبة</TableHead>
 
                       <TableHead>اللون</TableHead>
                       <TableHead>ترتيب اللعبة</TableHead>
                       <TableHead>الحالة</TableHead>
+                      <TableHead className="text-nowrap">تاريخ انشاء اللعبة</TableHead>
+
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ?
                       <TableRow>
-                        <TableCell className="text-center " colSpan={7}>
+                        <TableCell className="text-center " colSpan={8}>
                           <div className="flex w-full align-middle justify-center">
                             <LoaderIcon />
                           </div>
@@ -987,7 +1036,7 @@ export function GamesManagement() {
 
                       gamesData.length == 0 ? <>
                         <TableRow>
-                          <TableCell className="text-center " colSpan={7}>
+                          <TableCell className="text-center " colSpan={8}>
                             <div className="flex w-full align-middle justify-center">
                               <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
                             </div>
@@ -1015,19 +1064,22 @@ export function GamesManagement() {
                               />
                             </TableCell>
                             <TableCell>{game.order}</TableCell>
+
                             <TableCell>
                               <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
                                 {game.is_enable === 1 ? "نشط" : "غير نشط"}
                               </span>
                             </TableCell>
+                            <TableCell className="text-nowrap">{handleConvertDate(game.created_at)}</TableCell>
                             <TableCell>
                               <div className="flex space-x-2 space-x-reverse justify-center">
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
+                                  variant="outline"
+                                  // size="icon"
                                   onClick={() => handleTabChange("levels", { game_id: game.id.toString() })}
                                 >
-                                  <LucideChevronLeftCircle className="h-4 w-4" />
+                                  عرض المستويات
+                                  {/* <LucideChevronLeftCircle className="h-4 w-4" /> */}
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                                   <Eye className="h-4 w-4" />
@@ -1101,19 +1153,35 @@ export function GamesManagement() {
                           <TableCell>{level.question_count}</TableCell>
                           <TableCell>
                             <span className={`px-2 py-1 rounded-full ${level.status === "published" ? "bg-green-100 text-green-800 " : "bg-red-100 text-red-800 "}  text-xs`}>
-                              {level.status === "published" ? "نشط" : "غير نشط"}
+                              {level.status === "published" ? "منشور" : " غير منشور"}
                             </span>
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2 space-x-reverse justify-center">
                               <Button
-                                variant="ghost"
-                                size="icon"
+                                variant="outline"
+                                // size="icon"
                                 onClick={() => handleTabChange("questions", { level_id: level.id.toString() })}
                                 disabled={!filter.game_id}
                               >
-                                <LucideChevronLeftCircle className="h-4 w-4" />
+                                عرض الأسئلة
+                                {/* <LucideChevronLeftCircle className="h-4 w-4" /> */}
                               </Button>
+                              {level.can_publish && level.status === "pending" ? <>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger >
+                                      <Button variant="ghost" size="icon" onClick={() => handlePublishOpen(level)}>
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                      </Button>                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                      نشر المستوى
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+
+
+                              </> : <></>}
                               <Button variant="ghost" size="icon" onClick={() => handleViewLevel(level)}>
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -1192,12 +1260,13 @@ export function GamesManagement() {
                           <TableCell>
                             <div className="flex space-x-2 space-x-reverse justify-center">
                               <Button
-                                variant="ghost"
-                                size="icon"
+                                variant="outline"
+                                // size="icon"
                                 onClick={() => handleTabChange("answers", { question_id: question.id.toString() })}
                                 disabled={!filter.level_id}
                               >
-                                <LucideChevronLeftCircle className="h-4 w-4" />
+                                عرض الأجوبة
+                                {/* <LucideChevronLeftCircle className="h-4 w-4" /> */}
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleViewQuestion(question)}>
                                 <Eye className="h-4 w-4" />
@@ -1347,6 +1416,13 @@ export function GamesManagement() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
+      />
+      <PublishConfirmationDialog
+        title="نشر المستوى"
+        description={`هل أنت متأكد من نشر المستوى ؟ هذا الإجراء لا يمكن التراجع عنه.`}
+        open={publishLevel}
+        onOpenChange={setPublishLevel}
+        onConfirm={handlePublishLevel}
       />
     </div>
   )

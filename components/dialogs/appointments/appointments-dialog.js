@@ -15,7 +15,11 @@ import { formatDateTime } from "@/lib/utils"
 export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, guardian, initialData, childId }) {
     // Initialize form data state using a similar pattern to the InsulinDosesDialog
     const initialForm = {
-        patient_id: initialData?.patient_id.toString() || childId.toString(),
+        patient_id: initialData?.patient_id != null
+            ? initialData.patient_id.toString()
+            : childId != null
+                ? childId.toString()
+                : "", // or some default value if both are missing
         guardian_id: initialData?.guardian_id || "",
         doctor_id: initialData?.doctor_id || "",
         title: initialData?.title || "",

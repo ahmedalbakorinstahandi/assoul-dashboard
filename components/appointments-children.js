@@ -403,7 +403,7 @@ export function AppointmentsChildren({ childId }) {
         <div className="space-y-6">
             {/* تعديل عنوان الصفحة والأزرار */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-                <h2 className="text-xl md:text-3xl font-bold">إدارة مواعيد الطفل</h2>
+                <h3 className="text-lg font-medium">الحجوزات ({gamesData?.length})</h3>
 
                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto" onClick={() => setIsAddAppointmentOpen(true)}>
                     <Plus className="h-4 w-4 ml-2" />
@@ -620,8 +620,8 @@ export function AppointmentsChildren({ childId }) {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>المواعيد</CardTitle>
-                    <CardDescription>إدارة مواعيد الأطفال مع الأطباء</CardDescription>
+                    {/* <CardTitle>المواعيد</CardTitle>
+                    <CardDescription>إدارة مواعيد الأطفال مع الأطباء</CardDescription> */}
                 </CardHeader>
                 <CardContent>
                     {/* تعديل الجدول ليكون متجاوباً */}
