@@ -12,6 +12,9 @@ import { Eye, EyeOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { patientStatus, statusAppointment } from "@/data/data"
 import { formatDateTime } from "@/lib/utils"
+import { getData } from "@/lib/apiHelper";
+import AsyncSelect from "react-select/async";
+
 export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, guardian, initialData, childId }) {
     // Initialize form data state using a similar pattern to the InsulinDosesDialog
     const initialForm = {
@@ -37,7 +40,102 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
     const [isLoading, setIsLoading] = useState(false)
 
     const [formData, setFormData] = useState(initialForm);
+    const [defaultOptions, setDefaultOptions] = useState([]);
+    const [defaultOptionsTow, setDefaultOptionsTow] = useState([]);
+    const [defaultOptionsThree, setDefaultOptionsThree] = useState([]);
 
+    useEffect(() => {
+        const fetchInitialProviders = async () => {
+            try {
+                // Adjust your endpoint to limit the results (if supported by your API)
+                const response = await getData(`users/doctors?limit=20`);
+                const providers = response.data.map((item) => ({
+                    label: `${item.user.first_name + " " + item.user.last_name}`,
+                    value: item.id,
+                }));
+                setDefaultOptions(providers);
+            } catch (error) {
+                console.error("Error fetching initial providers:", error);
+            }
+        };
+        const fetchInitialProviders2 = async () => {
+            try {
+                // Adjust your endpoint to limit the results (if supported by your API)
+                const response = await getData(`users/guardians?limit=20`);
+                const providers = response.data.map((item) => ({
+                    label: `${item.user.first_name + " " + item.user.last_name}`,
+                    value: item.id,
+                }));
+                setDefaultOptionsTow(providers);
+            } catch (error) {
+                console.error("Error fetching initial providers:", error);
+            }
+        };
+        const fetchInitialProviders3 = async () => {
+            try {
+                // Adjust your endpoint to limit the results (if supported by your API)
+                const response = await getData(`users/children?limit=20`);
+                const providers = response.data.map((item) => ({
+                    label: `${item.user.first_name + " " + item.user.last_name}`,
+                    value: item.id,
+                }));
+                setDefaultOptionsThree(providers);
+            } catch (error) {
+                console.error("Error fetching initial providers:", error);
+            }
+        };
+        fetchInitialProviders3()
+        fetchInitialProviders2()
+        fetchInitialProviders();
+    }, []);
+    const loadOptions = async (inputValue, callback) => {
+        try {
+            // Call your API with the search query
+            // const response = await fetchData(`public/services`);
+
+            const response = await getData(`users/doctors?search=${inputValue}`);
+            const providers = response.data.map((item) => ({
+                label: `${item.user.first_name + " " + item.user.last_name}`,
+                value: item.id,
+            }));
+            callback(providers);
+        } catch (error) {
+            console.error("Error fetching providers on search:", error);
+            callback([]);
+        }
+    };
+    const loadOptionsTow = async (inputValue, callback) => {
+        try {
+            // Call your API with the search query
+            // const response = await fetchData(`public/services`);
+
+            const response = await getData(`users/guardians?search=${inputValue}`);
+            const providers = response.data.map((item) => ({
+                label: `${item.user.first_name + " " + item.user.last_name}`,
+                value: item.id,
+            }));
+            callback(providers);
+        } catch (error) {
+            console.error("Error fetching providers on search:", error);
+            callback([]);
+        }
+    };
+    const loadOptionsThree = async (inputValue, callback) => {
+        try {
+            // Call your API with the search query
+            // const response = await fetchData(`public/services`);
+
+            const response = await getData(`users/children?search=${inputValue}`);
+            const providers = response.data.map((item) => ({
+                label: `${item.user.first_name + " " + item.user.last_name}`,
+                value: item.id,
+            }));
+            callback(providers);
+        } catch (error) {
+            console.error("Error fetching providers on search:", error);
+            callback([]);
+        }
+    };
     useEffect(() => {
         if (initialData) {
             console.log(initialData);
@@ -68,9 +166,9 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
 
 
     const handleSubmit = (e) => {
+        e.preventDefault();
         setIsLoading(true)
 
-        e.preventDefault();
 
         // Basic validation
         // if (!formData.first_name) return toast.error("الاسم الأول مطلوب");
@@ -111,8 +209,23 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                         {initialData ? "قم بتحديث بيانات المستخدم هنا." : "أدخل بيانات المستخدم الجديد هنا."}
                     </DialogDescription>
                 </DialogHeader>
-                <form className="grid gap-4 py-4">
-                    <div className="space-y-2">
+                <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
+                    <div>
+                        <AsyncSelect
+                            cacheOptions
+                            // className="mt-2"
+                            defaultOptions={defaultOptionsThree}
+                            className="min-w-48"
+                            value={defaultOptionsThree.find(option => option.value == formData.patient_id.toString() || childId) || ""} // Set the value to be the object
+                            loadOptions={loadOptionsThree}
+                            isDisabled={childId ? true : false || initialData ? true : false}
+
+                            onChange={(value) => handleChange("patient_id", value ? value.value : "")}
+                            placeholder="اختر الطفل"
+                            isClearable
+                        />
+                    </div>
+                    {/* <div className="space-y-2">
                         <Label htmlFor="patient_id">الطفل</Label>
                         <Select
                             name="patient_id"
@@ -131,9 +244,23 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
+                    </div> */}
+                    <div>
+                        <AsyncSelect
+                            cacheOptions
+                            // className="mt-2"
+                            className="min-w-48"
+                            isDisabled={initialData ? true : false}
 
-                    <div className="space-y-2">
+                            defaultOptions={defaultOptionsTow}
+                            value={defaultOptionsTow.find(option => option.value == formData.guardian_id.toString()) || ""} // Set the value to be the object
+                            loadOptions={loadOptionsTow}
+                            onChange={(value) => handleChange("guardian_id", value ? value.value : "")}
+                            placeholder="اختر ولي الامر"
+                            isClearable
+                        />
+                    </div>
+                    {/* <div className="space-y-2">
                         <Label htmlFor="guardian_id">ولي الامر</Label>
                         <Select
                             disabled={initialData ? true : false}
@@ -154,8 +281,23 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div> */}
+                    <div>
+                        <AsyncSelect
+                            cacheOptions
+                            // className="mt-2"
+                            className="min-w-48"
+                            isDisabled={initialData ? true : false}
+
+                            defaultOptions={defaultOptions}
+                            value={defaultOptions.find(option => option.value.toString() == formData.doctor_id.toString()) || ""} // Set the value to be the object
+                            loadOptions={loadOptions}
+                            onChange={(value) => handleChange("doctor_id", value ? value.value : "")}
+                            placeholder="اختر الطبيب"
+                        // isClearable
+                        />
                     </div>
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                         <Label htmlFor="doctor_id">الطبيب</Label>
                         <Select
                             name="doctor_id"
@@ -176,18 +318,18 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
+                    </div> */}
                     <div className="space-y-2">
                         <Label>العنوان</Label>
-                        <Input name="title" value={formData.title} onChange={(e) => handleChange("title", e.target.value)} />
+                        <Input name="title" required value={formData.title} onChange={(e) => handleChange("title", e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label> الوصف</Label>
-                        <Textarea name="notes" value={formData.notes} onChange={(e) => handleChange("notes", e.target.value)} />
+                        <Textarea name="notes" required value={formData.notes} onChange={(e) => handleChange("notes", e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label> تاريخ ووقت الزيارة</Label>
-                        <Input type="datetime-local" name="appointment_date" value={formatDateTime(formData.appointment_date)} onChange={(e) => handleChange("appointment_date", e.target.value)} />
+                        <Input required type="datetime-local" name="appointment_date" value={formatDateTime(formData.appointment_date)} onChange={(e) => handleChange("appointment_date", e.target.value)} />
                     </div>
 
                     {!initialData ? <>
@@ -196,6 +338,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                             <Label htmlFor="patient_status"> حالة المريض</Label>
                             <Select
                                 name="patient_status"
+                                required={true}
                                 value={formData.status}
                                 onValueChange={(value) => handleChange("patient_status", value)}
                             // onValueChange={(e) => handleChange(e)}
@@ -242,8 +385,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                             إلغاء
                         </Button>
                         <Button
-                            onClick={handleSubmit}
-
+                            type="submit"
                             disabled={isLoading}
 
                             className="bg-[#ffac33] hover:bg-[#f59f00]">
