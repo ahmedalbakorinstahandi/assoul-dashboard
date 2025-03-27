@@ -371,6 +371,8 @@ export function GamesManagement() {
     // const updatedItem = { ...item, status: "published" };
     handleUpdateEntity("games/levels", selectedItem);
   };
+  console.log("answersData", answersData);
+
   const handlePublishOpen = (item) => {
     setPublishLevel(true)
     const updatedItem = { ...item, status: "published" };
@@ -1311,6 +1313,8 @@ export function GamesManagement() {
                       <TableHead>المستوى</TableHead>
                       <TableHead>السؤال</TableHead>
                       <TableHead>الجواب</TableHead>
+                      <TableHead className="text-nowrap">هل الجواب صحيح؟</TableHead>
+
                       {/* <TableHead>الإجراءات</TableHead> */}
                     </TableRow>
                   </TableHeader>
@@ -1344,6 +1348,10 @@ export function GamesManagement() {
                               answer.text : <>
                                 <img src={answer.image} className="rounded-lg h-10 w-10 object-cover  m-auto" />
                               </>}</TableCell>
+                          <TableCell>  <span className={`px-2 py-1 rounded-full ${answer.is_correct === true ? " bg-green-100 text-green-800 " : " bg-red-100 text-red-800 "}text-xs`}>
+                            {answer.is_correct === true ? "صحيح" : "غير صحيح"}
+                          </span>
+                          </TableCell>
                           <TableCell>
                             <div className="flex space-x-2 space-x-reverse justify-center">
                               {/*    <Button variant="ghost" size="icon" onClick={() => handleViewItem(answer)}>
