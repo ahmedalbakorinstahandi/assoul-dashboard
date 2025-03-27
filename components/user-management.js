@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays, Baby, LoaderIcon } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Code, CalendarDays, Baby, LoaderIcon, LucidePhoneOutgoing } from "lucide-react"
 import { UserViewDialog } from "@/components/dialogs/user-view-dialog"
 import { UserEditDialog } from "@/components/dialogs/user-edit-dialog"
 import { GuardianDialog } from "@/components/dialogs/users/guardians/guardian-dialog"
@@ -713,9 +713,20 @@ export function UserManagement() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2 space-x-reverse justify-center">
-                              <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
-                                <Code className="h-4 w-4" />
-                              </Button>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger >
+                                    <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
+                                      <LucidePhoneOutgoing className="h-4 w-4" />
+                                    </Button>
+
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-[400px] text-wrap" side="top">
+                                    الحصول على رمز للدخول
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               <Button variant="ghost" size="icon" onClick={() => { router.push(`users/patient/${child.id}`) }} >
                                 <Eye className="h-4 w-4" />
                               </Button>

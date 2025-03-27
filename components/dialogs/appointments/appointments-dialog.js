@@ -12,10 +12,10 @@ import { Eye, EyeOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { patientStatus, statusAppointment } from "@/data/data"
 import { formatDateTime } from "@/lib/utils"
-export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, guardian, initialData }) {
+export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, guardian, initialData, childId }) {
     // Initialize form data state using a similar pattern to the InsulinDosesDialog
     const initialForm = {
-        patient_id: initialData?.patient_id || "",
+        patient_id: initialData?.patient_id.toString() || childId.toString(),
         guardian_id: initialData?.guardian_id || "",
         doctor_id: initialData?.doctor_id || "",
         title: initialData?.title || "",
@@ -110,9 +110,9 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                         <Label htmlFor="patient_id">الطفل</Label>
                         <Select
                             name="patient_id"
-                            value={formData.patient_id.toString()}
+                            disabled={childId ? true : false || initialData ? true : false}
+                            value={formData.patient_id || ""}
                             onValueChange={(value) => handleChange("patient_id", value)}
-                        // onValueChange={(e) => handleChange(e)}
                         >
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="اختر الطفل " />

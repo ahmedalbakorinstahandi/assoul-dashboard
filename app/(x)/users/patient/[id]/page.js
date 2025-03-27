@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { ClipboardList, FileText, MessageSquare, User, Ruler, Award, Droplet } from "lucide-react"
+import { ClipboardList, FileText, MessageSquare, User, Ruler, Award, Droplet, Eye } from "lucide-react"
 import Lottie from 'lottie-react';
 import animationData from '@/public/loading.json'; // Adjust the path to your Lottie JSON file
 
@@ -18,6 +18,8 @@ import { MedicalRecordsDialog } from "@/components/dialogs/patient/medical-recor
 import toast from "react-hot-toast"
 import { NoteDialog } from "@/components/dialogs/patient/notes/notes-dialog"
 import { InstructionDialog } from "@/components/dialogs/patient/instructions/instructions-dialog"
+import { GuardianDetailsDialog } from "@/components/dialogs/users/guardians/GuardianDetailsDialog";
+import { AppointmentsChildren } from "@/components/appointments-children";
 
 export default function PatientDetails() {
     const params = useParams()
@@ -27,6 +29,7 @@ export default function PatientDetails() {
     const [patient, setPatient] = useState({});
     const [isAddMedical, setIsAddMedical] = useState(false);
     const [isEditMedical, setIsEditMedical] = useState(false);
+    const [showGuardian, setShowGuardian] = useState(false)
 
     const [isAddNote, setIsAddNote] = useState(false);
     const [isEditNote, setIsEditNote] = useState(false);
@@ -34,7 +37,10 @@ export default function PatientDetails() {
 
     const [isAddInstruction, setIsAddInstruction] = useState(false);
     const [isEditInstruction, setIsEditInstruction] = useState(false);
-
+    const handleShowGuardian = (user) => {
+        setSelectedItem(user)
+        setShowGuardian(true)
+    }
     const fetchPatientData = async () => {
         const response = await getData(`users/children/${id}`);
         console.log("ddd", response.data);
@@ -127,13 +133,13 @@ export default function PatientDetails() {
     if (!patient) {
         return (
             <div className="flex h-[70vh] items-center justify-center">
-            <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
-        </div>
+                <Lottie animationData={animationData} loop={true} style={{ width: 100, height: 100 }} />
+            </div>
         )
     }
 
     return (
-        <div className="container mx-auto p-4 space-y-6">
+        <div className="66 mx-auto  ">
             {/* بطاقة الملف الشخصي الرئيسية */}
             <Card className="border-honey/30 shadow-lg">
                 <CardHeader className="pb-2">
@@ -175,16 +181,18 @@ export default function PatientDetails() {
 
                 <CardContent className="pt-4">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-4 md:w-fit">
+                        <TabsList className="grid grid-cols-5 md:w-fit">
                             <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
                             <TabsTrigger value="medical">السجلات الطبية</TabsTrigger>
+                            <TabsTrigger value="appointments"> الحجوزات</TabsTrigger>
+
                             <TabsTrigger value="instructions">التعليمات</TabsTrigger>
                             <TabsTrigger value="notes">الملاحظات</TabsTrigger>
                         </TabsList>
 
                         {/* نظرة عامة */}
                         <TabsContent value="overview" className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
                                 {/* بطاقة المعلومات الشخصية */}
                                 <Card>
                                     <CardHeader className="pb-2">
@@ -232,12 +240,12 @@ export default function PatientDetails() {
                                             <span className="text-muted-foreground">الوزن:</span>
                                             <span className="font-medium">{patient.weight} كجم</span>
                                         </div>
-                                        <div className="flex justify-between">
+                                        {/* <div className="flex justify-between">
                                             <span className="text-muted-foreground">مؤشر كتلة الجسم:</span>
                                             <span className="font-medium">
                                                 {(patient.weight / Math.pow(patient.height / 100, 2)).toFixed(1)}
                                             </span>
-                                        </div>
+                                        </div> */}
                                     </CardContent>
                                 </Card>
 
@@ -267,40 +275,53 @@ export default function PatientDetails() {
 
                                 {/* بطاقة الولي/الوصي */}
                                 {patient.guardian && <>
-                                    <Card className="md:col-span-2 lg:col-span-1">
-                                        <CardHeader className="pb-2">
+                                    <Card >
+                                        <CardHeader className="pb-2 flex flex-row content-between">
                                             <CardTitle className="text-lg flex items-center gap-2">
                                                 <User className="h-5 w-5 text-green-500" />
                                                 معلومات الولي/الوصي
                                             </CardTitle>
+                                            {/* <Button variant="ghost" size="icon" onClick={() => handleShowGuardian(parent, guardia)}> */}
+
                                         </CardHeader>
                                         <CardContent>
                                             {patient.guardian?.map((guardian) => (
-                                                <div key={guardian.id} className="flex items-center gap-4">
-                                                    <Avatar>
-                                                        <AvatarImage
-                                                            src={guardian?.user?.avatar}
-                                                            alt={`${guardian.user?.first_name} ${guardian.user?.last_name}`}
-                                                        />
-                                                        <AvatarFallback className="bg-green-500/20 text-green-500">
-                                                            {guardian.user?.first_name.charAt(0)}
-                                                            {guardian.user?.last_name.charAt(0)}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="font-medium">
-                                                            {guardian.user?.first_name} {guardian.user?.last_name}
-                                                        </p>
-                                                        <p className="text-sm text-muted-foreground">{guardian.user?.email}</p>
-                                                        <p className="text-sm text-muted-foreground">{guardian.user?.phone}</p>
+                                                <div key={guardian.id} className="flex flex-col h-full" >
+                                                    <div className="flex items-center gap-4  h-full">
+                                                        <Avatar>
+                                                            <AvatarImage
+                                                                src={guardian?.user?.avatar}
+                                                                alt={`${guardian.user?.first_name} ${guardian.user?.last_name}`}
+                                                            />
+                                                            <AvatarFallback className="bg-green-500/20 text-green-500">
+                                                                {guardian.user?.first_name.charAt(0)}
+                                                                {guardian.user?.last_name.charAt(0)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                {guardian.user?.first_name} {guardian.user?.last_name}
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">{guardian.user?.email}</p>
+                                                            <p className="text-sm text-muted-foreground">{guardian.user?.phone}</p>
+                                                        </div>
                                                     </div>
+
+                                                    <Button onClick={() => handleShowGuardian(guardian)} className="bg-[#ffac33] hover:bg-[#f59f00] max-w-max mr-auto">
+                                                        <Eye className="h-4 w-4 ml-2" />
+                                                        <span className="hidden sm:inline">    عرض المزيد</span>
+                                                        <span className="sm:hidden"> عرض المزيد</span>
+                                                    </Button>
+                                                    {/* <p className="underline-offset-2 text-blue-500  cursor-pointer" >
+                                                        عرض المزيد
+                                                    </p> */}
                                                 </div>
                                             ))}
                                         </CardContent>
                                     </Card>
                                 </>}
                                 {/* بطاقة التقدم والإنجازات */}
-                                <Card className="md:col-span-2">
+                                {/* <Card className="md:col-span-2">
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-lg flex items-center gap-2">
                                             <Award className="h-5 w-5 text-honey" />
@@ -335,7 +356,7 @@ export default function PatientDetails() {
                                             </div>
                                         </div>
                                     </CardContent>
-                                </Card>
+                                </Card> */}
                             </div>
                         </TabsContent>
                         {/* {patient.medical_records && <> */}
@@ -436,7 +457,9 @@ export default function PatientDetails() {
                                 ))}
                             </div>
                         </TabsContent>
-
+                        <TabsContent value="appointments" className="space-y-4">
+                            <AppointmentsChildren childId={patient.id} />
+                        </TabsContent>
                         {/* الملاحظات */}
                         <TabsContent value="notes" className="space-y-4">
                             <div className="flex justify-between items-center">
@@ -581,7 +604,13 @@ export default function PatientDetails() {
                     setSelectedItem(null)
                 }}
             />
-
+            <GuardianDetailsDialog
+                isOpen={showGuardian}
+                onClose={() => setShowGuardian(false)}
+                // onSave={handleSaveItem}
+                // initialData={selectedItem}
+                userData={selectedItem}
+            />
         </div>
     )
 }

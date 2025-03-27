@@ -17,6 +17,7 @@ import { User, Phone, Mail, Shield } from "lucide-react"
 
 export function GuardianDetailsDialog({ isOpen, onClose, userData }) {
     const [imageError, setImageError] = useState(false)
+    // console.log("userData", userData);
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
