@@ -50,7 +50,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-        console.log(formData);
+        // console.log(formData);
 
     };
 
