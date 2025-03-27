@@ -20,6 +20,7 @@ import { NoteDialog } from "@/components/dialogs/patient/notes/notes-dialog"
 import { InstructionDialog } from "@/components/dialogs/patient/instructions/instructions-dialog"
 import { GuardianDetailsDialog } from "@/components/dialogs/users/guardians/GuardianDetailsDialog";
 import { AppointmentsChildren } from "@/components/appointments-children";
+import { TasksChildren } from "@/components/tasks-children";
 
 export default function PatientDetails() {
     const params = useParams()
@@ -459,6 +460,9 @@ export default function PatientDetails() {
                         </TabsContent>
                         <TabsContent value="appointments" className="space-y-4">
                             <AppointmentsChildren childId={patient.id} />
+                        </TabsContent>
+                        <TabsContent value="tasks" className="space-y-4">
+                            <TasksChildren childId={patient.id} />
                         </TabsContent>
                         {/* الملاحظات */}
                         <TabsContent value="notes" className="space-y-4">

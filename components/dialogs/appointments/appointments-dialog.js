@@ -28,6 +28,8 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
 
 
     };
+    console.log(initialForm);
+
     const [isLoading, setIsLoading] = useState(false)
 
     const [formData, setFormData] = useState(initialForm);
@@ -111,7 +113,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                         <Select
                             name="patient_id"
                             disabled={childId ? true : false || initialData ? true : false}
-                            value={formData.patient_id || ""}
+                            value={formData.patient_id.toString() || childId}
                             onValueChange={(value) => handleChange("patient_id", value)}
                         >
                             <SelectTrigger className="w-full">
@@ -130,6 +132,8 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                     <div className="space-y-2">
                         <Label htmlFor="guardian_id">ولي الامر</Label>
                         <Select
+                            disabled={initialData ? true : false}
+
                             name="guardian_id"
                             value={formData.guardian_id.toString()}
                             onValueChange={(value) => handleChange("guardian_id", value)}
@@ -151,6 +155,8 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                         <Label htmlFor="doctor_id">الطبيب</Label>
                         <Select
                             name="doctor_id"
+                            disabled={initialData ? true : false}
+
                             value={formData.doctor_id.toString()}
                             onValueChange={(value) => handleChange("doctor_id", value)}
                         // onValueChange={(e) => handleChange(e)}
