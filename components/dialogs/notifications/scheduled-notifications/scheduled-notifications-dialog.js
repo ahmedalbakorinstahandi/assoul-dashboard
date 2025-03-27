@@ -121,6 +121,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                         <Label htmlFor="title">عنوان المنبه</Label>
                         <Input
                             id="title"
+                            required
                             value={formData.title}
                             onChange={(e) => handleChange("title", e.target.value)}
                             placeholder="أدخل عنوان المنبه"
@@ -129,6 +130,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                     <div className="space-y-2">
                         <Label htmlFor="content">محتوى المنبه</Label>
                         <Textarea
+                        required
                             id="content"
                             value={formData.content}
                             onChange={(e) => handleChange("content", e.target.value)}
@@ -201,6 +203,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                             <Label htmlFor="month">الشهر (للتكرار السنوي)</Label>
                             <Select
                                 value={formData.month.toString()}
+
                                 onValueChange={(value) => handleChange("month", value)}
                             >
                                 <SelectTrigger id="month">
@@ -220,6 +223,8 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                     <div className="space-y-2">
                         <Label htmlFor="time">الوقت</Label>
                         <Input
+                            required
+                            name="time"
                             id="time"
                             type="time"
                             value={formData.time ? new Date(formData.time).toISOString().slice(11, 16) : ""}
@@ -228,7 +233,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">الحالة</Label>
-                        <Select value={formData.status.toString()} onValueChange={(value) => handleChange("status", value)}>
+                        <Select required value={formData.status.toString()} onValueChange={(value) => handleChange("status", value)}>
                             <SelectTrigger id="status">
                                 <SelectValue placeholder="اختر الحالة" />
                             </SelectTrigger>
@@ -240,7 +245,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                     </div>
                     <div className="space-y-2">
                         <Label>الصورة</Label>
-                        <Input type="file" onChange={handleImageChange} />
+                        <Input required type="file" onChange={handleImageChange} />
                         {imagePreview && (
                             <img
                                 src={imagePreview}
