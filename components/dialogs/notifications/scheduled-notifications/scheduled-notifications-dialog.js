@@ -50,6 +50,8 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+        console.log(formData);
+
     };
 
     const handleImageChange = async (event) => {
@@ -130,7 +132,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                     <div className="space-y-2">
                         <Label htmlFor="content">محتوى المنبه</Label>
                         <Textarea
-                        required
+                            required
                             id="content"
                             value={formData.content}
                             onChange={(e) => handleChange("content", e.target.value)}
@@ -158,18 +160,39 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                     {/* حقول إضافية حسب نوع التكرار */}
                     {formData.type === "weekly" && (
                         <div className="space-y-2">
-                            <Label htmlFor="week">الأسبوع (للتكرار الأسبوعي)</Label>
+                            <Label htmlFor="day">اليوم (للتكرار الأسبوعي)</Label>
                             <Select
-                                value={formData.week.toString()}
-                                onValueChange={(value) => handleChange("week", value)}
+                                value={formData.day.toString()}
+                                onValueChange={(value) => handleChange("day", value)}
                             >
-                                <SelectTrigger id="week">
-                                    <SelectValue placeholder="اختر الأسبوع" />
+                                <SelectTrigger id="day">
+                                    <SelectValue placeholder="اختر اليوم" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {Array.from({ length: 53 }, (_, i) => (
+                                    {Array.from({ length: 7 }, (_, i) => (
                                         <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                            الأسبوع {i + 1}
+                                            اليوم {i + 1}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                    {formData.type === "yearly" && (
+                        <div className="space-y-2">
+                            <Label htmlFor="month">الشهر (للتكرار السنوي)</Label>
+                            <Select
+                                value={formData.month.toString()}
+
+                                onValueChange={(value) => handleChange("month", value)}
+                            >
+                                <SelectTrigger id="month">
+                                    <SelectValue placeholder="اختر الشهر" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from({ length: 12 }, (_, i) => (
+                                        <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                            {new Date(2023, i, 1).toLocaleString('ar-SA', { month: 'long' })}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -198,27 +221,6 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                         </div>
                     )}
 
-                    {formData.type === "yearly" && (
-                        <div className="space-y-2">
-                            <Label htmlFor="month">الشهر (للتكرار السنوي)</Label>
-                            <Select
-                                value={formData.month.toString()}
-
-                                onValueChange={(value) => handleChange("month", value)}
-                            >
-                                <SelectTrigger id="month">
-                                    <SelectValue placeholder="اختر الشهر" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Array.from({ length: 12 }, (_, i) => (
-                                        <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                            {new Date(2023, i, 1).toLocaleString('ar-SA', { month: 'long' })}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
 
                     <div className="space-y-2">
                         <Label htmlFor="time">الوقت</Label>
@@ -227,9 +229,10 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                             name="time"
                             id="time"
                             type="time"
-                            value={formData.time ? new Date(formData.time).toISOString().slice(11, 16) : ""}
+                            value={formData.time || ""}
                             onChange={(e) => handleChange("time", e.target.value)}
                         />
+
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">الحالة</Label>
