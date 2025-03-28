@@ -351,7 +351,7 @@ export function AppointmentsManagement() {
     const handleCancelEntity = async (endpoint, updatedEntity) => {
         let response
 
-        response = await postData(endpoint, updatedEntity)
+        response = await putData(endpoint, updatedEntity)
 
 
         console.log(response);
@@ -387,8 +387,8 @@ export function AppointmentsManagement() {
         // setDeleteDialogOpen(false)
     }
     const handleConfirmCancel = (updatedItem) => {
-
-        handleCancelEntity(`schedules/appointments/${selectedAppointment.id}/cancel`, updatedItem)
+        const updatedItem2 = { ...updatedItem, status: "cancelled" }
+        handleCancelEntity(`schedules/appointments/${selectedAppointment.id}`, updatedItem2)
     }
 
     const handleAddItem = (updatedItem) => {
@@ -650,7 +650,7 @@ export function AppointmentsManagement() {
                                     <TableRow>
                                         <TableCell className="text-center " colSpan={9}>
                                             <div className="flex w-full align-middle justify-center">
-                                            <LoadingData />
+                                                <LoadingData />
                                             </div>
                                         </TableCell>
                                     </TableRow>

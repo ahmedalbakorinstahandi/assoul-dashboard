@@ -357,7 +357,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                         </div>
                     </> : <>
 
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label htmlFor="status">الحالة</Label>
                             <Select
                                 name="status"
@@ -376,7 +376,7 @@ export function AppointmentDialog({ isOpen, onClose, onSave, children, doctors, 
                                     ))}
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div> */}
 
                     </>}
 
