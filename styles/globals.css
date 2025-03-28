@@ -17,6 +17,16 @@ body {
     text-align: center !important;
   }
 }
+.scroll-nav {
+  background-color: #1a1b1e !important;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.scroll-nav ul {
+  min-height: 100%;
+}
+
 /* .text-left {
   text-align: right !important;
 } */

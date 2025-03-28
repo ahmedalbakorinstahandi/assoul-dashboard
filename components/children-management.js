@@ -39,9 +39,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 import LoadingData from "./LoadingData"
 import Lottie from "lottie-react"
 
-export function UserManagement() {
+export function ChildrenManagement() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("guardians")
+  const [activeTab, setActiveTab] = useState("children")
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddGameOpen, setIsAddGameOpen] = useState(false)
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false)
@@ -356,7 +356,7 @@ export function UserManagement() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl md:text-3xl font-bold">إدارة المستخدمين</h2>
+        <h2 className="text-xl md:text-3xl font-bold">إدارة حسابات الأطفال</h2>
         {activeTab === "guardians" && (
           <>
 
@@ -458,12 +458,12 @@ export function UserManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex grid-cols-2">
+        {/* <TabsList className="flex grid-cols-2">
           <TabsTrigger value="guardians" className="flex-1">حسابات الأولياء
           </TabsTrigger>
           <TabsTrigger value="doctors" className="flex-1">حسابات الأطباء</TabsTrigger>
           <TabsTrigger value="children" className="flex-1">حسابات الأطفال</TabsTrigger>
-        </TabsList>
+        </TabsList> */}
 
         <TabsContent value="guardians">
           <Card className="rtl">
@@ -725,7 +725,7 @@ export function UserManagement() {
                       </TableRow>
                       :
 
-                      questionsData.length == 0 ? <>
+                      gamesData.length == 0 ? <>
                         <TableRow>
                           <TableCell className="text-center " colSpan={11}>
                             <div className="flex w-full align-middle justify-center">
@@ -777,7 +777,7 @@ export function UserManagement() {
                               >
                                 الحصول على رمز للدخول
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => { router.push(`users/patient/${child.id}`) }} >
+                              <Button variant="ghost" size="icon" onClick={() => { router.push(`children/${child.id}`) }} >
                                 <Eye className="h-4 w-4" />
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleEditChild(child)}>

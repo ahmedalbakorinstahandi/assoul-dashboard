@@ -10,8 +10,11 @@ import {
   BellRing,
   Calendar,
   Bell,
+  Baby,
   Home,
   X,
+  BriefcaseMedical,
+  UsersRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,9 +39,19 @@ export function Sidebar({
       icon: HomeIcon,
     },
     {
-      id: "/users",
-      label: "إدارة المستخدمين",
-      icon: Users,
+      id: "/children",
+      label: "إدارة الأطفال",
+      icon: Baby,
+    },
+    {
+      id: "/doctors",
+      label: "إدارة الأطباء",
+      icon: BriefcaseMedical,
+    },
+    {
+      id: "/guardians",
+      label: "إدارة أولياء الأمور",
+      icon: UsersRound,
     },
     {
       id: "/games",
@@ -119,8 +132,8 @@ export function Sidebar({
             <span className="sr-only">إغلاق</span>
           </Button>
         </div>
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <ul className="space-y-2">
+        <nav className={`flex-1 p-4 scroll-nav`}>
+          <ul>
             {menuItems.map((item) => (
               <li key={item.id}>
                 <Link
