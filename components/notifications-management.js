@@ -276,7 +276,7 @@ export function NotificationsManagement() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <h2 className="text-xl md:text-3xl font-bold"> الإشعارات</h2>
         <div className="flex gap-2 w-full sm:w-auto">
-          {activeTab === "notiwwfications" && (
+          {/* {activeTab === "notiwwfications" && (
             <Dialog open={isAddNotificationOpen} onOpenChange={setIsAddNotificationOpen}>
               <DialogTrigger asChild>
 
@@ -337,23 +337,23 @@ export function NotificationsManagement() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          )}
+          )} */}
 
-          {activeTab === "notifications" && (
+          {/* {activeTab === "notifications" && (
             <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto" onClick={() => setIsAddNotificationOpen(true)}>
               <Plus className="h-4 w-4 ml-2" />
               <span className="hidden sm:inline">إضافة إشعار جديد</span>
               <span className="sm:hidden">إضافة</span>
             </Button>
-          )}
-
+          )} */}
+{/* 
           {activeTab === "reminders" && (
             <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto" onClick={() => setIsAddReminderOpen(true)}>
               <Plus className="h-4 w-4 ml-2" />
               <span className="hidden sm:inline">إضافة منبه جديد</span>
               <span className="sm:hidden">إضافة</span>
             </Button>
-          )}
+          )} */}
         </div>
       </div>
 

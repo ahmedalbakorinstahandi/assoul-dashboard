@@ -1028,10 +1028,10 @@ export function SugarChildren({ childId }) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex w-full" style={{ justifyContent: "space-evenly" }}>
-          <TabsTrigger className="flex-1" value="blood-sugar-readings">قراءات سكر الدم ({gamesData?.length})</TabsTrigger>
-          <TabsTrigger className="flex-1" value="insulin-doses">جرعات الأنسولين ({levelsData?.length})</TabsTrigger>
-          <TabsTrigger className="flex-1" value="physical-activities">الأنشطة البدنية ({answersData?.length})</TabsTrigger>
-          <TabsTrigger className="flex-1" value="meals">وجبات ({mealsData?.length})</TabsTrigger>
+          <TabsTrigger className="flex-1" value="blood-sugar-readings">قراءات سكر الدم {gamesData?.length > 0 ? <>({gamesData?.length})</> : <></>} </TabsTrigger>
+          <TabsTrigger className="flex-1" value="insulin-doses">جرعات الأنسولين {levelsData?.length > 0 ? <>({levelsData?.length})</> : <></>}</TabsTrigger>
+          <TabsTrigger className="flex-1" value="physical-activities">الأنشطة البدنية {answersData?.length > 0 ? <>({answersData?.length})</> : <></>}</TabsTrigger>
+          <TabsTrigger className="flex-1" value="meals">وجبات {mealsData?.length > 0 ? <>({mealsData?.length})</> : <></>}</TabsTrigger>
         </TabsList>
 
         {/* جدول الألعاب */}
@@ -1067,7 +1067,7 @@ export function SugarChildren({ childId }) {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1183,7 +1183,7 @@ export function SugarChildren({ childId }) {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1297,7 +1297,7 @@ export function SugarChildren({ childId }) {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1420,7 +1420,7 @@ export function SugarChildren({ childId }) {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>

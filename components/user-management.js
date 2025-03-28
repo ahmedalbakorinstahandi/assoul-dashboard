@@ -489,7 +489,7 @@ export function UserManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={8}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -591,7 +591,7 @@ export function UserManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={8}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -623,18 +623,23 @@ export function UserManagement() {
                               <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(doctor)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                              <TooltipProvider>
+                              <Button
+                                variant="outline"
+                                onClick={() => handleShowAppointments(doctor)}
+                              >
+                                عرض الحجوزات
+                              </Button>
+                              {/* <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger >
-                                    <Button variant="ghost" size="icon" onClick={() => handleShowAppointments(doctor)}>
+                                    <Button variant="ghost" size="icon" >
                                       <CalendarDays className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-[400px] text-wrap" side="top">
-                                    عرض الحجوزات
                                   </TooltipContent>
                                 </Tooltip>
-                              </TooltipProvider>
+                              </TooltipProvider> */}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -685,7 +690,7 @@ export function UserManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={11}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -715,7 +720,7 @@ export function UserManagement() {
                           <TableCell>
                             <div className="flex space-x-2 space-x-reverse justify-center">
 
-                              <TooltipProvider>
+                              {/* <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger >
                                     <Button variant="ghost" size="icon" onClick={() => handleGetCode(child)}>
@@ -724,10 +729,15 @@ export function UserManagement() {
 
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-[400px] text-wrap" side="top">
-                                    الحصول على رمز للدخول
                                   </TooltipContent>
                                 </Tooltip>
-                              </TooltipProvider>
+                              </TooltipProvider> */}
+                              <Button
+                                variant="outline"
+                                nClick={() => handleGetCode(child)}
+                              >
+                                الحصول على رمز للدخول
+                              </Button>
                               <Button variant="ghost" size="icon" onClick={() => { router.push(`users/patient/${child.id}`) }} >
                                 <Eye className="h-4 w-4" />
                               </Button>

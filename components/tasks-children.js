@@ -36,12 +36,17 @@ import Lottie from "lottie-react"
 import { DateFilter } from "./handleDateChange"
 import { getCookie } from "cookies-next"
 import LoadingData from "./LoadingData"
+import { PublishConfirmationDialog } from "./dialogs/publish-confirmation-dialog copy"
 
 export function TasksChildren({ childId }) {
     const [activeTab, setActiveTab] = useState("system-tasks")
     const [searchTerm, setSearchTerm] = useState("")
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
-    const initialFilter = { patient_id: childId, completed_at: "" };
+    const initialFilter = {
+        patient_id: childId,
+        completed_at: new Date(new Date().setHours(21, 0, 0, 0)).toISOString() // لضبطها كما في الـ API
+    };
+
     const [filter, setFilter] = useState(initialFilter)
     const [gameColor, setGameColor] = useState("#ffffff"); // اللون الافتراضي
 
@@ -55,6 +60,7 @@ export function TasksChildren({ childId }) {
     const [loading, setLoading] = useState(false)
     const [pageSize, setPageSize] = useState(50); // number of items per page
     const [imagePreview, setImagePreview] = useState(null); // Store image preview
+    const [editMode, setEditMode] = useState(false)
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -100,6 +106,40 @@ export function TasksChildren({ childId }) {
         //   fetchEntityData("games/answers", setAnswersData, setAnswersMeta, answersPage, searchTerm, filter);
         // }
     }, [activeTab, gamesPage, searchTerm, pageSize, filter]);
+
+    const [publishLevel, setPublishLevel] = useState(false)
+
+
+    const handleCheckTask = (task) => {
+        try {
+            const response = postData(`tasks/to-do-list/${task.id}/check`, { patient_id: childId, status: "completed", completed_at: filter.completed_at.toISOString() })
+            if (response.success) {
+
+                toast.success(response.message)
+                fetchEntityData("tasks/to-do-list", setChildrenData, setChildrenMeta, childrenPage, searchTerm, filter);
+                // setPublishLevel(false)
+
+            }
+        } catch (error) {
+            toast.error(error.response.message)
+
+        }
+    }
+    const handleInCheckTask = (task) => {
+        try {
+            const response = postData(`tasks/to-do-list/${task.id}/check`, { patient_id: childId, status: "not_completed", completed_at: filter.completed_at.toISOString() })
+            if (response.success) {
+
+                toast.success(response.message)
+                fetchEntityData("tasks/to-do-list", setChildrenData, setChildrenMeta, childrenPage, searchTerm, filter);
+                // setPublishLevel(false)
+
+            }
+        } catch (error) {
+            toast.error(error.response.message)
+
+        }
+    }
     // Mock data for demonstration
     const handleAddEntity = async (endpoint, newEntity, file = null) => {
         let dataToSend = { ...newEntity }; // نسخ البيانات إلى كائن جديد
@@ -150,6 +190,21 @@ export function TasksChildren({ childId }) {
     };
 
 
+    const handleCheckTaskConfirm = () => {
+        try {
+            const response = postData(`tasks/to-do-list/${selectedTask.id}/check`)
+            if (response.success) {
+
+                toast.success(response.message)
+                fetchEntityData("tasks/to-do-list", setChildrenData, setChildrenMeta, childrenPage, searchTerm, filter);
+                setPublishLevel(false)
+
+            }
+        } catch (error) {
+            toast.error(error.response.message)
+
+        }
+    }
 
 
 
@@ -323,99 +378,16 @@ export function TasksChildren({ childId }) {
           </DialogContent>
         </Dialog> */}
                 <div>
+                    {activeTab === "parent-tasks" && (
+                        <Button className="bg-[#5f5d5a] hover:bg-[#7a7773] w-full mx-2 sm:w-auto" onClick={() => setEditMode(!editMode)}>
+                            <Edit className="h-4 w-4 ml-2" />
+                            <span className="hidden sm:inline"> {editMode ? "اغلاق وضع التعديل" : "تفعيل وضع التعديل"}</span>
+                            <span className="sm:hidden">{editMode ? "اغلاق" : "تفعيل"}</span>
+                        </Button>
 
-                    {activeTab === "system-tasks" && (
-                        <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                                    <Plus className="h-4 w-4 ml-2" />
-                                    <span className="hidden sm:inline">إضافة مهمة جديدة</span>
-                                    <span className="sm:hidden">إضافة</span>
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[525px]">
-                                <DialogHeader>
-                                    <DialogTitle>إضافة مهمة جديدة</DialogTitle>
-                                    <DialogDescription>أدخل بيانات المهمة الجديدة هنا. اضغط على حفظ عند الانتهاء.</DialogDescription>
-                                </DialogHeader>
-
-                                {/* نموذج الإدخال */}
-                                <form
-                                    onSubmit={(event) => {
-                                        event.preventDefault(); // منع إعادة تحميل الصفحة
-
-                                        const newGame = {
-                                            title: document.getElementById("title").value,
-                                            points: document.getElementById("points").value,
-                                            color: gameColor, // اللون المختار
-                                        };
-
-                                        const imageFile = document.getElementById("image").files[0]; // جلب الصورة
-
-                                        handleAddEntity("tasks/system-tasks", newGame, imageFile);
-                                    }}
-                                >
-                                    <div className="grid gap-4 py-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="title">عنوان المهمة</Label>
-                                            <Input id="title" required placeholder="أدخل عنوان المهمة" />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="color">لون المهمة</Label>
-                                            <input
-                                                id="color"
-                                                type="color"
-                                                required
-                                                value={gameColor}
-                                                onChange={(e) => setGameColor(e.target.value)}
-                                                className="w-full h-10 p-1 border border-gray-300 rounded"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="points">نقاط المهمة</Label>
-                                            <Input id="points" required placeholder="أدخل نقاط المهمة" />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="image">صورة المهمة</Label>
-                                            <Input id="image" type="file" required onChange={handleImageChange} />
-                                            {imagePreview && (
-                                                <img
-                                                    src={imagePreview}
-                                                    alt="Preview"
-                                                    className="h-[100px] w-[100px] object-cover rounded border border-gray-300"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* الأزرار */}
-                                    <DialogFooter>
-                                        <Button
-                                            type="button"
-                                            style={{ marginInline: "1rem" }}
-                                            variant="outline"
-                                            onClick={() => setIsAddTaskOpen(false)}
-                                        >
-                                            إلغاء
-                                        </Button>
-
-                                        <Button
-                                            type="submit"
-                                            className="bg-[#ffac33] mx-4 hover:bg-[#f59f00]"
-                                        >
-                                            حفظ
-                                        </Button>
-                                    </DialogFooter>
-                                </form>
-                            </DialogContent>
-
-                        </Dialog>
                     )}
 
-                    {activeTab === "parent-tasks" && (
+                    {activeTab === "parent-tasks" && editMode && (
                         <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
                             <DialogTrigger asChild>
                                 <Button className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
@@ -519,15 +491,15 @@ export function TasksChildren({ childId }) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <DateFilter activeTab={activeTab} filter={filter} setFilter={setFilter} />
+                <DateFilter defaultDate={true} activeTab={activeTab} filter={filter} setFilter={setFilter} />
 
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="system-tasks">مهام عسول ({gamesData?.length})</TabsTrigger>
+                    <TabsTrigger value="system-tasks">مهام عسول {gamesData?.length > 0 ? <>({gamesData?.length})</> : <></>}</TabsTrigger>
 
-                    <TabsTrigger value="parent-tasks" >مهام الأطفال ({childrenData?.length})</TabsTrigger>
+                    <TabsTrigger value="parent-tasks" >مهام الأطفال {childrenData?.length > 0 ? <>({childrenData?.length})</> : <></>}</TabsTrigger>
                     {/* <TabsTrigger value="child-tasks" disabled>مهام الأطفال</TabsTrigger> */}
                 </TabsList>
                 <TabsContent value="system-tasks">
@@ -555,7 +527,7 @@ export function TasksChildren({ childId }) {
                                             <TableRow>
                                                 <TableCell className="text-center " colSpan={6}>
                                                     <div className="flex w-full align-middle justify-center">
-                                                    <LoadingData />
+                                                        <LoadingData />
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -589,7 +561,7 @@ export function TasksChildren({ childId }) {
                                                     <TableCell>{task.points} نقطة</TableCell>
                                                     <TableCell>
                                                         <div className="flex space-x-2 space-x-reverse justify-center ">
-                                                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                                                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                             <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
@@ -597,7 +569,7 @@ export function TasksChildren({ childId }) {
                                                             </Button>
                                                             <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
                                                                 <Trash2 className="h-4 w-4" />
-                                                            </Button>
+                                                            </Button> */}
                                                             <Button variant="ghost" size="icon">
                                                                 {task.system_task_completion ? <>
                                                                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -647,7 +619,7 @@ export function TasksChildren({ childId }) {
                                             <TableRow>
                                                 <TableCell className="text-center " colSpan={6}>
                                                     <div className="flex w-full align-middle justify-center">
-                                                    <LoadingData />
+                                                        <LoadingData />
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -674,35 +646,29 @@ export function TasksChildren({ childId }) {
                                                     {/* <TableCell>{(task.status)}</TableCell> */}
                                                     <TableCell>
                                                         <div className="flex space-x-2 space-x-reverse justify-center">
-                                                            {/* <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
-                                                            <Eye className="h-4 w-4" />
-                                                        </Button>
-                                                     
-                                                       
-                                                        {task.status !== "مكتمل" ? (
-                                                            <Button variant="ghost" size="icon" onClick={() => handleCompleteTask(task)}>
-                                                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                                            </Button>
-                                                        ) : (
-                                                            <Button variant="ghost" size="icon" onClick={() => handleRejectTask(task)}>
-                                                                <XCircle className="h-4 w-4 text-red-500" />
-                                                            </Button>
-                                                        )} */}
-                                                            <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" >
-                                                                {task.completion ? <>
-                                                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                                            {editMode ? <>
+                                                                <Button variant="ghost" size="icon" onClick={() => handleViewTask(task)}>
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task)}>
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
 
-                                                                </> : <>
-                                                                    <XCircle className="h-4 w-4 text-red-500" />
+                                                                : <>
+                                                                    <Button variant="ghost" size="icon" >
+                                                                        {task.completion ? <>
+                                                                            <Button variant="ghost" size="icon" >
 
+                                                                                <CheckCircle className="h-4 w-4 text-green-500" onClick={() => handleInCheckTask(task)} />
+                                                                            </Button>
+                                                                        </> : <>
+                                                                            <Button variant="ghost" size="icon" onClick={() => handleCheckTask(task)}>
+                                                                                <XCircle className="h-4 w-4 text-red-500" />
+                                                                            </Button>
+                                                                        </>}
+                                                                    </Button>
                                                                 </>}
-                                                            </Button>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -765,7 +731,8 @@ export function TasksChildren({ childId }) {
                 onOpenChange={setRejectionDialogOpen}
                 onConfirm={handleConfirmRejection}
             />
-        </div>
+
+        </div >
     )
 }
 

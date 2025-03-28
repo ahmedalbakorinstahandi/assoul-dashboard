@@ -1079,11 +1079,9 @@ export function GamesManagement() {
                               <div className="flex space-x-2 space-x-reverse justify-center">
                                 <Button
                                   variant="outline"
-                                  // size="icon"
                                   onClick={() => handleTabChange("levels", { game_id: game.id.toString() })}
                                 >
                                   عرض المستويات
-                                  {/* <LucideChevronLeftCircle className="h-4 w-4" /> */}
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleViewItem(game)}>
                                   <Eye className="h-4 w-4" />

@@ -192,7 +192,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                                 <SelectContent>
                                     {Array.from({ length: 12 }, (_, i) => (
                                         <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                            {new Date(2023, i, 1).toLocaleString('ar-SA', { month: 'long' })}
+                                            {new Date(2023, i, 1).toLocaleString('ar', { month: 'long' })}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

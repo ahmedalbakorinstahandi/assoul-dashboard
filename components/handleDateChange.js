@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 // import "react-datepicker/dist/react-datepicker.css";
 import { Button } from "@/components/ui/button";
-import { CircleChevronLeft, CircleChevronRight, Minus, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleChevronLeft, CircleChevronRight, Minus, Plus } from "lucide-react";
 import DatePickerV2 from "@/components/ui/date-picker-v2"
 
 import SimpleDatePicker, { DateOnlyPicker, DateTimePicker, YearPicker } from "@/components/ui/date-picker"
@@ -20,15 +20,15 @@ const initialFilter = {
     activity_date_to: null,
 };
 
-export function DateFilter({ activeTab, filter, setFilter }) {
-    const [selectedDate, setSelectedDate] = useState(null);
+export function DateFilter({ activeTab, filter, setFilter, defaultDate }) {
+    const [selectedDate, setSelectedDate] = useState(defaultDate ? new Date(new Date().setHours(0, 0, 0, 0)) : null);
 
     // دالة لضبط بداية ونهاية اليوم للتاريخ المختار
     const getStartAndEndOfDay = (date) => {
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        endOfDay.setHours(21, 0, 0, 0); // تحويل إلى توقيت API
         return { startOfDay, endOfDay };
     };
 
@@ -115,7 +115,7 @@ export function DateFilter({ activeTab, filter, setFilter }) {
             <div className="flex gap-2">
 
                 <Button size={"sm"} onClick={() => handleDateOffset(-1)} className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                    <CircleChevronRight Icon className="w-10 h-10 " />
+                    <ChevronRight Icon className="w-10 h-10 " />
 
                 </Button>
                 <DatePickerV2
@@ -126,7 +126,7 @@ export function DateFilter({ activeTab, filter, setFilter }) {
                 // className="p-2 border border-gray-300 rounded"
                 />
                 <Button size={"sm"} onClick={() => handleDateOffset(1)} className="bg-[#ffac33] hover:bg-[#f59f00] w-full sm:w-auto">
-                    <CircleChevronLeft />
+                    <ChevronLeft />
 
                 </Button>
                 {/* أزرار للتنقل بين أيام متعددة */}

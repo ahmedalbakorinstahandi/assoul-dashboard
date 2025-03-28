@@ -1094,7 +1094,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1210,7 +1210,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1324,7 +1324,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1447,7 +1447,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                          <LoadingData />
+                            <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
