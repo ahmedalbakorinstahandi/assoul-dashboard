@@ -155,6 +155,8 @@ export function LevelDialog({ level, open, onOpenChange, onSave }) {
             variant="outline"
             style={{ marginInline: "1rem" }}
             onClick={() => onOpenChange(false)}
+            type="button"
+
           >
             إلغاء
           </Button>

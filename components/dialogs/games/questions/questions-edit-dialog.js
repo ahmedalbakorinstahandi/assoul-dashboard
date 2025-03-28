@@ -240,6 +240,8 @@ export function QuestionDialog({ question, open, onOpenChange, onSave, gamesIds,
           <Button
             style={{ marginInline: "1rem" }}
             variant="outline"
+            type="button"
+
             onClick={() => onOpenChange(false)}
           >
             إلغاء

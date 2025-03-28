@@ -119,26 +119,7 @@ export function SystemTasksEditDialog({ game, open, onOpenChange, onSave, handle
               onChange={(e) => handleChange("title", e.target.value)}
             />
           </div>
-          {/* Description */}
-          {/* <div className="space-y-2">
-            <Label htmlFor="description">وصف اللعبة</Label>
-            <Textarea
-              id="description"
-              placeholder="أدخل وصف اللعبة"
-              value={form.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-            />
-          </div> */}
-          {/* Switch for is_enable */}
-          {/* <div className="flex items-center justify-between">
-            <Label htmlFor="is_enable">تفعيل اللعبة</Label>
-            <Switch
-              id="is_enable"
-              color="primary"
-              checked={form.is_enable}
-              onCheckedChange={(checked) => handleChange("is_enable", checked)}
-            />
-          </div> */}
+          
           {/* Color Picker */}
           <div className="space-y-2">
             <Label htmlFor="color">لون مهمة عسول</Label>
@@ -183,6 +164,7 @@ export function SystemTasksEditDialog({ game, open, onOpenChange, onSave, handle
             <Button
               style={{ marginInline: "1rem" }}
               variant="outline"
+              type="button"
               onClick={() => onOpenChange(false)}
             >
               إلغاء

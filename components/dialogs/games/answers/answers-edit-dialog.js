@@ -243,6 +243,8 @@ export function AnswerDialog({
           <Button
             style={{ marginInline: "1rem" }}
             variant="outline"
+            type="button"
+
             onClick={() => onOpenChange(false)}
           >
             إلغاء

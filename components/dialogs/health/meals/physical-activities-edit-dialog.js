@@ -182,6 +182,7 @@ export function MealsDialog({ meal, open, onOpenChange, onSave }) {
 
           <Button
             style={{ marginInline: "1rem" }}
+            type="button"
 
             variant="outline" onClick={() => onOpenChange(false)}>
             إلغاء

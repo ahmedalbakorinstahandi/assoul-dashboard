@@ -258,7 +258,8 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                         )}
                     </div>
                     <DialogFooter>
-                        <Button type="button" style={{ marginInline: "1rem" }} variant="outline" onClick={onClose}>
+              type="button"
+              <Button type="button" style={{ marginInline: "1rem" }}  variant="outline" onClick={onClose}>
                             إلغاء
                         </Button>
                         <Button type="submit" disabled={isLoading} className="bg-[#ffac33] hover:bg-[#f59f00]">

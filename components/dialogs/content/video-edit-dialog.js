@@ -139,6 +139,7 @@ export function ContentEditDialog({ game, open, onOpenChange, onSave, handleAddE
             <Button
               style={{ marginInline: "1rem" }}
               variant="outline"
+              type="button"
               onClick={() => onOpenChange(false)}
             >
               إلغاء

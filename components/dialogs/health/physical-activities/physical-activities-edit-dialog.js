@@ -195,7 +195,8 @@ export function PhysicalActivitiesDialog({ activity, open, onOpenChange, onSave 
         <DialogFooter>
           <Button
             style={{ marginInline: "1rem" }}
-            variant="outline" onClick={() => onOpenChange(false)}>
+              type="button"
+            variant="outline"  onClick={() => onOpenChange(false)}>
             إلغاء
           </Button>
           <Button

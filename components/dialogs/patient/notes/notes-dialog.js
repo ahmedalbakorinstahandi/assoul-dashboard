@@ -129,7 +129,7 @@ export function NoteDialog({ isOpen, onClose, refreshData, id, initialData }) {
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" style={{ marginInline: "1rem" }} variant="outline" onClick={onClose}>
+                        <Button type="button" style={{ marginInline: "1rem" }}  variant="outline" onClick={onClose}>
                             إلغاء
                         </Button>
                         <Button
