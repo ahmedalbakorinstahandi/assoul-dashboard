@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { calculateAge } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import LoadingData from "./LoadingData"
 
 export function UserManagement() {
   const router = useRouter()
@@ -488,7 +489,7 @@ export function UserManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={8}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -590,7 +591,7 @@ export function UserManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={8}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -684,7 +685,7 @@ export function UserManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={11}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>

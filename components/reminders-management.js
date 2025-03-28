@@ -32,6 +32,7 @@ import { PaginationControls } from "./ui/pagination-controls"
 // استيراد النوافذ المنبثقة من المجلدات الجديدة
 import { NotificationViewDialog } from "@/components/dialogs/notifications/notifications/notifications-view-dialog"
 import Lottie from "lottie-react"
+import LoadingData from "./LoadingData"
 // import { NotificationEditDialog } from "@/components/dialogs/notifications/notification-edit-dialog"
 // import { DeleteConfirmationDialog } from "@/components/dialogs/common/delete-confirmation-dialog"
 
@@ -487,7 +488,7 @@ export function NotificationsManagement() {
                                             <TableRow>
                                                 <TableCell className="text-center " colSpan={8}>
                                                     <div className="flex w-full align-middle justify-center">
-                                                        <LoaderIcon />
+                                                    <LoadingData />
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

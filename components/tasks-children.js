@@ -35,6 +35,7 @@ import { Switch } from "./ui/switch"
 import Lottie from "lottie-react"
 import { DateFilter } from "./handleDateChange"
 import { getCookie } from "cookies-next"
+import LoadingData from "./LoadingData"
 
 export function TasksChildren({ childId }) {
     const [activeTab, setActiveTab] = useState("system-tasks")
@@ -554,7 +555,7 @@ export function TasksChildren({ childId }) {
                                             <TableRow>
                                                 <TableCell className="text-center " colSpan={6}>
                                                     <div className="flex w-full align-middle justify-center">
-                                                        <LoaderIcon />
+                                                    <LoadingData />
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -646,7 +647,7 @@ export function TasksChildren({ childId }) {
                                             <TableRow>
                                                 <TableCell className="text-center " colSpan={6}>
                                                     <div className="flex w-full align-middle justify-center">
-                                                        <LoaderIcon />
+                                                    <LoadingData />
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

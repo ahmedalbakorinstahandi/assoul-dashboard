@@ -27,6 +27,7 @@ import toast from "react-hot-toast"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { DeleteConfirmationDialog } from "@/components/dialogs/delete-confirmation-dialog"
 import Lottie from "lottie-react"
+import LoadingData from "./LoadingData"
 
 export function AppointmentsChildren({ childId }) {
     const [searchTerm, setSearchTerm] = useState("")
@@ -647,7 +648,7 @@ export function AppointmentsChildren({ childId }) {
                                     <TableRow>
                                         <TableCell className="text-center " colSpan={9}>
                                             <div className="flex w-full align-middle justify-center">
-                                                <LoaderIcon />
+                                                <LoadingData />
                                             </div>
                                         </TableCell>
                                     </TableRow>

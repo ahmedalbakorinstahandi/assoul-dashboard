@@ -31,6 +31,7 @@ import { PaginationControls } from "./ui/pagination-controls"
 import { deleteData, getData, postData, putData } from "@/lib/apiHelper"
 import { Switch } from "./ui/switch"
 import Lottie from "lottie-react"
+import LoadingData from "./LoadingData"
 
 export function TasksManagement() {
   const [activeTab, setActiveTab] = useState("system-tasks")
@@ -465,7 +466,7 @@ export function TasksManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={6}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>

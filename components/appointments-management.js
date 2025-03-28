@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import AsyncSelect from "react-select/async";
 import animationData from '@/public/no_data.json'; // Adjust the path to your Lottie JSON file
+import LoadingData from "./LoadingData"
 
 import { Label } from "@/components/ui/label"
 import { Search, Edit, Eye, XCircle, Calendar, Plus, Trash2, LoaderIcon } from "lucide-react"
@@ -649,7 +650,7 @@ export function AppointmentsManagement() {
                                     <TableRow>
                                         <TableCell className="text-center " colSpan={9}>
                                             <div className="flex w-full align-middle justify-center">
-                                                <LoaderIcon />
+                                            <LoadingData />
                                             </div>
                                         </TableCell>
                                     </TableRow>

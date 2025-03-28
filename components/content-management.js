@@ -31,6 +31,7 @@ import toast from "react-hot-toast"
 import { Switch } from "./ui/switch"
 import { PaginationControls } from "./ui/pagination-controls"
 import Lottie from "lottie-react"
+import LoadingData from "./LoadingData"
 
 export function ContentManagement() {
   const [activeTab, setActiveTab] = useState("videos")
@@ -422,7 +423,7 @@ export function ContentManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={7}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>

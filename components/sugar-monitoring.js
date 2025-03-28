@@ -43,6 +43,7 @@ import { activityTime, injectionSites, intensity, measurementTypes, takenTime, t
 import toast from "react-hot-toast"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 import Link from "next/link"
+import LoadingData from "./LoadingData"
 export function SugarMonitoring() {
   const [activeTab, setActiveTab] = useState("blood-sugar-readings")
   const [searchTerm, setSearchTerm] = useState("")
@@ -1093,7 +1094,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1209,7 +1210,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1323,7 +1324,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1446,7 +1447,7 @@ export function SugarMonitoring() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={9}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>

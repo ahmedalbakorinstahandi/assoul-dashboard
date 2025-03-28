@@ -39,6 +39,7 @@ import toast from "react-hot-toast"
 import Lottie from "lottie-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 import { PublishConfirmationDialog } from "./dialogs/publish-confirmation-dialog copy"
+import LoadingData from "./LoadingData"
 
 export function GamesManagement() {
   const [activeTab, setActiveTab] = useState("games")
@@ -1030,7 +1031,8 @@ export function GamesManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={8}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
+
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1134,7 +1136,7 @@ export function GamesManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={5}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1237,7 +1239,7 @@ export function GamesManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={6}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1323,7 +1325,7 @@ export function GamesManagement() {
                       <TableRow>
                         <TableCell className="text-center " colSpan={5}>
                           <div className="flex w-full align-middle justify-center">
-                            <LoaderIcon />
+                          <LoadingData />
                           </div>
                         </TableCell>
                       </TableRow>
