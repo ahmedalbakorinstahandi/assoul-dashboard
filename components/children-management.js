@@ -773,7 +773,7 @@ export function ChildrenManagement() {
                               </TooltipProvider> */}
                               <Button
                                 variant="outline"
-                                nClick={() => handleGetCode(child)}
+                                onClick={() => handleGetCode(child)}
                               >
                                 الحصول على رمز للدخول
                               </Button>
