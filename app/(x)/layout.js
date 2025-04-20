@@ -64,6 +64,11 @@ export default function RootLayout({ children }) {
       );
 
       deleteCookie("token");
+      deleteCookie("email");
+
+      deleteCookie("name");
+      deleteCookie("id");
+
       toast.success("Logged out successfully!");
       router.push("/login");
     } catch (error) {

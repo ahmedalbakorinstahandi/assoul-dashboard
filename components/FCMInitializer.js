@@ -42,11 +42,28 @@ const FCMInitializer = () => {
         // Handle foreground messages
         onMessage(messaging, (payload) => {
           console.log("Foreground message received:", payload);
-          // Show notification using react-hot-toast
-          toast(payload.notification.title, {
-            description: payload.notification.body,
-            duration: 5000,
-          });
+          // Show notification using react-hot-toast with enhanced options
+          // toast(payload.notification.title, {
+          //   description: payload.notification.body,
+          //   duration: 8000,
+          //   position: 'top-right',
+          //   style: {
+          //     background: '#4CAF50',
+          //     color: '#fff',
+          //     padding: '16px',
+          //     borderRadius: '8px',
+          //   },
+          // });
+          // Create and show native notification
+          // if (Notification.permission === 'granted') {
+          //   const notification = new Notification(payload.notification.title, {
+          //     body: payload.notification.body,
+          //     icon: '/logo.png',
+          //     tag: new Date().getTime().toString(),
+          //     requireInteraction: true,
+          //     vibrate: [200, 100, 200]
+          //   });
+          // }
           // Dispatch custom event for NotificationContainer
           window.postMessage({ type: 'FCM_MESSAGE', payload }, '*');
         });

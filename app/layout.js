@@ -3,7 +3,7 @@
 
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-
+import FCMInitializer from "../components/FCMInitializer";
 import { Toaster } from "react-hot-toast";
 import { Providers } from "@/app/providers";
 
@@ -16,6 +16,8 @@ export default function RootLayout({ children }) {
         <Providers>
           {children}
           <Toaster position="top-right" reverseOrder={false} />
+          <FCMInitializer />
+
         </Providers>
       </body>
     </html>

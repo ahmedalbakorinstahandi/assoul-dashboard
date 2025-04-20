@@ -35,48 +35,56 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    const deviceToken = await getFirebaseToken(); // Get Firebase token
-    console.log(deviceToken);
 
-    const formData = { email, password, role: "admin", device_token: deviceToken };
     try {
-      const response = await axios.post(
+      const deviceToken = await getFirebaseToken();
+      setCookie("deviceToken", deviceToken);
+
+      const formData = {
+        email,
+        password,
+        role: "admin",
+        device_token: deviceToken,
+      };
+
+      const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_AUTH}login`,
         formData
       );
-      if (response.data?.success) {
-        const token = response.data.user_token;
-        const email = response.data.data.email;
-        const name = response.data.data.first_name;
-        const id = response.data.data.id;
 
-        setCookie("token", token);
+      if (data?.success) {
+        const token = data.user_token;
+        const { email, first_name: name, id } = data.data;
+
+        if (!token) {
+          throw new Error("لم يتم استلام رمز المصادقة من الخادم.");
+        }
+
+        // حفظ البيانات في الكوكيز
+        setCookie("token", token, { maxAge: 60 * 60 * 24 * 7 });
         setCookie("email", email);
         setCookie("name", name);
         setCookie("id", id);
 
-        toast.success(response.data.message);
-        router.push("/dashboard");
+        toast.success(data.message || "تم تسجيل الدخول بنجاح");
+
+        // تأخير بسيط لضمان تخزين الكوكيز قبل الانتقال
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 300);
       } else {
-        toast.error(response.message || "Login failed!");
-        setError(response.message);
-
+        toast.error(data.message || "فشل تسجيل الدخول");
+        setError(data.message);
       }
-
-      // if (email === "admin@assoul.com" && password === "password") {
-      //   router.push("/");
-      // } else {
-      //   setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
-      // }
     } catch (err) {
-      console.log(err);
-      toast.error(err.response.data.message || "Login failed!");
-
-      // setError(err.response.data.message);
+      console.error("Login Error:", err);
+      toast.error(err?.response?.data?.message || "حدث خطأ أثناء تسجيل الدخول");
+      setError(err?.response?.data?.message || "Login error");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div
