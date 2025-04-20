@@ -20,6 +20,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
+import { getFirebaseToken } from "../firebaseConfig";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,7 +35,10 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    const formData = { email, password, role: "admin" }
+    const deviceToken = await getFirebaseToken(); // Get Firebase token
+    console.log(deviceToken);
+
+    const formData = { email, password, role: "admin", device_token: deviceToken };
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_AUTH}login`,

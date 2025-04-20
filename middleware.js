@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 export function middleware(request) {
     const token = request.cookies.get("token")?.value;
     const path = request.nextUrl.pathname;
-
+    if (request.nextUrl.pathname === '/firebase-messaging-sw.js') {
+        return NextResponse.next()
+    }
     const protectedRoutes = ["/", "/games", "/users", "/content", "/notifications", "/sugar", "/appointments"];
     const authRoutes = ["/login", "/signup"];
     if (path === "/" && token) {

@@ -108,6 +108,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
     } else {
         dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
     }
+    const daysOfWeek = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -169,9 +170,9 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                                     <SelectValue placeholder="اختر اليوم" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {Array.from({ length: 7 }, (_, i) => (
+                                    {daysOfWeek.map((day, i) => (
                                         <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                            اليوم {i + 1}
+                                            {day}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -258,8 +259,7 @@ export function ScheduledNotificationsDialog({ isOpen, onClose, onSave, initialD
                         )}
                     </div>
                     <DialogFooter>
-              type="button"
-              <Button type="button" style={{ marginInline: "1rem" }}  variant="outline" onClick={onClose}>
+                        <Button type="button" style={{ marginInline: "1rem" }} variant="outline" onClick={onClose}>
                             إلغاء
                         </Button>
                         <Button type="submit" disabled={isLoading} className="bg-[#ffac33] hover:bg-[#f59f00]">

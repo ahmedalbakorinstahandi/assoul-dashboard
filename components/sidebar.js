@@ -29,8 +29,8 @@ export function Sidebar({
   isOpen,
   setIsOpen,
 }) {
-  const email = getCookie("email");
-  const name = getCookie("name");
+  // const email = getCookie("email");
+  // const name = getCookie("name");
   const menuItems = [
 
     {
@@ -158,8 +158,8 @@ export function Sidebar({
               م
             </div>
             <div className="min-w-0">
-              <p className="font-medium truncate">{name}</p>
-              <p className="text-sm text-gray-400 truncate">{email}</p>
+              {/* <p className="font-medium truncate">{name}</p>
+              <p className="text-sm text-gray-400 truncate">{email}</p> */}
             </div>
           </div>
         </div>
